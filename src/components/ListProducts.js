@@ -1,4 +1,4 @@
-import Cart from "./Cart";
+import Card from "./Card";
 
 export default function ListProducts({title}) {
   return (
@@ -9,7 +9,7 @@ export default function ListProducts({title}) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1 px-24">
             {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="product-item">
-                <Cart></Cart>
+                <Card></Card>
               </div>
             ))}
           </div>
