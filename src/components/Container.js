@@ -9,6 +9,5 @@ export default function Container({ children }) {
   const containerStyle = {
     maxWidth: "1440px",
     margin: "0 auto",
-    padding: "0 20px",
   };
   

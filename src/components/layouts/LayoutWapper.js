@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from '../Header';
 import Container from '../Container';
 import AuthLayout from './AuthLayout';
+import Footer from '../Footer';
 
 
 export default function LayoutWrapper({ children }) {
@@ -24,6 +25,7 @@ export default function LayoutWrapper({ children }) {
         <>
           <Header />
           <Container>{children}</Container>
+          <Footer/>
         </>
       )}
     </>
