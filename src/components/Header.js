@@ -8,7 +8,7 @@ export default function Header() {
         <header className="flex items-center justify-between p-4 px-20">
           <div className="flex items-baseline">
             <span className="text-3xl font-bold text-red-600">W</span>
-            <span className="text-xs font-bold text-black">EARWISE</span>
+            <span className="text-xl font-bold text-black">EARWISE</span>
           </div>
 
           <nav className="flex items-center space-x-6 text-lg">
