@@ -1,19 +1,8 @@
-import { FaStar, FaArrowRight, FaArrowLeft } from "react-icons/fa";
-
+import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import Star from "./Star";
 export default function Reviews() {
   return (
     <>
-      {/* <div className="bg-white text-black">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-8">OUR HAPPY CUSTOMERS</h1>
-          <div className="flex space-x-4 overflow-x-auto">
-            {[...Array(5)].map((_, index) => (
-              <CartReview key={index} />
-            ))}
-          </div>
-        </div>
-      </div> */}
-
       <div className="bg-white text-gray-800">
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold text-center mb-8">
@@ -27,9 +16,7 @@ export default function Reviews() {
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-md w-80">
                 <div className="flex items-center mb-2">
                   <div className="flex items-center">
-                    {[...Array(5)].map((_, index) => (
-                      <FaStar key={index} className="text-yellow-500" />
-                    ))}
+                    <Star numStars={4} />
                   </div>
                 </div>
                 <h2 className="text-lg font-semibold mb-2">
@@ -46,9 +33,7 @@ export default function Reviews() {
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-md w-80">
                 <div className="flex items-center mb-2">
                   <div className="flex items-center">
-                    {[...Array(5)].map((_, index) => (
-                      <FaStar key={index} className="text-yellow-500" />
-                    ))}
+                    <Star numStars={5} />
                   </div>
                 </div>
                 <h2 className="text-lg font-semibold mb-2">
@@ -64,9 +49,7 @@ export default function Reviews() {
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-md w-80">
                 <div className="flex items-center mb-2">
                   <div className="flex items-center">
-                    {[...Array(5)].map((_, index) => (
-                      <FaStar key={index} className="text-yellow-500" />
-                    ))}
+                    <Star numStars={5} />
                   </div>
                 </div>
                 <h2 className="text-lg font-semibold mb-2">

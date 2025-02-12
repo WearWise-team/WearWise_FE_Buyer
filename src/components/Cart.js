@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Star from "./Star";
 
 export default function Cart() {
   return (
@@ -15,14 +16,8 @@ export default function Cart() {
           <div className="mt-4">
             <h2 className="text-lg font-semibold">Sleeve Striped T-shirt</h2>
             <div className="flex items-center mt-2">
-              <div className="flex items-center text-yellow-500">
-                <i className="fas fa-star"></i>
-                <i className="fas fa-star"></i>
-                <i className="fas fa-star"></i>
-                <i className="fas fa-star"></i>
-                <i className="fas fa-star-half-alt"></i>
-              </div>
-              <span className="ml-2 text-gray-600">4.5/5</span>
+              <Star numStars={4}/>
+              <span className="ml-2 text-gray-600">4/5</span>
             </div>
             <div className="flex items-center mt-2">
               <span className="text-2xl font-bold">$130</span>
