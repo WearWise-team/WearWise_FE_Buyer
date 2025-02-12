@@ -1,15 +1,14 @@
-import Image from "next/image";
-
+"use client"
 export default function Footer() {
   return (
     <footer className="bg-gray-100 py-10 px-20">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap justify-between">
-          <div className="w-full md:w-1/4 mb-6 md:mb-0">
-          <div className="flex items-baseline">
-            <span className="text-3xl font-bold text-red-600">W</span>
-            <span className="text-xl font-bold text-black">EARWISE</span>
-          </div>
+        <div className="flex flex-nowrap justify-center gap-x-5">
+          <div className="w-full md:w-1/5 mb-6 md:mb-0">
+            <div className="flex items-baseline">
+              <span className="text-3xl font-bold text-red-600">W</span>
+              <span className="text-xl font-bold text-black">EARWISE</span>
+            </div>
             <p className="text-gray-600">
               We have clothes that suits your style and which you&apos;re proud
               to wear. From women to men.
