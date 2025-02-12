@@ -52,7 +52,7 @@ export default function Header() {
             <a href="contactUs" className="text-black hover:text-gray-600">
               Contact Us
             </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            <a href="products" className="text-black hover:text-gray-600">
               Casual
             </a>
           </nav>
