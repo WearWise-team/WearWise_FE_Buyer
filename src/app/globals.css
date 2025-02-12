@@ -15,3 +15,14 @@ body {
 input:focus {
   @apply ring-1 ring-gray-400;
 }
+
+@layer base {
+  html,
+  body {
+    scrollbar-width: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+  }
+}
