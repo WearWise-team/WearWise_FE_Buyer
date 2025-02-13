@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { FaSearch, FaHeart, FaUser } from "react-icons/fa";
-import { FaBagShopping } from "react-icons/fa6";
+import { UserOutlined, ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
 
 export default function Header() {
   return (
@@ -44,8 +43,8 @@ export default function Header() {
                 </Link>
               </div>
             </div>
-            <Link href="#" className="text-black hover:text-gray-600">
-              Our Story
+            <Link href="/wishList" className="text-black hover:text-gray-600">
+              Wish List
             </Link>
             <Link href="#" className="text-black hover:text-gray-600">
               Blog
@@ -59,16 +58,16 @@ export default function Header() {
           </nav>
           <div className="flex items-center space-x-4 text-xl">
             <Link href="#" className="text-black hover:text-gray-600">
-              <FaSearch />
+            <SearchOutlined />
             </Link>
             <Link href="#" className="text-black hover:text-gray-600">
-              <FaHeart />
+            <HeartOutlined />
             </Link>
             <Link href="#" className="text-black hover:text-gray-600">
-              <FaBagShopping />
+            <ShoppingCartOutlined />
             </Link>
             <Link href="/" className="text-black hover:text-gray-600">
-              <FaUser />
+              <UserOutlined />
             </Link>
           </div>
         </header>
