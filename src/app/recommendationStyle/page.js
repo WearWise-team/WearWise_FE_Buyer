@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import Cart from "@/components/Cart";
+import Card from "@/components/Card";
 import Link from "next/link";
 
 export default function RecommendStyle() {
@@ -80,15 +80,15 @@ export default function RecommendStyle() {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Cart />
+          <Card />
         </div>
 
         <div className="text-center">
-          <button className="bg-black text-white py-2 px-6 rounded-full hover:bg-gray-800 transition">
-            <Link href="http://localhost:3000/recommendationStyle">
+          <Link href="http://localhost:3000/recommendationStyle/results">
+            <button className="bg-black text-white py-2 px-6 rounded-full hover:bg-gray-800 transition">
               Continue
-            </Link>
-          </button>
+            </button>
+          </Link>
         </div>
       </div>
     </div>
