@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FaSearch, FaHeart, FaUser } from "react-icons/fa";
 import { FaBagShopping } from "react-icons/fa6";
 
@@ -12,63 +13,63 @@ export default function Header() {
           </div>
 
           <nav className="flex items-center space-x-6 text-lg">
-            <a href="" className="text-black hover:text-gray-600">
+            <Link href="/" className="text-black hover:text-gray-600">
               Home
-            </a>
+            </Link>
             <div className="relative group">
-              <a
+              <Link
                 href="#"
                 className="text-black hover:text-gray-600 flex items-center"
               >
                 Shop <i className="fas fa-chevron-down ml-1"></i>
-              </a>
+              </Link>
               <div className="absolute hidden group-hover:block bg-white shadow-lg mt-2 rounded">
-                <a
+                <Link
                   href="#"
                   className="block px-4 py-2 text-black hover:bg-gray-100"
                 >
                   Category 1
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="block px-4 py-2 text-black hover:bg-gray-100"
                 >
                   Category 2
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="block px-4 py-2 text-black hover:bg-gray-100"
                 >
                   Category 3
-                </a>
+                </Link>
               </div>
             </div>
-            <a href="#" className="text-black hover:text-gray-600">
+            <Link href="#" className="text-black hover:text-gray-600">
               Our Story
-            </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="#" className="text-black hover:text-gray-600">
               Blog
-            </a>
-            <a href="contactUs" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="/contactUs" className="text-black hover:text-gray-600">
               Contact Us
-            </a>
-            <a href="products" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="/products" className="text-black hover:text-gray-600">
               Casual
-            </a>
+            </Link>
           </nav>
           <div className="flex items-center space-x-4 text-xl">
-            <a href="#" className="text-black hover:text-gray-600">
+            <Link href="#" className="text-black hover:text-gray-600">
               <FaSearch />
-            </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="#" className="text-black hover:text-gray-600">
               <FaHeart />
-            </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="#" className="text-black hover:text-gray-600">
               <FaBagShopping />
-            </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            </Link>
+            <Link href="/" className="text-black hover:text-gray-600">
               <FaUser />
-            </a>
+            </Link>
           </div>
         </header>
       </div>
