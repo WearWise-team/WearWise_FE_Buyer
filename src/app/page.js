@@ -29,7 +29,7 @@ export default function Home() {
 
       <FilterPanel></FilterPanel>
 
-      <Reviews></Reviews>
+      <Reviews title={"OUR HAPPY CUSTOMERS"}></Reviews>
 
       <style jsx>{`
         @keyframes marquee {
