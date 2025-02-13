@@ -12,7 +12,7 @@ export default function Header() {
           </div>
 
           <nav className="flex items-center space-x-6 text-lg">
-            <a href="#" className="text-black hover:text-gray-600">
+            <a href="" className="text-black hover:text-gray-600">
               Home
             </a>
             <div className="relative group">
@@ -49,10 +49,10 @@ export default function Header() {
             <a href="#" className="text-black hover:text-gray-600">
               Blog
             </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            <a href="contactUs" className="text-black hover:text-gray-600">
               Contact Us
             </a>
-            <a href="#" className="text-black hover:text-gray-600">
+            <a href="products" className="text-black hover:text-gray-600">
               Casual
             </a>
           </nav>
