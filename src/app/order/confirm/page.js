@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { InputField } from "@/components/InputField";
+import Link from "next/link";
+import { IoMdArrowDropright } from "react-icons/io";
 
 export default function Page() {
   const [items, setItems] = useState([
@@ -25,7 +27,22 @@ export default function Page() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">Confirm your order</h1>
+        <nav className="text-sm mb-4 flex gap-2 text-end">
+          <Link className="text-gray-500 hover:text-gray-700" href="#">
+            Home
+          </Link>{" "}
+          <IoMdArrowDropright className="pt-1 h-full" />
+          <Link className="text-gray-500 hover:text-gray-700" href="#">
+            Cart
+          </Link>{" "}
+          <IoMdArrowDropright className="pt-1 h-full" />
+          <Link className="text-gray-500 hover:text-gray-700" href="#">
+            process to checkout (Shipping Address)
+          </Link>{" "}
+        </nav>
+        <Link href="http://localhost:3000/order/confirm/shipping">
+          <h1 className="text-3xl font-bold mb-6">Confirm your order</h1>
+        </Link>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
