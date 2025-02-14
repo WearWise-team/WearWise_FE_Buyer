@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { InputField } from "@/components/InputField";
 
 export default function Page() {
   const [items, setItems] = useState([
@@ -39,18 +40,18 @@ export default function Page() {
               </div>
               {isEditing ? (
                 <form className="space-y-4">
-                  <input
-                    className="w-full border-gray-300 rounded-md p-2"
+                  <InputField
+                    label="Phone Number"
                     type="text"
                     placeholder="Phone Number"
                   />
-                  <input
-                    className="w-full border-gray-300 rounded-md p-2"
+                  <InputField
+                    label="Email Address"
                     type="email"
                     placeholder="Email Address"
                   />
-                  <input
-                    className="w-full border-gray-300 rounded-md p-2"
+                  <InputField
+                    label="Address Line 1"
                     type="text"
                     placeholder="Address Line 1"
                   />
@@ -64,33 +65,21 @@ export default function Page() {
                 </form>
               ) : (
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Your phone number
-                    </label>
-                    <input
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                      type="text"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email address
-                    </label>
-                    <input
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                      type="email"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Address
-                    </label>
-                    <input
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                      type="string"
-                    />
-                  </div>
+                  <InputField
+                    label="Your phone number"
+                    type="text"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                  />
+                  <InputField
+                    label="Email address"
+                    type="email"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                  />
+                  <InputField
+                    label="Address"
+                    type="text"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                  />
                 </div>
               )}
             </div>
@@ -111,48 +100,32 @@ export default function Page() {
               </div>
               {paymentMethod === "Credit Card" && (
                 <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Card Number
-                    </label>
-                    <input
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                      type="text"
-                      placeholder="1234 5678 9101 1121"
-                    />
-                  </div>
+                  <InputField
+                    label="Card Number"
+                    type="text"
+                    placeholder="1234 5678 9101 1121"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                  />
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Expiry Date
-                      </label>
-                      <input
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                        type="text"
-                        placeholder="MM/YY"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        CVV
-                      </label>
-                      <input
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
-                        type="text"
-                        placeholder="123"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Cardholder Name
-                    </label>
-                    <input
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                    <InputField
+                      label="Expiry Date"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="MM/YY"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                    />
+                    <InputField
+                      label="CVV"
+                      type="text"
+                      placeholder="123"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
                     />
                   </div>
+                  <InputField
+                    label="Cardholder Name"
+                    type="text"
+                    placeholder="John Doe"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-12"
+                  />
                 </div>
               )}
             </div>
