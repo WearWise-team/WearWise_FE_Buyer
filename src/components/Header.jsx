@@ -46,8 +46,8 @@ export default function Header() {
             <Link href="/wishList" className="text-black hover:text-gray-600">
               Wish List
             </Link>
-            <Link href="#" className="text-black hover:text-gray-600">
-              Blog
+            <Link href="/tryOn" className="text-black hover:text-gray-600">
+              Try On
             </Link>
             <Link href="/contactUs" className="text-black hover:text-gray-600">
               Contact Us
