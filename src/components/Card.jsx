@@ -3,16 +3,11 @@ import { Rate } from 'antd';
 export default function Card({product}) {
   // Default props for development
   const defaultProduct = {
-    name: "Sleeve Striped T-shirt",
-    image: "https://storage.googleapis.com/a1aa/image/jj2YjB6IiJIYzv6qXAO3UckaWZAA4VcWoJSwQL4ceG8.jpg",
-    rating: 4.5,
-    price: 130,
-    originalPrice: 160,
-    discount: 30,
     ...product,
   }
 
-  const { name, image, rating, price, originalPrice, discount } = defaultProduct
+  const { name, image, rating = 5, price, originalPrice, discount } = defaultProduct;
+
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="relative aspect-[2/2] w-full overflow-hidden rounded-t-lg">
@@ -28,7 +23,7 @@ export default function Card({product}) {
         <h2 className="text-base font-medium text-gray-900 mb-2">{name}</h2>
         <div className="flex items-center mb-2">
           <div className="flex items-center text-yellow-500">
-              <Rate allowHalf defaultValue={rating} disabled/>
+              <Rate defaultValue={rating} disabled/>
           </div>
           <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
         </div>
