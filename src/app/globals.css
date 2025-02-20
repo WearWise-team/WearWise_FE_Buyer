@@ -2,20 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ffffff;
-    --foreground: #ededed;
-  }
-}
 
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+/* Add smooth transitions */
+* {
+  @apply transition-all duration-200;
+}
+
+/* Form focus styles */
+input:focus {
+  @apply ring-1 ring-gray-400;
+}
+
+@layer base {
+  html,
+  body {
+    scrollbar-width: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0;
+  }
 }
