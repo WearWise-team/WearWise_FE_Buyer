@@ -1,26 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use, useEffect } from "react";
 import { RiCheckboxCircleLine } from "react-icons/ri";
 import { FaSlidersH, FaChevronDown } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import { Rate } from "antd";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import Reviews from "@/components/Reviews";
+import CartReview from "@/components/CardReview";
 import ListProducts from "@/components/ListProducts";
 import Link from "next/link";
+import { getProductDetails } from "@/apiServices/products/page";
 
-export default function DetailProduct() {
+export default function DetailProduct({ params }) {
+  const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState("gray");
   const [selectedSize, setSelectedSize] = useState("Large");
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState("Product Details");
-  const tabs = ["Product Details", "Rating & Reviews", "FAQs"];
+  const [activeTab, setActiveTab] = useState("Details");
+  const tabs = ["Details", "Rating & Reviews", "FAQs"];
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
+
+  useEffect(() => {
+    if (product === null) {
+      getProductDetails(id)
+        .then((data) => {
+          setProduct(data);
+        })
+        .catch((error) => console.error("error when show data:", error));
+    }
+  }, [id, product]);
+
+  useEffect(() => {
+    if (product) {
+      setRating(
+        product.reviews.reduce((sum, cur) => sum + cur.rating, 0) /
+          product.reviews.length
+      );
+    }
+  }, [product]);
 
   const handleChange = (value) => {
     setRating(value);
@@ -33,6 +56,8 @@ export default function DetailProduct() {
     setReviewText("");
     setRating(0);
   };
+
+  const percentageOf = (value, percentage) => (value * percentage) / 100;
 
   const colors = [
     {
@@ -61,7 +86,7 @@ export default function DetailProduct() {
         <div className="container mx-16 p-4">
           {/* Breadcrumb */}
           <nav className="text-sm mb-4 flex gap-2 text-end">
-            <Link className="text-gray-500 hover:text-gray-700" href="#">
+            <Link className="text-gray-500 hover:text-gray-700" href="/">
               Home
             </Link>{" "}
             <IoMdArrowDropright className="pt-1 h-full" />
@@ -75,16 +100,22 @@ export default function DetailProduct() {
             <div className="flex items-center justify-between gap-5 lg:w-1/2">
               <div className="flex flex-col items-center justify-evenly h-full mb-4">
                 {[
-                  "Dhn6XAieil2J6UaY8hx0lBU6MfEFFT23ie77PYxJ_aQ.jpg",
-                  "nANLUMGkKl5jjp-4FGy1K9rnyLqphVESrXOVFNW7fwc.jpg",
-                  "3BrQql9F8L8boyaWDivxyozjY8_pjLAoUFV955UgufU.jpg",
+                  product
+                    ? product.image
+                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
+                  product
+                    ? product.image
+                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
+                  product
+                    ? product.image
+                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
                 ].map((src, index) => (
                   <Image
                     key={index}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-20 h-20 rounded-lg"
                     height="100"
-                    src={`https://storage.googleapis.com/a1aa/image/${src}`}
+                    src={`${src}`}
                     width="100"
                   />
                 ))}
@@ -95,7 +126,11 @@ export default function DetailProduct() {
                   alt="Main product image"
                   className="w-full rounded-lg"
                   height="800"
-                  src="https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg"
+                  src={
+                    product
+                      ? product.image
+                      : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg"
+                  }
                   width="600"
                 />
               </div>
@@ -104,26 +139,50 @@ export default function DetailProduct() {
             {/* Chi tiết sản phẩm */}
             <div className="lg:w-1/2 lg:pl-8">
               <h1 className="text-2xl font-bold mb-2">
-                T-shirt with Tape Details
+                {product ? product.name : "is loading..."}
               </h1>
 
               <div className="flex items-center mb-2">
                 <div className="flex items-center text-yellow-500">
-                  <Rate allowHalf defaultValue={4.5} disabled />
+                  <Rate allowHalf value={rating} disabled />
                 </div>
-                <span className="ml-2 text-gray-600">4.5/5</span>
+                <span className="ml-2 text-gray-600">
+                  {rating ? rating : 0}/5
+                </span>
               </div>
 
               <div className="flex items-center mb-4">
-                <span className="text-3xl font-bold">$260</span>
-                <span className="text-gray-500 line-through ml-2">$300</span>
-                <span className="text-red-500 ml-2">-40%</span>
+                <span className="text-3xl font-bold">
+                  ${product ? product.price : 0}
+                </span>
+                {product && product.discounts.length > 0 ? (
+                  <div className="ml-2">
+                    {product.discounts.map((discount) => {
+                      // Tính giá sau giảm giá
+                      const discountedPrice = percentageOf(
+                        product.price,
+                        discount.percentage
+                      );
+                      return (
+                        <p key={discount.id} className="flex items-center">
+                          <span className="text-gray-500">
+                            {discount.code} -
+                          </span>
+                          <span className="text-gray-500 ml-2 line-through">
+                            ${discountedPrice.toFixed(2)}
+                          </span>
+                          <span className="text-red-500 ml-2">
+                            {discount.percentage}%
+                          </span>
+                        </p>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
 
               <p className="text-gray-600 mb-4 w-2/3">
-                This graphic t-shirt which is perfect for any occasion. Crafted
-                from a soft and breathable fabric, it offers superior comfort
-                and style.
+                {product ? product.description : ""}
               </p>
 
               {/* Chọn màu */}
@@ -226,16 +285,68 @@ export default function DetailProduct() {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="w-full text-center p-4 mt-4"
               >
-                {activeTab === "Product Details" && (
-                  <p className="inline-block">
-                    🔹 Details about the product...
-                  </p>
+                {activeTab === "Details" && (
+                  <div className="inline-block">
+                    <div className="bg-gray-100">
+                      <div className="max-w-4xl p-4 bg-white shadow-md rounded-md">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <Image
+                              alt="Avatar of supplier"
+                              className="w-20 h-20 rounded-full"
+                              height="100"
+                              src={
+                                product
+                                  ? product.supplier.avatar
+                                  : "https://placehold.co/100x100"
+                              }
+                              width="100"
+                            />
+                          </div>
+                          <div className="ml-4 flex-grow">
+                            <h2 className="text-xl font-semibold"></h2>
+                            <div className="flex items-center">
+                              <span>Shop: </span>
+                              <span className="ml-2 text-red-500">
+                                {product && product.supplier.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <span>Address: </span>
+                              <span className="ml-2 text-red-500">
+                                {product && product.supplier.address}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <span>Phone Number: </span>
+                              <span className="ml-2 text-red-500">
+                                {product && product.supplier.phone}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {/* <div className="mt-2 flex space-x-2">
+                          <button className="bg-white border border-red-500 text-red-500 px-4 py-2 rounded flex items-center">
+                            <i className="fas fa-comments mr-2"></i>
+                            Chat Ngay
+                          </button>
+                          <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded flex items-center">
+                            <i className="fas fa-store mr-2"></i>
+                            Xem Shop
+                          </button>
+                        </div> */}
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {activeTab === "Rating & Reviews" && (
                   <>
                     <div className="flex items-center space-x-4 p-4 justify-between">
                       <div className="text-lg font-semibold">
-                        All Reviews <span className="text-gray-500">(451)</span>
+                        All Reviews{" "}
+                        <span className="text-gray-500">
+                          {product && product.reviews.length}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2 w-1/3 justify-evenly">
                         <button className="flex items-center justify-evenly w-10 h-10 rounded-full bg-gray-200">
@@ -258,7 +369,11 @@ export default function DetailProduct() {
                         <h2 className="text-lg font-semibold mb-2">
                           Write a Review
                         </h2>
-                         <Rate allowHalf defaultValue={rating} onChange={handleChange}/>
+                        <Rate
+                          allowHalf
+                          defaultValue={rating}
+                          onChange={handleChange}
+                        />
                         <textarea
                           className="w-full p-2 mt-2 border rounded-lg"
                           rows="4"
@@ -282,8 +397,15 @@ export default function DetailProduct() {
                         </div>
                       </div>
                     )}
-
-                    <Reviews title={""} />
+                    {product.reviews.length > 0 &&
+                      product.reviews.map((review, index) => (
+                        <CartReview
+                          key={index}
+                          numStar={review.rating}
+                          author={review.user.name}
+                          comment={review.content}
+                        />
+                      ))}
                   </>
                 )}
                 {activeTab === "FAQs" && (
