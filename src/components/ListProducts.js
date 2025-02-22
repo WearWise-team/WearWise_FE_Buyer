@@ -7,8 +7,9 @@ import Link from "next/link";
 
 export default function ListProducts({ title }) {
   const { products } = useProducts();
-  console.log(products);
   const router = useRouter();
+
+  console.log(products);
 
   return (
     <div className="bg-white text-gray-800">
@@ -17,13 +18,21 @@ export default function ListProducts({ title }) {
 
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1 px-24">
-            {products.map((product) => (
-              <div key={product.id} className="product-item">
-                <Link href={`/products/${product.id}`}>
-                  <Card product={product} />
-                </Link>
-              </div>
-            ))}
+            {products.map((product) => {
+              const rating =
+                product.reviews?.length > 0
+                  ? product.reviews.reduce((sum, cur) => sum + cur.rating, 0) /
+                    product.reviews.length
+                  : 0;
+
+              return (
+                <div key={product.id} className="product-item">
+                  <Link href={`/products/${product.id}`}>
+                    <Card product={product} rating={rating} />
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center">No products found</div>

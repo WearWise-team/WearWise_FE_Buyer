@@ -30,6 +30,8 @@ const fetchData = async (
 export const getProducts = () => fetchData("products");
 
 export const getProductById = (id) => fetchData(`products/${id}`);
+
+export const getProductDetails = (id) => fetchData(`products/more/${id}`);
 export const createProduct = (productData) =>
   fetchData("products", "POST", productData);
 export const updateProduct = (id, productData) =>

@@ -31,7 +31,7 @@ export default function Reviews({title}) {
                   "As someone who's always on the lookout for unique fashion pieces, I'm thrilled to have stumbled upon Shop.co. The selection of clothes is not only diverse but also on-point with the latest trends.",
               },
             ].map((customer, index) => (
-              <CartReview key={index} author={customer.name} comment={customer.review}/>
+              <CartReview key={index} author={customer.name} comment={customer.review} numStar={5}/>
             ))}
           </div>
           <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full cursor-pointer">
