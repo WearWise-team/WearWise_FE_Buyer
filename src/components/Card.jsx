@@ -7,7 +7,7 @@ export default function Card({ product, rating }) {
 
   // Lấy phần tử cuối cùng của `discounts`
   const discount = discounts?.length ? discounts[discounts.length - 1] : null;
-  const discountedPrice = discount ? (price - percentageOf(price, discount.percentage)).toFixed(2) : price;
+  const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)).toFixed(2) : price;
 
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -38,7 +38,7 @@ export default function Card({ product, rating }) {
             <>
               <span className="text-sm text-gray-500 line-through ml-2">${price}</span>
               <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
-                -{discount.percentage}%
+                -{Math.floor(discount.pivot.percentage)}%
               </span>
             </>
           )}
