@@ -11,9 +11,11 @@ import CartReview from "@/components/CardReview";
 import ListProducts from "@/components/ListProducts";
 import Link from "next/link";
 import { getProductDetails } from "@/apiServices/products/page";
+import WearwiseLoading from "@/components/WearwiseLoading";
 
 export default function DetailProduct({ params }) {
   const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState("gray");
   const [selectedSize, setSelectedSize] = useState("Large");
   const [quantity, setQuantity] = useState(1);
@@ -28,11 +30,15 @@ export default function DetailProduct({ params }) {
 
   useEffect(() => {
     if (product === null) {
-      getProductDetails(id)
-        .then((data) => {
-          setProduct(data);
-        })
-        .catch((error) => console.error("error when show data:", error));
+      setIsLoading(true);
+      setTimeout(() => {
+        getProductDetails(id)
+          .then((data) => {
+            setProduct(data);
+          })
+          .catch((error) => console.error("error when show data:", error))
+          .finally(() => setIsLoading(false));
+      }, 3000);
     }
   }, [id, product]);
 
@@ -59,26 +65,9 @@ export default function DetailProduct({ params }) {
 
   const percentageOf = (value, percentage) => (value * percentage) / 100;
 
-  const colors = [
-    {
-      id: "gray",
-      bg: "bg-gray-800",
-      border: "border-gray-600",
-      shadow: "0_0_10px_3px_rgba(128,128,128,0.8)",
-    },
-    {
-      id: "green",
-      bg: "bg-green-800",
-      border: "border-gray-600",
-      shadow: "0_0_10px_3px_rgba(34,197,94,0.8)",
-    },
-    {
-      id: "blue",
-      bg: "bg-blue-800",
-      border: "border-gray-600",
-      shadow: "0_0_10px_3px_rgba(59,130,246,0.8)",
-    },
-  ];
+  if (isLoading) {
+    return <WearwiseLoading></WearwiseLoading>;
+  }
 
   return (
     <>
@@ -99,26 +88,21 @@ export default function DetailProduct({ params }) {
             {/* Hình ảnh sản phẩm */}
             <div className="flex items-center justify-between gap-5 lg:w-1/2">
               <div className="flex flex-col items-center justify-evenly h-full mb-4">
-                {[
-                  product
-                    ? product.image
-                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
-                  product
-                    ? product.image
-                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
-                  product
-                    ? product.image
-                    : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg",
-                ].map((src, index) => (
-                  <Image
-                    key={index}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-20 h-20 rounded-lg"
-                    height="100"
-                    src={`${src}`}
-                    width="100"
-                  />
-                ))}
+                {(product?.images && product.images.length > 0
+                  ? product.images
+                  : [product?.image, product?.image, product?.image]
+                ).map((value, index) =>
+                  value ? (
+                    <Image
+                      key={index}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-20 h-20 rounded-lg"
+                      height="100"
+                      src={value.url ? value.url : value}
+                      width="100"
+                    />
+                  ) : null
+                )}
               </div>
 
               <div className="w-full lg:w-3/4 mb-4">
@@ -126,11 +110,7 @@ export default function DetailProduct({ params }) {
                   alt="Main product image"
                   className="w-full rounded-lg"
                   height="800"
-                  src={
-                    product
-                      ? product.image
-                      : "https://storage.googleapis.com/a1aa/image/2O0wQorkwOQyoIFuG2H8ed28lPwTTv5X4cnUJxcbLG8.jpg"
-                  }
+                  src={product ? product.image : "https://placehold.co/100x100"}
                   width="600"
                 />
               </div>
@@ -189,13 +169,14 @@ export default function DetailProduct({ params }) {
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Select Colors</h2>
                 <div className="flex space-x-2">
-                  {colors.map((color) => (
+                  {product?.colors?.map((color) => (
                     <button
                       key={color.id}
-                      onClick={() => setSelectedColor(color.id)}
-                      className={`relative w-10 h-10 rounded-full ${color.bg} ${color.border} transition-all duration-300 hover:shadow-[${color.shadow}]`}
+                      onClick={() => setSelectedColor(color.name)}
+                      className="relative w-10 h-10 rounded-full border-gray-600 transition-all duration-300 hover:shadow-md"
+                      style={{ backgroundColor: color.code }}
                     >
-                      {selectedColor === color.id && (
+                      {selectedColor === color.name && (
                         <RiCheckboxCircleLine className="absolute text-white text-2xl top-2 right-2" />
                       )}
                     </button>
@@ -207,30 +188,29 @@ export default function DetailProduct({ params }) {
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Choose Size</h2>
                 <div className="flex space-x-2">
-                  {["Small", "Medium", "Large", "X-Large"].map(
-                    (size, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 border rounded-lg flex items-center gap-2 ${
-                          selectedSize === size ? "bg-black text-white" : ""
-                        }`}
-                      >
-                        {size}
-                        {selectedSize === size && (
-                          <RiCheckboxCircleLine className="text-white" />
-                        )}
-                      </button>
-                    )
-                  )}
+                  {product?.sizes?.map((size) => (
+                    <button
+                      key={size.id}
+                      onClick={() => setSelectedSize(size.shirt_size)}
+                      className={`px-4 py-2 border border-spacing-1 rounded-md ${
+                        selectedSize === size.shirt_size
+                          ? "bg-gray-800 text-white"
+                          : "bg-white text-gray-800"
+                      } transition-all duration-300 hover:shadow-md`}
+                    >
+                      {size.shirt_size}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* Các nút thao tác */}
               <div className="flex items-center space-x-4 mb-4">
-                <button className="px-4 py-2 bg-black text-white rounded-lg">
-                  Try to 2D
-                </button>
+                <Link href="/tryOn">
+                  <button className="px-4 py-2 bg-black text-white rounded-lg">
+                    Try to 2D
+                  </button>
+                </Link>
                 <div className="flex items-center border rounded-lg">
                   <button
                     className="px-4 py-2"
@@ -397,15 +377,17 @@ export default function DetailProduct({ params }) {
                         </div>
                       </div>
                     )}
-                    {product.reviews.length > 0 &&
-                      product.reviews.map((review, index) => (
-                        <CartReview
-                          key={index}
-                          numStar={review.rating}
-                          author={review.user.name}
-                          comment={review.content}
-                        />
-                      ))}
+                    <div className="flex flex-wrap gap-8">
+                      {product.reviews.length > 0 &&
+                        product.reviews.map((review, index) => (
+                          <CartReview
+                            key={index}
+                            numStar={review.rating}
+                            author={review.user.name}
+                            comment={review.content}
+                          />
+                        ))}
+                    </div>
                   </>
                 )}
                 {activeTab === "FAQs" && (
