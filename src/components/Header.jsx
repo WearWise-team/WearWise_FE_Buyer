@@ -57,7 +57,7 @@ export default function Header() {
             </Link>
           </nav>
           <div className="flex items-center space-x-4 text-xl">
-            <Link href="#" className="text-black hover:text-gray-600">
+            <Link href="/search" className="text-black hover:text-gray-600">
             <SearchOutlined />
             </Link>
             <Link href="#" className="text-black hover:text-gray-600">

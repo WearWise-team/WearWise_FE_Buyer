@@ -38,4 +38,9 @@ export const updateProduct = (id, productData) =>
   fetchData(`products/${id}`, "PUT", productData);
 export const deleteProduct = (id) => fetchData(`products/${id}`, "DELETE");
 
+export const searchProduct = (name) =>
+  fetchData("products/search", "POST", {
+    name: name,
+  });
+
 export default fetchData;

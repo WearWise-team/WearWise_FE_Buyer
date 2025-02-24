@@ -2,8 +2,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { InputField } from "@/components/InputField"
-
-
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -55,7 +54,7 @@ export default function RegisterPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch("your-laravel-api/register", {
+      const res = await fetch(`${BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
