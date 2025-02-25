@@ -1,77 +1,94 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { UserOutlined, ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
+import { FaMicrophone } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { searchProduct } from "@/apiServices/products/page";
 
+let searchTimeout;
 export default function Header() {
-  return (
-    <>
-      <div>
-        <header className="flex items-center justify-between p-4 px-20">
-          <div className="flex items-baseline">
-            <span className="text-3xl font-bold text-red-600">W</span>
-            <span className="text-xl font-bold text-black">EARWISE</span>
-          </div>
+  const router = useRouter();
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
-          <nav className="flex items-center space-x-6 text-lg">
-            <Link href="/" className="text-black hover:text-gray-600">
-              Home
-            </Link>
-            <div className="relative group">
-              <Link
-                href="#"
-                className="text-black hover:text-gray-600 flex items-center"
-              >
-                Shop <i className="fas fa-chevron-down ml-1"></i>
-              </Link>
-              <div className="absolute hidden group-hover:block bg-white shadow-lg mt-2 rounded">
-                <Link
-                  href="#"
-                  className="block px-4 py-2 text-black hover:bg-gray-100"
-                >
-                  Category 1
-                </Link>
-                <Link
-                  href="#"
-                  className="block px-4 py-2 text-black hover:bg-gray-100"
-                >
-                  Category 2
-                </Link>
-                <Link
-                  href="#"
-                  className="block px-4 py-2 text-black hover:bg-gray-100"
-                >
-                  Category 3
-                </Link>
-              </div>
-            </div>
-            <Link href="/wishList" className="text-black hover:text-gray-600">
-              Wish List
-            </Link>
-            <Link href="/tryOn" className="text-black hover:text-gray-600">
-              Try On
-            </Link>
-            <Link href="/contactUs" className="text-black hover:text-gray-600">
-              Contact Us
-            </Link>
-            <Link href="/products" className="text-black hover:text-gray-600">
-              Casual
-            </Link>
-          </nav>
-          <div className="flex items-center space-x-4 text-xl">
-            <Link href="/search" className="text-black hover:text-gray-600">
-            <SearchOutlined />
-            </Link>
-            <Link href="#" className="text-black hover:text-gray-600">
-            <HeartOutlined />
-            </Link>
-            <Link href="#" className="text-black hover:text-gray-600">
-            <ShoppingCartOutlined />
-            </Link>
-            <Link href="/" className="text-black hover:text-gray-600">
-              <UserOutlined />
-            </Link>
+  useEffect(() => {
+    if (isSearchVisible) {
+      searchTimeout = setTimeout(() => setIsSearchVisible(false), 2000);
+    }
+    return () => clearTimeout(searchTimeout);
+  }, [isSearchVisible]);
+
+  const handleFocus = () => {
+    clearTimeout(searchTimeout);
+  };
+
+  const handleBlur = () => {
+    searchTimeout = setTimeout(() => setIsSearchVisible(false), 2000);
+  };
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    if (!searchValue.trim()) {
+      console.warn("Vui lòng nhập sản phẩm cần tìm!");
+      return;
+    }
+    router.push(`/products?search=${encodeURIComponent(searchValue)}`);
+  };
+
+  return (
+    <header className="flex items-center justify-between p-4 px-20">
+      <Link href="/">
+        <div className="flex items-baseline">
+          <span className="text-3xl font-bold text-red-600">W</span>
+          <span className="text-xl font-bold text-black">EARWISE</span>
+        </div>
+      </Link>
+
+      <nav className="flex items-center space-x-6 text-lg">
+        <Link href="/" className="text-black hover:text-gray-600">Home</Link>
+        <Link href="/wishList" className="text-black hover:text-gray-600">Wish List</Link>
+        <Link href="/tryOn" className="text-black hover:text-gray-600">Try On</Link>
+        <Link href="/contactUs" className="text-black hover:text-gray-600">Contact Us</Link>
+        <Link href="/products" className="text-black hover:text-gray-600">Casual</Link>
+      </nav>
+      
+      <div className="flex items-center space-x-4 text-xl relative">
+        {!isSearchVisible && (
+          <SearchOutlined className="text-black hover:text-gray-600 cursor-pointer" onClick={() => setIsSearchVisible(true)} />
+        )}
+        {isSearchVisible && (
+          <div className="relative w-full max-w-md mx-auto">
+            <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <form onSubmit={handleSearch}>
+              <motion.input
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: isSearchVisible ? "300px" : 0, opacity: isSearchVisible ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                type="text"
+                placeholder="Find my products"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+              />
+            </form>
+            <FaMicrophone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500 cursor-pointer" />
           </div>
-        </header>
+        )}
+        <Link href="#" className="text-black hover:text-gray-600">
+          <HeartOutlined />
+        </Link>
+        <Link href="#" className="text-black hover:text-gray-600">
+          <ShoppingCartOutlined />
+        </Link>
+        <Link href="/" className="text-black hover:text-gray-600">
+          <UserOutlined />
+        </Link>
       </div>
-    </>
+    </header>
   );
 }
