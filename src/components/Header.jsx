@@ -15,11 +15,11 @@ export default function Header() {
   const [searchValue, setSearchValue] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [cartCount, setCartCount] = useState(2); // Giả định dữ liệu
-  const [wishlistCount, setWishlistCount] = useState(3); // Giả định dữ liệu
-  const [userImage, setUserImage] = useState("/default-avatar.png"); // Ảnh mặc định
+  const [cartCount, setCartCount] = useState(0); 
+  const [wishlistCount, setWishlistCount] = useState(3); 
+  const [userImage, setUserImage] = useState("/default-avatar.png"); 
 
-  const pathname = usePathname(); // Lấy đường dẫn hiện tại
+  const pathname = usePathname(); 
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -43,6 +43,7 @@ export default function Header() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
         },
       });
   
@@ -145,7 +146,7 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {/* Wishlist với Badge */}
               <div className="relative">
-                <Link href="#" className="text-black hover:text-gray-600">
+                <Link href="/wishlist" className="text-black hover:text-gray-600">
                   <HeartOutlined className="text-2xl" />
                 </Link>
                 {wishlistCount > 0 && (
@@ -157,7 +158,7 @@ export default function Header() {
 
               {/* Cart với Badge */}
               <div className="relative">
-                <Link href="#" className="text-black hover:text-gray-600">
+                <Link href="/cart" className="text-black hover:text-gray-600">
                   <ShoppingCartOutlined className="text-2xl" />
                 </Link>
                 {cartCount > 0 && (
