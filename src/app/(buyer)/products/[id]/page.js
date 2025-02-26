@@ -127,7 +127,7 @@ export default function DetailProduct({ params }) {
                   <Rate allowHalf value={rating} disabled />
                 </div>
                 <span className="ml-2 text-gray-600">
-                  {rating ? rating : 0}/5
+                  {rating ? rating.toFixed(0) : 0}/5
                 </span>
               </div>
 

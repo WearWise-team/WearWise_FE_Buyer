@@ -5,7 +5,6 @@ export default function Card({ product, rating }) {
   const percentageOf = (value, percentage) => (value * percentage) / 100;
   const { name, image, price, discounts } = product;
 
-  // Lấy phần tử cuối cùng của `discounts`
   const discount = discounts?.length ? discounts[discounts.length - 1] : null;
   const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)).toFixed(2) : price;
 
