@@ -4,7 +4,7 @@ import React from 'react'
 import { useState } from "react"
 import Link from "next/link"
 import { InputField } from '@/components/InputField'
-
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ export default function LoginPage() {
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-
+  const router = useRouter()
   const validateForm = () => {
     const newErrors = {}
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch("your-laravel-api/login", { // Thay thế bằng URL API thật
+      const res = await fetch("http://127.0.0.1:8000/api/auth/login", { // Thay thế bằng URL API thật
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,11 +52,17 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
-      // Lưu token vào localStorage hoặc cookies
-      localStorage.setItem('accessToken', data.access_token);
+     // Lưu token và thông tin người dùng vào localStorage
+     localStorage.setItem('accessToken', data.result.token.access_token);
+     localStorage.setItem('user', JSON.stringify(data.result.user));
 
-      // Chuyển hướng đến trang chủ
-      router.push("/");
+      // Chuyển hướng dựa trên vai trò
+      const userRole = data.result.user.role;
+      if (userRole === 'supplier') {
+          router.push("/supplier"); // Thay đổi đường dẫn
+      } else {
+          router.push("/"); // Trang chủ cho buyer
+      }
 
     } catch (error) {
       setErrors({
