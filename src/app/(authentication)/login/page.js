@@ -53,22 +53,22 @@ export default function LoginPage() {
       }
 
      // Lưu token và thông tin người dùng vào localStorage
-     localStorage.setItem('accessToken', data.result.token.access_token);
+     localStorage.setItem('accessToken', data.result.token.original.access_token);
      localStorage.setItem('user', JSON.stringify(data.result.user));
 
       // Chuyển hướng dựa trên vai trò
       const userRole = data.result.user.role;
       if (userRole === 'supplier') {
-          router.push("/supplier"); // Thay đổi đường dẫn
+          router.push("/supplier"); 
       } else {
-          router.push("/"); // Trang chủ cho buyer
+          router.push("/"); 
       }
 
     } catch (error) {
       setErrors({
-        email: "Invalid credentials",
+        email: "Invalid email or password",
+        password: "Invalid email or password"
       });
-      console.error("Login error:", error); // Ghi log lỗi để debug
     } finally {
       setIsLoading(false);
     }
