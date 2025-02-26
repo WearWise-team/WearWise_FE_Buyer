@@ -16,4 +16,14 @@ export const searchProduct = (name) =>
     name: name,
   });
 
+export const fetchFilteredProducts = async (filter) => {
+  try {
+    const result = await fetchData("products/filter", "POST",  filter );
+    return result;
+  } catch (error) {
+    console.error("Fetch filter error:", error);
+    return [];
+  }
+};
+
 export default fetchData;

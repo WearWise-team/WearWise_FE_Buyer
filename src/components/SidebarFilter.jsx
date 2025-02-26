@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import ColorFilter from "@/components/ColorFilter";
-import { getColors } from "@/apiServices/colors/page"
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+import { getColors } from "@/apiServices/colors/page";
+import { useRouter } from "next/navigation";
 
 export default function SidebarFilter() {
+  const router = useRouter();
   const [filters, setFilters] = useState({
     categories: [],
-    min_price: 0,
-    max_price: 200,
+    minPrice: 0,
+    maxPrice: 200,
     colors: [],
     sizes: [],
     sortBy: "",
@@ -50,34 +50,40 @@ export default function SidebarFilter() {
     setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
   };
 
-  const applyFilters = async () => {
+  const applyFilters = () => {
     try {
       const filteredData = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) =>
-          Array.isArray(value) ? value.length > 0 : value !== null && value !== ""
-        )
+        Object.entries(filters).filter(([key, value]) => {
+          if (Array.isArray(value)) return value.length > 0;
+          return value !== null && value !== "" && value !== undefined;
+        })
       );
   
-      const response = await fetch(`${BASE_URL}/api/products/filter`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(filteredData),
+      // Chuyển đổi dữ liệu thành query string đúng định dạng
+      const queryString = new URLSearchParams();
+  
+      Object.entries(filteredData).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((val) => queryString.append(key, val));
+        } else {
+          queryString.append(key, value);
+        }
       });
   
-      if (!response.ok) {
-        throw new Error("Failed to fetch filtered products");
-      }
+      // Kiểm tra query string trước khi điều hướng
+      const newUrl = `/products?${queryString.toString()}`;
+      console.log("Navigating to:", newUrl);
   
-      const data = await response.json();
-      localStorage.setItem("filteredProducts", JSON.stringify(data));
+      // Cập nhật URL với các tham số lọc
+      router.push(newUrl);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error updating filters:", error);
     }
   };
   
 
   return (
-    <div className="w-64 pr-8" onKeyDown={(e) => e.key === "Enter" && applyFilters()}>
+    <div className="w-64 pr-8" >
       <h3 className="text-lg font-medium mb-4">Filters</h3>
 
       {/* Categories */}
@@ -116,15 +122,15 @@ export default function SidebarFilter() {
         <h4 className="font-medium mb-2">Price Range</h4>
         <input
           type="number"
-          value={filters.min_price ?? 0}
-          onChange={(e) => handlePriceChange(e, "min_price")}
+          value={filters.minPrice ?? 0}
+          onChange={(e) => handlePriceChange(e, "minPrice")}
           placeholder="Min Price"
           className="w-full border rounded px-2 py-1 mb-2"
         />
         <input
           type="number"
-          value={filters.max_price ?? 200}
-          onChange={(e) => handlePriceChange(e, "max_price")}
+          value={filters.maxPrice ?? 200}
+          onChange={(e) => handlePriceChange(e, "maxPrice")}
           placeholder="Max Price"
           className="w-full border rounded px-2 py-1"
         />

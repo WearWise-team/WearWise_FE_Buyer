@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { UserOutlined, ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { FaMicrophone } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { searchProduct } from "@/apiServices/products/page";
 
 let searchTimeout;
+
 export default function Header() {
   const router = useRouter();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -57,28 +57,39 @@ export default function Header() {
       
       <div className="flex items-center space-x-4 text-xl relative">
         {!isSearchVisible && (
-          <SearchOutlined className="text-black hover:text-gray-600 cursor-pointer" onClick={() => setIsSearchVisible(true)} />
+          <SearchOutlined 
+            className="text-black hover:text-gray-600 cursor-pointer" 
+            onClick={() => setIsSearchVisible(true)} 
+          />
         )}
-        {isSearchVisible && (
-          <div className="relative w-full max-w-md mx-auto">
-            <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-            <form onSubmit={handleSearch}>
-              <motion.input
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: isSearchVisible ? "300px" : 0, opacity: isSearchVisible ? 1 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                type="text"
-                placeholder="Find my products"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </form>
-            <FaMicrophone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500 cursor-pointer" />
-          </div>
-        )}
+        
+        {/* Hiệu ứng trượt vào/trượt ra */}
+        <AnimatePresence>
+          {isSearchVisible && (
+            <motion.div 
+              initial={{ x: 50, opacity: 0, visibility: "hidden" }}
+              animate={{ x: 0, opacity: 1, visibility: "visible" }}
+              exit={{ x: 50, opacity: 0, visibility: "hidden", transition: { duration: 0.3 } }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-md mx-auto"
+            >
+              <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              <form onSubmit={handleSearch}>
+                <input
+                  className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  type="text"
+                  placeholder="Find my products"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </form>
+              <FaMicrophone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500 cursor-pointer" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
         <Link href="#" className="text-black hover:text-gray-600">
           <HeartOutlined />
         </Link>

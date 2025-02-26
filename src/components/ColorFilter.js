@@ -3,9 +3,9 @@ const ColorFilter = ({ colors, selectedColors, handleCheckboxChange }) => {
     <div className="mb-6">
       <h4 className="font-medium mb-2">Colors</h4>
       <div className="flex flex-wrap gap-2">
-        {colors.map((color) => (
+        {colors.map((color, index) => (
           <button
-            key={color.id}
+            key={index}
             onClick={() => handleCheckboxChange("colors", color.name)}
             className={`w-6 h-6 rounded-full border border-gray-300 transition-all ${
               selectedColors.includes(color.name)
