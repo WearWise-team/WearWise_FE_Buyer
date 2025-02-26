@@ -17,7 +17,24 @@ export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
   const [cartCount, setCartCount] = useState(0); 
   const [wishlistCount, setWishlistCount] = useState(3); 
-  const [userImage, setUserImage] = useState("/default-avatar.png"); 
+  const [userImage, setUserImage] = useState("https://placehold.co/100x100"); 
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.start();
+    setIsListening(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchValue(transcript);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  };
 
   const pathname = usePathname(); 
 
@@ -136,7 +153,10 @@ export default function Header() {
                   onBlur={handleBlur}
                 />
               </form>
-              <FaMicrophone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500 cursor-pointer" />
+              <FaMicrophone 
+                className={`absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer ${isListening ? "text-red-600" : "text-pink-500"}`} 
+                onClick={startListening} 
+              />
             </motion.div>
           )}
         </AnimatePresence>
