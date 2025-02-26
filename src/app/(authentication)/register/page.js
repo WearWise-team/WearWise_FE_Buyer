@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from 'next/navigation';
 import { InputField } from "@/components/InputField"
-
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
