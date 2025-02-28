@@ -169,7 +169,7 @@ export default function Header() {
               </div>
 
               {/* User Avatar + Dropdown */}
-              <div className="relative self-center">
+              <>
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="focus:outline-none"
@@ -182,7 +182,7 @@ export default function Header() {
                 </button>
 
                 {showMenu && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
+                  <div className="absolute left-10 top-8 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
                     <Link
                       href="/profile"
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
@@ -197,7 +197,7 @@ export default function Header() {
                     </button>
                   </div>
                 )}
-              </div>
+              </>
             </div>
           ) : (
             <>
