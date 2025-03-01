@@ -20,4 +20,6 @@ export const removeFromCart = (cartData) =>
     authorization: `Bearer ${localStorage.getItem("accessToken")}`,
   });
 
+  
+
 export default fetchData;

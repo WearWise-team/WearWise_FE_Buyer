@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { IoMdArrowDropright } from "react-icons/io";
-import { getMyCart, removeFromCart } from "@/apiServices/cart/page";
+import { getMyCart, removeFromCart, updateCart } from "@/apiServices/cart/page";
+import WearwiseLoading from "@/components/WearwiseLoading";
+import { useNotification } from "@/apiServices/NotificationService";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -11,8 +13,7 @@ const Cart = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
   const [totalDiscount, setTotalDiscount] = useState(0);
-
-  console.log(cartItems);
+  const notify = useNotification();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -23,8 +24,8 @@ const Cart = () => {
       const fetchCartItems = async () => {
         try {
           const response = await getMyCart(userId);
-          setCartItems(response.cart_items);
-          updateSubtotal(response.cart_items);
+          setCartItems(response.cart);
+          updateSubtotal(response.cart);
         } catch (error) {
           console.error("Error fetching cart items:", error);
         } finally {
@@ -36,80 +37,101 @@ const Cart = () => {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateSubtotal = (items) => {
-    const total = items.reduce((acc, item) => {
-      const totalQuantity = item.quantities.reduce(
-        (sum, q) => sum + q.quantity,
-        0
-      );
-      return acc + item.product.price * totalQuantity;
-    }, 0);
-    setSubtotal(total);
-  };
-
-  const applyDiscount = () => {
+    let total = 0;
     let totalDiscount = 0;
-    cartItems.forEach((item) => {
-      if (item.discounts) {
-        const validDiscounts = item.discounts.filter((discount) => {
-          const now = new Date();
-          const startDate = new Date(discount.start_date);
-          const endDate = new Date(discount.end_date);
-          return (
-            now >= startDate && now <= endDate && discount.code === discountCode
-          );
-        });
+    const now = new Date();
+    let discountApplied = false;
 
-        validDiscounts.forEach((discount) => {
-          totalDiscount +=
-            ((item.product.price * discount.percentage) / 100) * item.quantity;
-        });
+    items.forEach((item) => {
+      total += item.product.price * item.quantity;
+
+      const validDiscount = item.discounts.find(
+        (d) =>
+          d.code === discountCode &&
+          now >= new Date(d.start_date) &&
+          now <= new Date(d.end_date)
+      );
+
+      if (validDiscount) {
+        totalDiscount +=
+          (item.product.price * item.quantity * validDiscount.percentage) / 100;
+        discountApplied = true;
       }
     });
 
-    setTotalDiscount(totalDiscount);
+    setSubtotal(total);
+    setTotalDiscount(totalDiscount); // Chỉ cập nhật state ở đây
   };
 
-  const removeItem = async (cartItemId, index) => {
+  // Sử dụng useEffect để gọi notify sau khi totalDiscount thay đổi
+  useEffect(() => {
+    if (discountCode) {
+      if (totalDiscount > 0) {
+        notify(
+          "Discount Applied",
+          `Your discount has been successfully applied. You saved ${totalDiscount.toFixed(
+            2
+          )} VND.`,
+          "topRight"
+        );
+      } else {
+        notify(
+          "Invalid Discount Code",
+          "The discount code is either expired or not applicable.",
+          "topRight",
+          "warning"
+        );
+      }
+    }
+  }, [totalDiscount]); // Chỉ chạy khi totalDiscount thay đổi
+
+  const applyDiscount = () => {
+    updateSubtotal(cartItems);
+  };
+
+  const removeItem = async (cartItemId) => {
     try {
       const response = await removeFromCart({ cart_item_id: cartItemId });
-
-      if (response.success) {
-        const updatedCart = cartItems.filter((_, i) => i !== index);
+      if (response) {
+        const updatedCart = cartItems.filter(
+          (item) => item.cart_item_id !== cartItemId
+        );
         setCartItems(updatedCart);
         updateSubtotal(updatedCart);
-      } else {
-        console.error("Failed to remove item from cart:", response.message);
       }
     } catch (error) {
       console.error("Error removing item:", error);
     }
   };
 
-  const updateQuantity = (index, size, color, amount) => {
-    setCartItems((prevItems) => {
-      const updatedItems = prevItems.map((item, i) => {
-        if (i === index) {
-          return {
-            ...item,
-            quantities: item.quantities.map((q) =>
-              q.size === size && q.color === color
-                ? { ...q, quantity: Math.max(1, q.quantity + amount) }
-                : q
-            ),
-          };
-        }
-        return item;
+  const updateQuantity = async (cartItemId, newQuantity) => {
+    try {
+      const response = await updateCart({
+        cart_item_id: cartItemId,
+        quantity: newQuantity,
       });
 
-      updateSubtotal(updatedItems);
-      return updatedItems;
-    });
+      if (response) {
+        setCartItems((prevItems) => {
+          const updatedItems = prevItems.map((item) =>
+            item.cart_item_id === cartItemId
+              ? { ...item, quantity: newQuantity }
+              : item
+          );
+          updateSubtotal(updatedItems);
+          return updatedItems;
+        });
+      }
+    } catch (error) {
+      console.error("Error updating cart:", error);
+    }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <WearwiseLoading />;
 
   return (
     <div className="bg-gray-100">
@@ -141,58 +163,42 @@ const Cart = () => {
                   />
                   <div>
                     <h2 className="font-semibold">{item.product.name}</h2>
-
-                    {item.quantities.map((q, idx) => (
-                      <div
-                        key={idx}
-                        className="text-sm text-gray-500 flex items-center"
+                    <p className="text-sm text-gray-500">
+                      Size: {item.size.shirt_size}, Color: {item.color.name}
+                    </p>
+                    <p className="font-bold mt-2">
+                      {Number(item.product.price).toFixed(2)}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <button
+                        onClick={() =>
+                          updateQuantity(
+                            item.cart_item_id,
+                            Math.max(1, item.quantity - 1)
+                          )
+                        }
+                        className="px-2 py-1 bg-gray-300 rounded"
                       >
-                        <p>
-                          Size: {q.size}, Color: {q.color}, Quantity:{" "}
-                          {q.quantity}
-                        </p>
-
-                        <div className="flex border rounded-lg ml-2">
-                          <button
-                            className="px-3 py-1"
-                            onClick={() =>
-                              updateQuantity(index, q.size, q.color, -1)
-                            }
-                          >
-                            -
-                          </button>
-                          <span className="px-3 py-1">{q.quantity}</span>
-                          <button
-                            className="px-3 py-1"
-                            onClick={() =>
-                              updateQuantity(index, q.size, q.color, 1)
-                            }
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-
-                    <p className="font-bold mt-2">${item.product.price}</p>
+                        -
+                      </button>
+                      <span className="px-4">{item.quantity}</span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.cart_item_id, item.quantity + 1)
+                        }
+                        className="px-2 py-1 bg-gray-300 rounded"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-col pl-3 text-center">
-                  <div className="flex border rounded-lg w-1/2">
-                    <span className="px-4 py-2">
-                      {item.quantities.reduce(
-                        (total, q) => total + q.quantity,
-                        0
-                      )}
-                    </span>
-                  </div>
-                  <button
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg mt-4"
-                    onClick={() => removeItem(item.product.id, index)}
-                  >
-                    Remove
-                  </button>
-                </div>
+                <button
+                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                  onClick={() => removeItem(item.cart_item_id)}
+                >
+                  Remove
+                </button>
               </div>
             ))}
           </div>
@@ -209,29 +215,23 @@ const Cart = () => {
                   -${totalDiscount.toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between mb-2">
-                <span>Delivery Fee</span>
-                <span>$15</span>
-              </div>
               <div className="flex justify-between font-bold text-lg mb-4">
                 <span>Total</span>
-                <span>${(subtotal - totalDiscount + 15).toFixed(2)}</span>
+                <span>${(subtotal - totalDiscount).toFixed(2)}</span>
               </div>
-              <div className="flex mb-4">
-                <input
-                  className="flex-1 p-2 border rounded-l-lg"
-                  placeholder="Enter discount code"
-                  type="text"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                />
-                <button
-                  className="bg-black text-white px-4 rounded-r-lg"
-                  onClick={applyDiscount}
-                >
-                  Apply
-                </button>
-              </div>
+              <input
+                type="text"
+                className="w-full border p-2 rounded mb-2"
+                placeholder="Enter discount code"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+              />
+              <button
+                onClick={applyDiscount}
+                className="bg-blue-500 text-white w-full py-2 rounded-lg mb-4"
+              >
+                Apply Discount
+              </button>
               <button className="bg-black text-white w-full py-3 rounded-lg">
                 Go to Checkout
               </button>
