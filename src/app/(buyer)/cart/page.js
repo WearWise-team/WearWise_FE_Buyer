@@ -26,6 +26,11 @@ const Cart = () => {
           const response = await getMyCart(userId);
           setCartItems(response.cart);
           updateSubtotal(response.cart);
+
+          const storedSubtotal = localStorage.getItem("subtotal");
+          const storedDiscount = localStorage.getItem("discount");
+          if (storedSubtotal) setSubtotal(parseFloat(storedSubtotal));
+          if (storedDiscount) setTotalDiscount(parseFloat(storedDiscount));
         } catch (error) {
           console.error("Error fetching cart items:", error);
         } finally {
@@ -37,7 +42,7 @@ const Cart = () => {
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateSubtotal = (items) => {
@@ -64,13 +69,17 @@ const Cart = () => {
     });
 
     setSubtotal(total);
-    setTotalDiscount(totalDiscount); // Chỉ cập nhật state ở đây
+    setTotalDiscount(totalDiscount);
+
+    localStorage.setItem("discount", totalDiscount.toFixed(2));
+    localStorage.setItem("total", (total - totalDiscount).toFixed(2));
   };
 
-  // Sử dụng useEffect để gọi notify sau khi totalDiscount thay đổi
   useEffect(() => {
     if (discountCode) {
       if (totalDiscount > 0) {
+        localStorage.setItem("discount", totalDiscount.toFixed(2));
+        localStorage.setItem("total", (subtotal - totalDiscount).toFixed(2));
         notify(
           "Discount Applied",
           `Your discount has been successfully applied. You saved ${totalDiscount.toFixed(
@@ -87,7 +96,8 @@ const Cart = () => {
         );
       }
     }
-  }, [totalDiscount]); // Chỉ chạy khi totalDiscount thay đổi
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalDiscount, subtotal]);
 
   const applyDiscount = () => {
     updateSubtotal(cartItems);
@@ -137,11 +147,11 @@ const Cart = () => {
     <div className="bg-gray-100">
       <div className="container mx-auto p-4">
         <nav className="text-sm mb-4 flex gap-2 text-end">
-          <Link className="text-gray-500 hover:text-gray-700" href="#">
+          <Link className="text-gray-500 hover:text-gray-700" href="/">
             Home
           </Link>
           <IoMdArrowDropright className="pt-1 h-full" />
-          <Link className="text-gray-500 hover:text-gray-700" href="#">
+          <Link className="text-gray-500 hover:text-gray-700" href="/cart">
             Cart
           </Link>
         </nav>
@@ -194,7 +204,7 @@ const Cart = () => {
                   </div>
                 </div>
                 <button
-                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                  className="bg-pink-500 text-white px-3 py-1 rounded-lg"
                   onClick={() => removeItem(item.cart_item_id)}
                 >
                   Remove
@@ -228,13 +238,15 @@ const Cart = () => {
               />
               <button
                 onClick={applyDiscount}
-                className="bg-blue-500 text-white w-full py-2 rounded-lg mb-4"
+                className="bg-pink-500 text-white w-full py-2 rounded-lg mb-4"
               >
                 Apply Discount
               </button>
-              <button className="bg-black text-white w-full py-3 rounded-lg">
-                Go to Checkout
-              </button>
+              <Link href="/order">
+                <button className="bg-black text-white w-full py-3 rounded-lg">
+                  Go to Checkout
+                </button>
+              </Link>
             </div>
           </div>
         </div>
