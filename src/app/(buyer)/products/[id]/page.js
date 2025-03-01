@@ -12,15 +12,18 @@ import ListProducts from "@/components/ListProducts";
 import Link from "next/link";
 import { getProductDetails } from "@/apiServices/products/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
+import { addToCart } from "@/apiServices/cart/page";
+import { useNotification } from "@/apiServices/NotificationService";
 
 export default function DetailProduct({ params }) {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedColor, setSelectedColor] = useState("gray");
-  const [selectedSize, setSelectedSize] = useState("Large");
-  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(1);
   const [activeTab, setActiveTab] = useState("Details");
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
+  const [cart, setCart] = useState([]);
+  const notify = useNotification();
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
@@ -61,6 +64,48 @@ export default function DetailProduct({ params }) {
     setShowReviewForm(false);
     setReviewText("");
     setRating(0);
+  };
+
+  const handleAddToCart = (
+    productId,
+    productColorId,
+    productSizeId,
+    quantity
+  ) => {
+    const isAlreadyInCart = cart.some(
+      (item) =>
+        item.product_id === productId &&
+        item.product_color_id === productColorId &&
+        item.product_size_id === productSizeId
+    );
+    if (isAlreadyInCart) {
+      notify(
+        "Product Added to Cart",
+        "Your product has been added to the cart.",
+        "topRight",
+        "warning"
+      );
+      return;
+    }
+
+    const newItem = {
+      product_id: productId,
+      product_color_id: productColorId,
+      product_size_id: productSizeId,
+      quantity: quantity,
+    };
+
+    setCart([...cart, newItem]); // Cập nhật giỏ hàng
+
+    addToCart(newItem)
+      .then((response) =>
+        notify(
+          "Product Added Successfully",
+          "Your product has been added to the inventory.",
+          "topRight"
+        )
+      )
+      .catch((error) => console.error("Add to cart error:", error));
   };
 
   const percentageOf = (value, percentage) => (value * percentage) / 100;
@@ -172,11 +217,13 @@ export default function DetailProduct({ params }) {
                   {product?.colors?.map((color) => (
                     <button
                       key={color.id}
-                      onClick={() => setSelectedColor(color.name)}
+                      id={color.id}
+                      onClick={() => setSelectedColor(color.id)}
                       className="relative w-10 h-10 rounded-full border-gray-600 transition-all duration-300 hover:shadow-md"
                       style={{ backgroundColor: color.code }}
                     >
-                      {selectedColor === color.name && (
+                      {color.name}
+                      {selectedColor === color.id && (
                         <RiCheckboxCircleLine className="absolute text-white text-2xl top-2 right-2" />
                       )}
                     </button>
@@ -191,14 +238,15 @@ export default function DetailProduct({ params }) {
                   {product?.sizes?.map((size) => (
                     <button
                       key={size.id}
-                      onClick={() => setSelectedSize(size.shirt_size)}
+                      id={size.id}
+                      onClick={() => setSelectedSize(size.id)}
                       className={`px-4 py-2 border border-spacing-1 rounded-md ${
-                        selectedSize === size.shirt_size
+                        selectedSize === size.id
                           ? "bg-gray-800 text-white"
                           : "bg-white text-gray-800"
                       } transition-all duration-300 hover:shadow-md`}
                     >
-                      {size.shirt_size}
+                      {size.shirt_size + "-" + size.target_audience}
                     </button>
                   ))}
                 </div>
@@ -211,22 +259,12 @@ export default function DetailProduct({ params }) {
                     Try to 2D
                   </button>
                 </Link>
-                <div className="flex items-center border rounded-lg">
-                  <button
-                    className="px-4 py-2"
-                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                  >
-                    -
-                  </button>
-                  <span className="px-4 py-2">{quantity}</span>
-                  <button
-                    className="px-4 py-2"
-                    onClick={() => setQuantity((prev) => prev + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-                <button className="px-4 py-2 bg-black text-white rounded-lg ">
+                <button
+                  className="px-4 py-2 bg-black text-white rounded-lg"
+                  onClick={() =>
+                    handleAddToCart(product?.id, selectedColor, selectedSize, 1)
+                  }
+                >
                   Add to Cart
                 </button>
               </div>
