@@ -17,7 +17,24 @@ export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
   const [cartCount, setCartCount] = useState(0); 
   const [wishlistCount, setWishlistCount] = useState(3); 
-  const [userImage, setUserImage] = useState("/default-avatar.png"); 
+  const [userImage, setUserImage] = useState("https://placehold.co/100x100"); 
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.start();
+    setIsListening(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSearchValue(transcript);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  };
 
   const pathname = usePathname(); 
 
@@ -136,7 +153,10 @@ export default function Header() {
                   onBlur={handleBlur}
                 />
               </form>
-              <FaMicrophone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-pink-500 cursor-pointer" />
+              <FaMicrophone 
+                className={`absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer ${isListening ? "text-red-600" : "text-pink-500"}`} 
+                onClick={startListening} 
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -169,7 +189,7 @@ export default function Header() {
               </div>
 
               {/* User Avatar + Dropdown */}
-              <div className="relative self-center">
+              <>
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="focus:outline-none"
@@ -182,7 +202,7 @@ export default function Header() {
                 </button>
 
                 {showMenu && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
+                  <div className="absolute left-10 top-8 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
                     <Link
                       href="/profile"
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
@@ -197,7 +217,7 @@ export default function Header() {
                     </button>
                   </div>
                 )}
-              </div>
+              </>
             </div>
           ) : (
             <>
