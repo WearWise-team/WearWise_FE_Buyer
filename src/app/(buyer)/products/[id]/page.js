@@ -222,7 +222,6 @@ export default function DetailProduct({ params }) {
                       className="relative w-10 h-10 rounded-full border-gray-600 transition-all duration-300 hover:shadow-md"
                       style={{ backgroundColor: color.code }}
                     >
-                      {color.name}
                       {selectedColor === color.id && (
                         <RiCheckboxCircleLine className="absolute text-white text-2xl top-2 right-2" />
                       )}
