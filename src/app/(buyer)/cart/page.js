@@ -14,6 +14,8 @@ const Cart = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
   const [totalDiscount, setTotalDiscount] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
   const notify = useNotification();
 
   useEffect(() => {
@@ -104,24 +106,29 @@ const Cart = () => {
     updateSubtotal(cartItems);
   };
 
-  const removeItem = async (cartItemId) => {
-    try {
-      const response = await removeFromCart({ cart_item_id: cartItemId });
-      if (response) {
-        const updatedCart = cartItems.filter(
-          (item) => item.cart_item_id !== cartItemId
-        );
-        setCartItems(updatedCart);
-        updateSubtotal(updatedCart);
-      }
+  const confirmRemoveItem = async () => {
+    if (itemToRemove) {
+      try {
+        const response = await removeFromCart({ cart_item_id: itemToRemove });
+        if (response) {
+          const updatedCart = cartItems.filter(
+            (item) => item.cart_item_id !== itemToRemove
+          );
+          setCartItems(updatedCart);
+          updateSubtotal(updatedCart);
+        }
 
-      notify(
-        "Product Removed",
-        "Your product has been removed from the cart.",
-        "topRight"
-      )
-    } catch (error) {
-      console.error("Error removing item:", error);
+        notify(
+          "Product Removed",
+          "Your product has been removed from the cart.",
+          "topRight"
+        );
+      } catch (error) {
+        console.error("Error removing item:", error);
+      } finally {
+        setShowModal(false);
+        setItemToRemove(null);
+      }
     }
   };
 
@@ -213,7 +220,10 @@ const Cart = () => {
                   </div>
                   <button
                     className="bg-pink-500 text-white px-3 py-1 rounded-lg"
-                    onClick={() => removeItem(item.cart_item_id)}
+                    onClick={() => {
+                      setItemToRemove(item.cart_item_id);
+                      setShowModal(true);
+                    }}
                   >
                     Remove
                   </button>
@@ -267,6 +277,30 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for confirmation */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Confirm Removal</h2>
+            <p>Are you sure you want to remove this item from your cart?</p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-gray-300 text-black px-4 py-2 rounded mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={confirmRemoveItem}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
