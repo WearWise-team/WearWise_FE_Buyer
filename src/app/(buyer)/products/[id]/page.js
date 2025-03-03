@@ -14,6 +14,7 @@ import { getProductDetails } from "@/apiServices/products/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
 import { addToCart } from "@/apiServices/cart/page";
 import { useNotification } from "@/apiServices/NotificationService";
+import { useRouter } from 'next/navigation';
 
 export default function DetailProduct({ params }) {
   const [product, setProduct] = useState(null);
@@ -24,6 +25,7 @@ export default function DetailProduct({ params }) {
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
   const [cart, setCart] = useState([]);
   const notify = useNotification();
+  const router = useRouter();
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
@@ -72,19 +74,29 @@ export default function DetailProduct({ params }) {
     productSizeId,
     quantity
   ) => {
+    const isUserLogin = localStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === productId &&
         item.product_color_id === productColorId &&
         item.product_size_id === productSizeId
     );
-    if (isAlreadyInCart) {
+    if (isAlreadyInCart && isUserLogin) {
       notify(
         "Product Added to Cart",
         "Your product has been added to the cart.",
         "topRight",
         "warning"
       );
+      return;
+    } else if (!isUserLogin) {
+      notify(
+        "Login Required",
+        "You must login to add this product to the cart.",
+        "topRight",
+        "warning"
+      );
+      router.push("/login");
       return;
     }
 
