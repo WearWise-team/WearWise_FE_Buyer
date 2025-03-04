@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
         >
           <LayoutWrapper>
             <ProductProvider>{children}</ProductProvider>
-          </LayoutWrapper>{" "}
+          </LayoutWrapper>
         </body>
       </html>
     </NotificationProvider>

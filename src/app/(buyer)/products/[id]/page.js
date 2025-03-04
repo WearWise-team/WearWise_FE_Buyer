@@ -14,16 +14,18 @@ import { getProductDetails } from "@/apiServices/products/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
 import { addToCart } from "@/apiServices/cart/page";
 import { useNotification } from "@/apiServices/NotificationService";
+import { useRouter } from "next/navigation";
 
 export default function DetailProduct({ params }) {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedColor, setSelectedColor] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(1);
   const [activeTab, setActiveTab] = useState("Details");
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
   const [cart, setCart] = useState([]);
   const notify = useNotification();
+  const router = useRouter();
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
@@ -72,19 +74,39 @@ export default function DetailProduct({ params }) {
     productSizeId,
     quantity
   ) => {
+    if (!selectedColor) {
+      notify(
+        "Product Color Required",
+        "Please select a color for this product.",
+        "topRight",
+        "warning"
+      );
+      return;
+    }
+
+    const isUserLogin = localStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === productId &&
         item.product_color_id === productColorId &&
         item.product_size_id === productSizeId
     );
-    if (isAlreadyInCart) {
+    if (isAlreadyInCart && isUserLogin) {
       notify(
         "Product Added to Cart",
         "Your product has been added to the cart.",
         "topRight",
         "warning"
       );
+      return;
+    } else if (!isUserLogin) {
+      notify(
+        "Login Required",
+        "You must login to add this product to the cart.",
+        "topRight",
+        "warning"
+      );
+      router.push("/login");
       return;
     }
 
@@ -349,16 +371,6 @@ export default function DetailProduct({ params }) {
                             </div>
                           </div>
                         </div>
-                        {/* <div className="mt-2 flex space-x-2">
-                          <button className="bg-white border border-red-500 text-red-500 px-4 py-2 rounded flex items-center">
-                            <i className="fas fa-comments mr-2"></i>
-                            Chat Ngay
-                          </button>
-                          <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded flex items-center">
-                            <i className="fas fa-store mr-2"></i>
-                            Xem Shop
-                          </button>
-                        </div> */}
                       </div>
                     </div>
                   </div>
