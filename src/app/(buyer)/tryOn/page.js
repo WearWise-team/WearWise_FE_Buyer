@@ -84,6 +84,7 @@ export default function TryOn2D() {
       //   garmentFile = dataURLtoFile(garmentImage, "garment.jpg");
         
       // }
+      // formData.append("cloth_image", garmentFile);
       formData.append("cloth_image", dataURLtoFile(garmentImage, "garment.jpg"));
       formData.append("person_image", dataURLtoFile(personImage, "person.jpg"));
 
