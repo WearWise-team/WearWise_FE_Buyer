@@ -6,6 +6,7 @@ import { IoMdArrowDropright } from "react-icons/io";
 import { getMyCart, removeFromCart, updateCart } from "@/apiServices/cart/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
 import { useNotification } from "@/apiServices/NotificationService";
+import { ShoppingOutlined } from "@ant-design/icons";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -13,6 +14,8 @@ const Cart = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
   const [totalDiscount, setTotalDiscount] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
   const notify = useNotification();
 
   useEffect(() => {
@@ -42,7 +45,7 @@ const Cart = () => {
     } else {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateSubtotal = (items) => {
@@ -96,25 +99,36 @@ const Cart = () => {
         );
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalDiscount, subtotal]);
 
   const applyDiscount = () => {
     updateSubtotal(cartItems);
   };
 
-  const removeItem = async (cartItemId) => {
-    try {
-      const response = await removeFromCart({ cart_item_id: cartItemId });
-      if (response) {
-        const updatedCart = cartItems.filter(
-          (item) => item.cart_item_id !== cartItemId
+  const confirmRemoveItem = async () => {
+    if (itemToRemove) {
+      try {
+        const response = await removeFromCart({ cart_item_id: itemToRemove });
+        if (response) {
+          const updatedCart = cartItems.filter(
+            (item) => item.cart_item_id !== itemToRemove
+          );
+          setCartItems(updatedCart);
+          updateSubtotal(updatedCart);
+        }
+
+        notify(
+          "Product Removed",
+          "Your product has been removed from the cart.",
+          "topRight"
         );
-        setCartItems(updatedCart);
-        updateSubtotal(updatedCart);
+      } catch (error) {
+        console.error("Error removing item:", error);
+      } finally {
+        setShowModal(false);
+        setItemToRemove(null);
       }
-    } catch (error) {
-      console.error("Error removing item:", error);
     }
   };
 
@@ -158,59 +172,71 @@ const Cart = () => {
         <h1 className="text-2xl font-bold mb-6">Your cart</h1>
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1">
-            {cartItems.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-md mb-4 flex items-center justify-between"
-              >
-                <div className="flex items-center">
-                  <Image
-                    alt={item.product.name}
-                    className="w-16 h-16 rounded-lg mr-4"
-                    height={60}
-                    width={60}
-                    src={item.product.image}
-                  />
-                  <div>
-                    <h2 className="font-semibold">{item.product.name}</h2>
-                    <p className="text-sm text-gray-500">
-                      Size: {item.size.shirt_size}, Color: {item.color.name}
-                    </p>
-                    <p className="font-bold mt-2">
-                      {Number(item.product.price).toFixed(2)}
-                    </p>
-                    <div className="flex items-center mt-2">
-                      <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.cart_item_id,
-                            Math.max(1, item.quantity - 1)
-                          )
-                        }
-                        className="px-2 py-1 bg-gray-300 rounded"
-                      >
-                        -
-                      </button>
-                      <span className="px-4">{item.quantity}</span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.cart_item_id, item.quantity + 1)
-                        }
-                        className="px-2 py-1 bg-gray-300 rounded"
-                      >
-                        +
-                      </button>
+            {cartItems.length > 0 ? (
+              cartItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-4 rounded-lg shadow-md mb-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center">
+                    <Image
+                      alt={item.product.name}
+                      className="w-16 h-16 rounded-lg mr-4"
+                      height={60}
+                      width={60}
+                      src={item.product.image}
+                    />
+                    <div>
+                      <h2 className="font-semibold">{item.product.name}</h2>
+                      <p className="text-sm text-gray-500">
+                        Size: {item.size.shirt_size}, Color: {item.color.name}
+                      </p>
+                      <p className="font-bold mt-2">
+                        {Number(item.product.price).toFixed(2)}
+                      </p>
+                      <div className="flex items-center mt-2">
+                        <button
+                          onClick={() =>
+                            updateQuantity(
+                              item.cart_item_id,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
+                          className="px-2 py-1 bg-gray-300 rounded"
+                        >
+                          -
+                        </button>
+                        <span className="px-4">{item.quantity}</span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.cart_item_id, item.quantity + 1)
+                          }
+                          className="px-2 py-1 bg-gray-300 rounded"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
+                  <button
+                    className="bg-pink-500 text-white px-3 py-1 rounded-lg"
+                    onClick={() => {
+                      setItemToRemove(item.cart_item_id);
+                      setShowModal(true);
+                    }}
+                  >
+                    Remove
+                  </button>
                 </div>
-                <button
-                  className="bg-pink-500 text-white px-3 py-1 rounded-lg"
-                  onClick={() => removeItem(item.cart_item_id)}
-                >
-                  Remove
-                </button>
+              ))
+            ) : (
+              <div>
+                <div className="text-center py-12 bg-white rounded-lg">
+                  <ShoppingOutlined className="text-4xl text-gray-400 mb-4" />
+                  <p className="text-gray-500">Your cart is empty.</p>
+                </div>
               </div>
-            ))}
+            )}
           </div>
           <div className="w-full lg:w-1/2">
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -251,6 +277,30 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for confirmation */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Confirm Removal</h2>
+            <p>Are you sure you want to remove this item from your cart?</p>
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-gray-300 text-black px-4 py-2 rounded mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={confirmRemoveItem}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
