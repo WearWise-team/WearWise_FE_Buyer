@@ -117,7 +117,7 @@ export default function DetailProduct({ params }) {
       quantity: quantity,
     };
 
-    setCart([...cart, newItem]);
+    setCart([...cart, newItem]); 
 
     addToCart(newItem)
       .then((response) =>
@@ -275,7 +275,14 @@ export default function DetailProduct({ params }) {
 
               {/* Các nút thao tác */}
               <div className="flex items-center space-x-4 mb-4">
-                <Link href="/tryOn">
+                <Link
+                  href="/tryOn"
+                  // onClick={() => {
+                  //   if (typeof window !== "undefined") {
+                  //     localStorage.setItem("tryOnImage", product.image); // Lưu ảnh vào localStorage
+                  //   }
+                  // }}
+                >
                   <button className="px-4 py-2 bg-black text-white rounded-lg">
                     Try to 2D
                   </button>
