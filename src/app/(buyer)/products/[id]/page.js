@@ -272,8 +272,6 @@ export default function DetailProduct({ params }) {
                   ))}
                 </div>
               </div>
-
-              {/* Các nút thao tác */}
               <div className="flex items-center space-x-4 mb-4">
                 <Link
                   href="/tryOn"
