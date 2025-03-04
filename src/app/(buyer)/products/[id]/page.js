@@ -275,18 +275,18 @@ export default function DetailProduct({ params }) {
 
               {/* Các nút thao tác */}
               <div className="flex items-center space-x-4 mb-4">
-                {/* <Link
+                <Link
                   href="/tryOn"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      localStorage.setItem("tryOnImage", product.image); // Lưu ảnh vào localStorage
-                    }
-                  }}
+                  // onClick={() => {
+                  //   if (typeof window !== "undefined") {
+                  //     localStorage.setItem("tryOnImage", product.image); // Lưu ảnh vào localStorage
+                  //   }
+                  // }}
                 >
                   <button className="px-4 py-2 bg-black text-white rounded-lg">
                     Try to 2D
                   </button>
-                </Link> */}
+                </Link>
                 <button
                   className="px-4 py-2 bg-black text-white rounded-lg"
                   onClick={() =>
