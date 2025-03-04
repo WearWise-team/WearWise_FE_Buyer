@@ -71,6 +71,7 @@ const ProductPage = () => {
     };
 
     fetchProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, products]);
 
   const updateProductList = (result) => {
