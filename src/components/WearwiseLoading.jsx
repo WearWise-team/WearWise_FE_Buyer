@@ -1,59 +1,74 @@
-'use client';
+"use client"
 
-import { useEffect } from 'react';
+import { useEffect, useState } from "react"
 
 const WearwiseLoading = () => {
-    useEffect(() => {
-        const animateLetters = () => {
-            const letters = document.querySelectorAll(".letter");
-            
-            letters.forEach((letter) => {
-                letter.style.transform = `translate(${Math.random() * 200 - 100}px, ${Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg)`;
-                letter.style.opacity = 1;
-            });
+  const [mounted, setMounted] = useState(false)
 
-            setTimeout(() => {
-                letters.forEach((letter, index) => {
-                    letter.style.transform = `translate(${index * 60 - 180}px, 0) rotate(0deg)`;
-                });
-            }, 2000);
-        };
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
-        const startLoop = () => {
-            animateLetters();
-            setInterval(() => {
-                setTimeout(animateLetters, 2000);
-            }, 4000);
-        };
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-[9999]">
+      <div className="flex items-end gap-1 sm:gap-2">
+        {mounted && (
+          <>
+            <span
+              className="text-red-600 text-5xl sm:text-6xl font-bold animate-wave"
+              style={{ animationDelay: "0ms" }}
+            >
+              W
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "100ms" }}
+            >
+              E
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "200ms" }}
+            >
+              A
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "300ms" }}
+            >
+              R
+            </span>
+            <span
+              className="text-black text-5xl sm:text-6xl font-bold animate-wave"
+              style={{ animationDelay: "400ms" }}
+            >
+              W
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "500ms" }}
+            >
+              I
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "600ms" }}
+            >
+              S
+            </span>
+            <span
+              className="text-black text-4xl sm:text-5xl font-bold animate-wave"
+              style={{ animationDelay: "700ms" }}
+            >
+              E
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
-        startLoop();
-    }, []);
+export default WearwiseLoading
 
-    return (
-        <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            width: '100vw', 
-            height: '100vh', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            backgroundColor: 'white', 
-            zIndex: 9999 
-        }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', fontSize: '40px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif' }}>
-                <span className="letter" style={{ color: 'red', fontSize: '60px' }}>W</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>E</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>A</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>R</span>
-                <span className="letter" style={{ color: 'black', fontSize: '60px' }}>W</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>I</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>S</span>
-                <span className="letter" style={{ color: 'black', fontSize: '50px' }}>E</span>
-            </div>
-        </div>
-    );
-};
-
-export default WearwiseLoading;

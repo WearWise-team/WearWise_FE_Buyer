@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -24,5 +23,28 @@ input:focus {
 
   ::-webkit-scrollbar {
     width: 0;
-  }  
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  25% {
+    transform: translateY(-15px);
+  }
+  50% {
+    transform: translateY(0px);
+  }
+  75% {
+    transform: translateY(5px);
+  }
+}
+
+.animate-wave {
+  animation: wave 1s ease-in-out infinite;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+  letter-spacing: 60px;
 }
