@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { UserOutlined, ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaMicrophone } from "react-icons/fa";
 import { useRouter, usePathname } from "next/navigation";
+import { useNotification } from "@/apiServices/NotificationService";
 
 let searchTimeout;
 
@@ -19,6 +20,7 @@ export default function Header() {
   const [wishlistCount, setWishlistCount] = useState(3); 
   const [userImage, setUserImage] = useState("https://placehold.co/100x100"); 
   const [isListening, setIsListening] = useState(false);
+  const notify = useNotification();
 
   const startListening = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -65,7 +67,6 @@ export default function Header() {
       });
   
       if (response.ok) {
-        // Nếu logout thành công
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         setIsLoggedIn(false);
@@ -97,15 +98,16 @@ export default function Header() {
     searchTimeout = setTimeout(() => setIsSearchVisible(false), 2000);
   };
 
-  const handleSearch = (event) => {
-    event.preventDefault();
+  const handleSearch = async (event) => {
+  event.preventDefault();
+
     if (!searchValue.trim()) {
-      console.warn("Vui lòng nhập sản phẩm cần tìm!");
+      notify("Search", "Please enter a keyword to search.", "topRight", "warning");
       return;
     }
+
     router.push(`/products?search=${encodeURIComponent(searchValue)}`);
   };
-
   return (
     <header className="flex items-center justify-between p-4 px-20">
       <Link href="/">
