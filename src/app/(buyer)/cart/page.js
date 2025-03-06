@@ -7,6 +7,7 @@ import { getMyCart, removeFromCart, updateCart } from "@/apiServices/cart/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
 import { useNotification } from "@/apiServices/NotificationService";
 import { ShoppingOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -17,6 +18,7 @@ const Cart = () => {
   const [showModal, setShowModal] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
   const notify = useNotification();
+  const router = useRouter();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -155,6 +157,20 @@ const Cart = () => {
     }
   };
 
+  const handleCheckOut = () => {
+    if (subtotal == 0) {
+      notify(
+        "Order processing procedure",
+        "Please add a product to your cart",
+        "topRight",
+        "warning"
+      );
+    } else {
+      router.push("/order");
+    }
+    return;
+  };
+
   if (loading) return <WearwiseLoading />;
 
   return (
@@ -268,11 +284,12 @@ const Cart = () => {
               >
                 Apply Discount
               </button>
-              <Link href="/order">
-                <button className="bg-black text-white w-full py-3 rounded-lg">
-                  Go to Checkout
-                </button>
-              </Link>
+              <button
+                onClick={() => handleCheckOut()}
+                className="bg-black text-white w-full py-3 rounded-lg"
+              >
+                Go to Checkout
+              </button>
             </div>
           </div>
         </div>
