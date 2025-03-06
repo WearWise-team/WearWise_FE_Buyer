@@ -14,57 +14,59 @@ import {
 import { UploadOutlined, InboxOutlined } from "@ant-design/icons";
 import styles from "./page.module.css";
 import Image from "next/image";
+import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page";
+import { useNotification } from "@/apiServices/NotificationService";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Dragger } = Upload;
 
 // Sample data for examples
 const personExamples = [
-  "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
+  "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
 ];
 
 const garmentExamples = [
-  "https://timshop.timhortons.ca/cdn/shop/files/retro-logo-tshirt-back-1000px.png?v=1707853862&width=1000?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
-  "/placeholder.svg?height=100&width=80",
+  "https://timshop.timhortons.ca/cdn/shop/files/retro-logo-tshirt-back-1000px.png?v=1707853862&width=1000",
+  "https://bizweb.dktcdn.net/thumb/large/100/396/594/themes/937450/assets/season_coll_1_img.png",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
+  "/placeholder.svg",
 ];
 
 // Sample data for try-on examples
 const tryOnExamples = [
   {
-    person: "/placeholder.svg?height=100&width=80",
-    garment: "/placeholder.svg?height=100&width=80",
-    result: "/placeholder.svg?height=100&width=80",
+    person: "/placeholder.svg",
+    garment: "/placeholder.svg",
+    result: "/placeholder.svg",
   },
   {
-    person: "/placeholder.svg?height=100&width=80",
-    garment: "/placeholder.svg?height=100&width=80",
-    result: "/placeholder.svg?height=100&width=80",
+    person: "/placeholder.svg",
+    garment: "/placeholder.svg",
+    result: "/placeholder.svg",
   },
   {
-    person: "/placeholder.svg?height=100&width=80",
-    garment: "/placeholder.svg?height=100&width=80",
-    result: "/placeholder.svg?height=100&width=80",
+    person: "/placeholder.svg",
+    garment: "/placeholder.svg",
+    result: "/placeholder.svg",
   },
 ];
 
@@ -72,12 +74,11 @@ export default function Home() {
   const [personImage, setPersonImage] = useState(null);
   const [garmentImage, setGarmentImage] = useState(null);
   const [resultImage, setResultImage] = useState(null);
-  const [seed, setSeed] = useState(0);
-  const [randomSeed, setRandomSeed] = useState(true);
-
+  const notify = useNotification();
 
   const handlePersonUpload = (info) => {
     const file = info.file.originFileObj; 
+    console.log(file);
     if (!file) {
         console.error("No file selected");
         return;
@@ -88,8 +89,7 @@ export default function Home() {
       setPersonImage(reader.result);
       setResultImage(null);
     };
-};
-
+  };
 
   const handleGarmentUpload = (info) => {
     const file = info.file.originFileObj; 
@@ -105,76 +105,104 @@ export default function Home() {
     };
   };
 
-  const handleRun = () => {
-    // In a real app, you would call an API to process the images
-    // For this demo, we'll just use a placeholder
-    
-  };
-
   async function submitTryOn() {
     let personFile = personImage;
     let garmentFile = garmentImage;
 
-    setResultImage("/placeholder.svg?height=300&width=200");
     if (!personFile || !garmentFile) {
-        alert("Please upload both images!");
-        return;
+      notify("Error", "Please upload both images!", "topRight", "error");
+      return;
     }
 
     let personBase64 = await convertToBase64(personFile);
     let garmentBase64 = await convertToBase64(garmentFile);
 
-  //   let tryonUrl = "http://your-api-url/Submit";  // Replace with actual API URL
-  //   let headers = {
-  //       "Content-Type": "application/json",
-  //       "token": "your-token",  // Replace with actual token
-  //       "Cookie": "your-cookie",
-  //       "referer": "your-referer"
-  //   };
+    if (personBase64 && garmentBase64) {
 
-  //   let response = await fetch(tryonUrl, {
-  //       method: "POST",
-  //       headers: headers,
-  //       body: JSON.stringify({ clothImage: garmentBase64, humanImage: personBase64, seed: Math.random() * 999999 })
-  //   });
+      // console.log(garmentFile);
+      // console.log("object"); pass input
+      // console.log(garmentBase64); 
 
-  //   let result = await response.json();
-  //   if (result.result.status !== "success") {
-  //       alert("Error processing images");
-  //       return;
-  //   }
+      // let authorization = await getJWTCode();
+      // if (!authorization) {
+      //     alert("Error getting JWT code");
+      //     return;
+      // }
 
-  //   let taskId = result.result.result;
-  //   await checkTryOnResult(taskId);
-  // }
+      // console.log(authorization.token); pass
 
-  // async function checkTryOnResult(taskId) {
-  //     let queryUrl = `http://your-api-url/Query?taskId=${taskId}`;  // Replace with actual API URL
-  //     let headers = { "token": "your-token", "Cookie": "your-cookie", "referer": "your-referer" };
+      // let tryOnUrl = "https://api.klingai.com/v1/images/kolors-virtual-try-on";
+      // let headers = {
+      //   "Content-Type": "application/json",
+      //   "Authorization": `Bearer ${authorization.token}`,
+      // };
 
-  //     for (let i = 0; i < 12; i++) {
-  //         await new Promise(r => setTimeout(r, 9000));  // Wait 9 sec
+      let response = await tryOnKlingAI(
+        {
+          human_image: personBase64,
+          cloth_image: garmentBase64
+        }
+      );
 
-  //         let response = await fetch(queryUrl, { headers: headers });
-  //         let result = await response.json();
+      let result = await response.json();
 
-  //         if (result.result.status === "success") {
-  //             let imgSrc = `data:image/jpeg;base64,${result.result.result}`;
-  //             document.getElementById("resultImg").src = imgSrc;
-  //             document.getElementById("resultImg").style.display = "block";
-  //             return;
-  //         }
-  //     }
-  //     alert("Try-on failed. Please try again later.");
-  // }
+      console.log(result);
 
-  // async function convertToBase64(file) {
-  //     return new Promise((resolve, reject) => {
-  //         let reader = new FileReader();
-  //         reader.readAsDataURL(file);
-  //         reader.onload = () => resolve(reader.result.split(",")[1]);
-  //         reader.onerror = error => reject(error);
-  //     });
+      // Kiểm tra nếu API trả về lỗi
+      if (result.data?.code !== 0 || !result.data?.data?.task_id) {
+        alert(`Error: ${result.data.message || "Unknown error"}`);
+        console.log(result.data.message);
+        return;
+      }
+
+      let taskId = result.data?.data.task_id;
+      console.log(result);
+      console.log(taskId);
+      // await checkTryOnResult(taskId, result.token);
+    }
+  }
+
+  async function checkTryOnResult(taskId, token) {
+      let result = await getKlingAIResults(taskId, token);
+
+      if (result.data?.data?.task_status === "failed") {
+          alert(`Error: ${result.data?.message || "Unknown failure reason"}`);
+          console.log(result);
+          return;
+      }
+    
+
+    // Nếu sau 24 lần (2 phút) vẫn không có kết quả
+    notify(
+      "Request took too long",
+      "Failed to get try-on result within 120 seconds.",
+      "topRight",
+      "error"
+    );
+  }
+
+  async function convertToBase64(input) {
+    return new Promise((resolve, reject) => {
+        if (input instanceof File) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64String = reader.result.split(",")[1]; 
+                resolve(base64String);
+            };
+            reader.onerror = (error) => {
+                console.error("Error reading file:", error);
+                reject(error);
+            };
+            reader.readAsDataURL(input);
+        } 
+        else if (typeof input === "string") {
+            const base64Match = input.match(/^data:image\/[a-zA-Z]+;base64,(.*)$/);
+            resolve(base64Match ? base64Match[1] : input);
+        } 
+        else {
+            reject("Invalid input type");
+        }
+    });
   }
 
   const selectPersonExample = (index) => {
@@ -334,32 +362,10 @@ export default function Home() {
             </div>
 
             <Card className={styles.seedCard}>
-              <div className={styles.seedRow}>
-                <Text>Seed</Text>
-                <div className={styles.seedControls}>
-                  <Slider
-                    value={seed}
-                    onChange={setSeed}
-                    min={0}
-                    max={100}
-                    disabled={randomSeed}
-                    className={styles.seedSlider}
-                  />
-                  <div className={styles.randomSeedToggle}>
-                    <Switch
-                      checked={randomSeed}
-                      onChange={setRandomSeed}
-                      size="small"
-                    />
-                    <Text>Random seed</Text>
-                  </div>
-                </div>
-              </div>
-
               <div className={styles.runButtonContainer}>
                 <Button
                   type="primary"
-                  onClick={submitTryOn}
+                  onClick={() => submitTryOn()}
                   className={styles.runButton}
                   disabled={!personImage || !garmentImage}
                 >
