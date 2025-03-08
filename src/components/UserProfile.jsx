@@ -23,7 +23,7 @@ import {
 import { EditOutlined, UserOutlined, InboxOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
 import { viewProfile, updateProfile } from "@/apiServices/users/page";
-
+import { useNotification } from "@/apiServices/NotificationService";
 const { Title, Text } = Typography
 
 export default function UserProfile({ orders = [] }) {
@@ -31,71 +31,66 @@ export default function UserProfile({ orders = [] }) {
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [form] = Form.useForm()
+  const notify = useNotification();
 
-  console.log(orders);
-
-  // Fetch user profile from API
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const data = await viewProfile();
-        // const data = await response.json()
-        console.log(data);
-        setUser(data)
-        form.setFieldsValue({
-          name: data.name,
-          phone: data.phone,
-          address: data.address,
-          gender: data.gender,
-          weight: data.weight,
-          height: data.height,
-          shirt_size: data.shirt_size,
-          pant_size: data.pant_size,
-          // Nếu có dob trong API thì thêm vào đây
-          // dob: data.dob ? dayjs(data.dob) : null,
-        })
+        setUser(data);
+  
+        if (data) {
+          form.setFieldsValue({
+            name: data.name,
+            phone: data.phone,
+            address: data.address,
+            gender: data.gender,
+            weight: data.weight,
+            height: data.height,
+            shirt_size: data.shirt_size,
+            pant_size: data.pant_size,
+            dob: data.dob ? dayjs(data.dob) : null,
+          });
+        }
       } catch (error) {
-        console.error("Failed to load profile data")
+        console.error("Failed to load profile data", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchUserProfile()
-  }, [form])
+    };
+    fetchUserProfile();
+  }, [form]);
+  
 
   const handleSubmit = async (values) => {
     setIsLoading(true)
-    try {
-      const formattedData = {
-        name: values.name,
-        address: values.address,
-        phone: values.phone,
-        email: user.email,
-        weight: values.weight,
-        height: values.height,
-        shirt_size: values.shirt_size,
-        gender: values.gender,
-        pant_size: values.pant_size,
-        role: user.role,
-        avatar: user.avatar,
-      }
-
-      const response = await updateProfile(user.id, formattedData);
-
-      if (!response.ok) {
-        throw new Error("Failed to update user information")
-      }
-
-      const updatedData = await response.json()
-      setUser(updatedData)
-      message.success("Your profile has been updated successfully.")
-      setIsEditing(false)
-    } catch (error) {
-      message.error("Failed to update profile. Please try again.")
-    } finally {
-      setIsLoading(false)
+    const formattedData = {
+      name: values.name,
+      address: values.address,
+      phone: values.phone,
+      email: user?.email || "",
+      weight: values.weight,
+      height: values.height,
+      shirt_size: values.shirt_size,
+      gender: values.gender,
+      pant_size: values.pant_size,
+      role: user.role,
+      avatar: user.avatar,
     }
+
+    const updatedData = await updateProfile(user.id, formattedData);
+
+    if (!updatedData) {
+      notify("Failed to update profile.", "Please try again.", "topRight", "error");
+      return;
+    }
+
+    setUser(formattedData);
+    setIsEditing(false);
+    setIsLoading(false);
+    notify("Your profile has been updated successfully.", "successfully", "topRight");
+    return;
   }
 
   const handleCancel = () => {
@@ -109,7 +104,7 @@ export default function UserProfile({ orders = [] }) {
       shirt_size: user.shirt_size,
       pant_size: user.pant_size,
     })
-    setIsEditing(false)
+    setIsEditing(false);
   }
 
   // Define table columns
@@ -130,9 +125,8 @@ export default function UserProfile({ orders = [] }) {
       title: "Items",
       dataIndex: "items",
       key: "items",
-      render: (items) => `${items.map(
-        (item) => `${item.product_name} x ${item.quantity} ${item.quantity == 1 ? "item" : "items"}`,
-      )}`,
+      render: (items) =>
+        items.map((item) => `${item.product_name} x ${item.quantity} ${item.quantity === 1 ? "item" : "items"}`).join(", "),
     },
     {
       title: "Total amount",
