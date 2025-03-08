@@ -166,7 +166,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {selectedTab === "Profile" && user && <UserProfile user={user} orders={orders} />}
+          {selectedTab === "Profile" && user && <UserProfile orders={orders} />}
         </div>
       </div>
     </div>
