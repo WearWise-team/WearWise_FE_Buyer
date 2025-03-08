@@ -118,11 +118,13 @@ export default function Header() {
       </Link>
 
       <nav className="flex items-center space-x-6 text-lg">
-        <NavLink href="/" label="Home" activePath={isActive("/")} />
-        <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
-        <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
-        <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
-      </nav>
+          <NavLink href="/" label="Home" activePath={isActive("/")} />
+          <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
+          <NavLink href="/tryOnK" label="Try On with Kling AI" activePath={isActive("/tryOnK")} />
+          <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
+          <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
+        </nav>
+
       
       <div className="flex items-center space-x-4 text-xl">
         <div 
