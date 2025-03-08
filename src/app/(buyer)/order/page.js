@@ -49,9 +49,39 @@ export default function Page() {
       if (!totalAmount || isNaN(totalAmount)) {
         notify(
           "Create Order",
-          "Please back to your cart and try again!",
+          "Please go back to your cart and try again!",
           "topRight",
           "warning"
+        );
+        return;
+      }
+
+      if (!user?.phone) {
+        notify(
+          "Missing Information",
+          "Please enter your phone number before confirming your order.",
+          "topRight",
+          "error"
+        );
+        return;
+      }
+
+      if (!user?.address) {
+        notify(
+          "Missing Information",
+          "Please enter your address before confirming your order.",
+          "topRight",
+          "error"
+        );
+        return;
+      }
+
+      if (!user?.email) {
+        notify(
+          "Missing Information",
+          "Please enter your email before confirming your order.",
+          "topRight",
+          "error"
         );
         return;
       }
@@ -75,7 +105,7 @@ export default function Page() {
 
       notify(
         "Create Order",
-        "Your order has been create.",
+        "Your order has been created successfully.",
         "topRight",
         "success"
       );
