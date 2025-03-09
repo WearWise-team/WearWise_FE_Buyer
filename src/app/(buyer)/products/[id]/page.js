@@ -4,6 +4,8 @@ import { useState, use, useEffect } from "react";
 import { RiCheckboxCircleLine } from "react-icons/ri";
 import { FaSlidersH, FaChevronDown } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
+import { HeartOutlined, HeartFilled } from "@ant-design/icons";
+import axios from "axios";
 import { Rate } from "antd";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +27,7 @@ export default function DetailProduct({ params }) {
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
   const [cart, setCart] = useState([]);
   const notify = useNotification();
+  const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
 
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -61,12 +64,12 @@ export default function DetailProduct({ params }) {
     console.log("User rated:", value);
   };
 
-  const handleSubmitReview = () => {
-    console.log("Review Submitted:", { rating, reviewText });
-    setShowReviewForm(false);
-    setReviewText("");
-    setRating(0);
-  };
+  // const handleSubmitReview = () => {
+  //   console.log("Review Submitted:", { rating, reviewText });
+  //   setShowReviewForm(false);
+  //   setReviewText("");
+  //   setRating(0);
+  // };
 
   const handleAddToCart = (
     productId,
@@ -130,6 +133,45 @@ export default function DetailProduct({ params }) {
       .catch((error) => console.error("Add to cart error:", error));
   };
 
+  const toggleFavorite = async () => {
+    try {
+      const token = localStorage.getItem("accessToken"); // Lấy token từ localStorage (hoặc cookies)
+      if (!token) {
+        console.error("User not authenticated");
+        return;
+      }
+  
+      const headers = {
+        Authorization: `Bearer ${token}`, // Gửi token để xác thực
+        "Content-Type": "application/json",
+      };
+  
+      if (!isFavorite) {
+        await axios.post(
+          "http://127.0.0.1:8000/api/wishlists",
+          { product_id: id },
+          { headers }
+        );
+        notify(
+          "Product Added wishlist Successfully",
+          "Your product has been added to the wishlist.",
+          "topRight"
+        )
+      } else {
+        await axios.delete(`http://127.0.0.1:8000/api/wishlists/${id}`, { headers });
+        notify(
+          "Product deleted wishlist Successfully",
+          "Your product has been added to the wishlist.",
+          "topRight"
+        )
+      }
+  
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    }
+  };
+  
   const percentageOf = (value, percentage) => (value * percentage) / 100;
 
   if (isLoading) {
@@ -196,6 +238,9 @@ export default function DetailProduct({ params }) {
                 <span className="ml-2 text-gray-600">
                   {rating ? rating.toFixed(0) : 0}/5
                 </span>
+                <button onClick={toggleFavorite} className="ml-2 text-red-500">
+                  {isFavorite ? <HeartFilled /> : <HeartOutlined />}
+                </button>
               </div>
 
               <div className="flex items-center mb-4">
