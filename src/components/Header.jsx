@@ -168,8 +168,8 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {/* Wishlist với Badge */}
               <div className="relative">
-                <Link href="/wishlist" className="text-black hover:text-gray-600">
-                  <HeartOutlined className="text-2xl" />
+                <Link href="/profile?tab=wishlist" className="text-black hover:text-gray-600"> 
+                  <HeartOutlined className="text-2xl" /> 
                 </Link>
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center">

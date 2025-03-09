@@ -4,10 +4,12 @@ import { useEffect, useState, useCallback } from "react"
 import { Menu } from "antd"
 import { UserOutlined, ShoppingOutlined, HeartOutlined } from "@ant-design/icons"
 import { getUserOrders } from "@/apiServices/orders/page"
+import { getUserWishlists, removeWishlistItem } from "@/apiServices/wishlists/page"
 import { useNotification } from "@/apiServices/NotificationService"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import OrdersList from "@/components/OrdersList"
 import UserProfile from "@/components/UserProfile"
+import WishlistItems from "@/components/WishlistItem"
 
 function explode(delimiter, string, limit) {
   //  discuss at: https://locutus.io/php/explode/
@@ -43,9 +45,14 @@ function explode(delimiter, string, limit) {
 }
 
 export default function ProfilePage() {
-  const [selectedTab, setSelectedTab] = useState("orders")
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+
+  const [selectedTab, setSelectedTab] = useState(tabParam || "orders")
   const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [wishlistItems, setWishlistItems] = useState([])
+  const [loadingOrders, setLoadingOrders] = useState(false)
+  const [loadingWishlist, setLoadingWishlist] = useState(false)
   const [userId, setUserId] = useState(null)
   const [user, setUser] = useState(null)
   const notify = useNotification()
@@ -65,11 +72,26 @@ export default function ProfilePage() {
     }
   }, [])
 
-  // Memoized fetch function
+  // Update URL when tab changes
+  useEffect(() => {
+    if (selectedTab) {
+      // Update URL without refreshing the page
+      window.history.pushState({}, "", `/profile?tab=${selectedTab}`)
+    }
+  }, [selectedTab])
+
+  // Set initial tab from URL parameter
+  useEffect(() => {
+    if (tabParam) {
+      setSelectedTab(tabParam)
+    }
+  }, [tabParam])
+
+  // Memoized fetch function for orders
   const fetchOrders = useCallback(async () => {
     if (!userId || selectedTab !== "orders") return
 
-    setLoading(true)
+    setLoadingOrders(true)
     try {
       const data = await getUserOrders(userId)
       // Only update if data has actually changed
@@ -80,17 +102,51 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error fetching orders:", error)
     } finally {
-      setLoading(false)
+      setLoadingOrders(false)
     }
   }, [userId, selectedTab])
 
-  // Fetch orders when dependencies change
+  // Memoized fetch function for wishlists
+  const fetchWishlists = useCallback(async () => {
+    if (!userId || selectedTab !== "wishlist") return
+
+    setLoadingWishlist(true)
+    try {
+      const data = await getUserWishlists(userId)
+      // Only update if data has actually changed
+      setWishlistItems((prevItems) => {
+        const isDifferent = JSON.stringify(data) !== JSON.stringify(prevItems)
+        return isDifferent ? data : prevItems
+      })
+    } catch (error) {
+      console.error("Error fetching wishlists:", error)
+    } finally {
+      setLoadingWishlist(false)
+    }
+  }, [userId, selectedTab])
+
+  // Fetch data when dependencies change
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
 
+  useEffect(() => {
+    fetchWishlists()
+  }, [fetchWishlists])
+
   const handleTabChange = (e) => {
     setSelectedTab(e.key)
+  }
+
+  // Handle removing wishlist item
+  const handleRemoveWishlistItem = async (itemId) => {
+    try {
+      await removeWishlistItem(itemId)
+      return true
+    } catch (error) {
+      console.error("Error removing wishlist item:", error)
+      throw error
+    }
   }
 
   useEffect(() => {
@@ -98,7 +154,7 @@ export default function ProfilePage() {
       if (!router.isReady) return
 
       const query = router.query
-      const resultCode = query.resultCode
+      const resultCode = query?.resultCode
 
       if (resultCode !== undefined) {
         if (resultCode === "0") {
@@ -148,7 +204,7 @@ export default function ProfilePage() {
                 label: "My Wishlists",
               },
               {
-                key: "Profile",
+                key: "profile",
                 icon: <UserOutlined />,
                 label: "My Profile",
               },
@@ -157,16 +213,19 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-6">
-          {selectedTab === "orders" && <OrdersList orders={orders} loading={loading} notify={notify} />}
+          {selectedTab === "orders" && <OrdersList orders={orders} loading={loadingOrders} notify={notify} />}
 
           {selectedTab === "wishlist" && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <HeartOutlined className="text-4xl text-gray-400 mb-4" />
-              <p className="text-gray-500">No wishlisted items found.</p>
-            </div>
+            <WishlistItems
+              wishlistItems={wishlistItems}
+              loading={loadingWishlist}
+              notify={notify}
+              onRemoveItem={handleRemoveWishlistItem}
+              onRefresh={fetchWishlists}
+            />
           )}
 
-          {selectedTab === "Profile" && user && <UserProfile user={user} orders={orders} />}
+          {selectedTab === "profile" && user && <UserProfile user={user} orders={orders} />}
         </div>
       </div>
     </div>
