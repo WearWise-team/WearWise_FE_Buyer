@@ -22,6 +22,7 @@ export default function Header() {
   const [isListening, setIsListening] = useState(false);
   const notify = useNotification();
 
+
   const startListening = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
@@ -69,6 +70,7 @@ export default function Header() {
       if (response.ok) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
+        notify("Logout", "Logout Successful.", "topRight", "success");
         setIsLoggedIn(false);
         window.location.href = "/";
       } else {
