@@ -4,16 +4,14 @@ import { useEffect, useState, useCallback } from "react"
 import { Menu } from "antd"
 import { UserOutlined, ShoppingOutlined, HeartOutlined } from "@ant-design/icons"
 import { getUserOrders } from "@/apiServices/orders/page"
+import { getUserWishlists, removeWishlistItem } from "@/apiServices/wishlists/page"
 import { useNotification } from "@/apiServices/NotificationService"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import OrdersList from "@/components/OrdersList"
 import UserProfile from "@/components/UserProfile"
+import WishlistItems from "@/components/WishlistItem"
 
 function explode(delimiter, string, limit) {
-  //  discuss at: https://locutus.io/php/explode/
-  // original by: Kevin van Zonneveld (https://kvz.io)
-  //   example 1: explode(' ', 'Kevin van Zonneveld')
-  //   returns 1: [ 'Kevin', 'van', 'Zonneveld' ]
   if (arguments.length < 2 || typeof delimiter === "undefined" || typeof string === "undefined") {
     return null
   }
@@ -43,15 +41,19 @@ function explode(delimiter, string, limit) {
 }
 
 export default function ProfilePage() {
-  const [selectedTab, setSelectedTab] = useState("orders")
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+
+  const [selectedTab, setSelectedTab] = useState(tabParam || "orders")
   const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [wishlistItems, setWishlistItems] = useState([])
+  const [loadingOrders, setLoadingOrders] = useState(false)
+  const [loadingWishlist, setLoadingWishlist] = useState(false)
   const [userId, setUserId] = useState(null)
   const [user, setUser] = useState(null)
   const notify = useNotification()
   const router = useRouter()
 
-  // Fetch userId from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -65,11 +67,26 @@ export default function ProfilePage() {
     }
   }, [])
 
-  // Memoized fetch function
+    useEffect(() => {
+      const resultCode = searchParams.get("resultCode")
+      if (resultCode && resultCode !== "0") {
+        router.push("/cart") 
+      } else if (resultCode === "0") {
+        // Payment success
+        notify("success", "Payment successful!") 
+      }
+    }, [searchParams, router, notify])
+
+  useEffect(() => {
+    if (tabParam) {
+      setSelectedTab(tabParam)
+    }
+  }, [tabParam])
+
   const fetchOrders = useCallback(async () => {
     if (!userId || selectedTab !== "orders") return
 
-    setLoading(true)
+    setLoadingOrders(true)
     try {
       const data = await getUserOrders(userId)
       // Only update if data has actually changed
@@ -80,56 +97,49 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error fetching orders:", error)
     } finally {
-      setLoading(false)
+      setLoadingOrders(false)
     }
   }, [userId, selectedTab])
 
-  // Fetch orders when dependencies change
+  const fetchWishlists = useCallback(async () => {
+    if (!userId || selectedTab !== "wishlist") return
+
+    setLoadingWishlist(true)
+    try {
+      const data = await getUserWishlists(userId)
+      // Only update if data has actually changed
+      setWishlistItems((prevItems) => {
+        const isDifferent = JSON.stringify(data) !== JSON.stringify(prevItems)
+        return isDifferent ? data : prevItems
+      })
+    } catch (error) {
+      console.error("Error fetching wishlists:", error)
+    } finally {
+      setLoadingWishlist(false)
+    }
+  }, [userId, selectedTab])
+
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
+
+  useEffect(() => {
+    fetchWishlists()
+  }, [fetchWishlists])
 
   const handleTabChange = (e) => {
     setSelectedTab(e.key)
   }
 
-  useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (!router.isReady) return
-
-      const query = router.query
-      const resultCode = query.resultCode
-
-      if (resultCode !== undefined) {
-        if (resultCode === "0") {
-          try {
-            const response = await fetch("http://127.0.0.1:8000/api/orders", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                status: "completed",
-                userId: userId,
-                orderId: `${explode(":", query.orderId)[0]}`,
-              }),
-            })
-
-            if (response.ok) {
-              notify("Payment Successful", "Your order has been completed.", "topRight", "success")
-            } else {
-              notify("Update Failed", "Could not update order status.", "topRight", "error")
-            }
-          } catch (error) {
-            notify("Error", "Something went wrong.", "topRight", "error")
-          }
-        } else {
-          notify("Payment Failed", "Your payment was not successful.", "topRight", "error")
-        }
-        router.replace("/profile", undefined, { shallow: true })
-      }
+  const handleRemoveWishlistItem = async (itemId) => {
+    try {
+      await removeWishlistItem(itemId)
+      return true
+    } catch (error) {
+      console.error("Error removing wishlist item:", error)
+      throw error
     }
-
-    checkPaymentStatus()
-  }, [router.query, router, router.isReady, notify, userId])
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -148,7 +158,7 @@ export default function ProfilePage() {
                 label: "My Wishlists",
               },
               {
-                key: "Profile",
+                key: "profile",
                 icon: <UserOutlined />,
                 label: "My Profile",
               },
@@ -157,16 +167,19 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-6">
-          {selectedTab === "orders" && <OrdersList orders={orders} loading={loading} notify={notify} />}
+          {selectedTab === "orders" && <OrdersList orders={orders} loading={loadingOrders} notify={notify} />}
 
           {selectedTab === "wishlist" && (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <HeartOutlined className="text-4xl text-gray-400 mb-4" />
-              <p className="text-gray-500">No wishlisted items found.</p>
-            </div>
+            <WishlistItems
+              wishlistItems={wishlistItems}
+              loading={loadingWishlist}
+              notify={notify}
+              onRemoveItem={handleRemoveWishlistItem}
+              onRefresh={fetchWishlists}
+            />
           )}
 
-          {selectedTab === "Profile" && user && <UserProfile orders={orders} />}
+          {selectedTab === "profile" && user && <UserProfile user={user} orders={orders} />}
         </div>
       </div>
     </div>
