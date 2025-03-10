@@ -22,6 +22,7 @@ export default function Header() {
   const [isListening, setIsListening] = useState(false);
   const notify = useNotification();
 
+
   const startListening = () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-US";
@@ -69,6 +70,7 @@ export default function Header() {
       if (response.ok) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
+        notify("Logout", "Logout Successful.", "topRight", "success");
         setIsLoggedIn(false);
         window.location.href = "/";
       } else {
@@ -118,50 +120,37 @@ export default function Header() {
       </Link>
 
       <nav className="flex items-center space-x-6 text-lg">
-          <NavLink href="/" label="Home" activePath={isActive("/")} />
-          <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
-          <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
-          <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
-        </nav>
-
+        <NavLink href="/" label="Home" activePath={isActive("/")} />
+        <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
+        <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
+        <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
+        <div className="nav-link-container">
+          <NavLink href="/tryOnK" label="Try On" activePath={isActive("/tryOnK")} />
+          <span className="new-badge">New</span>
+        </div>
+      </nav>
       
-      <div className="flex items-center space-x-4 text-xl relative">
-        {!isSearchVisible && (
-          <SearchOutlined 
-            className="text-black hover:text-gray-600 cursor-pointer" 
-            onClick={() => setIsSearchVisible(true)} 
+      <div className="flex items-center space-x-4 text-xl">
+        <div 
+          className="relative"
+        >
+          <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <form onSubmit={handleSearch}>
+            <input
+              className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              type="text"
+              placeholder="Find my products"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </form>
+          <FaMicrophone 
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer ${isListening ? "text-green-600" : "text-pink-500"}`} 
+            onClick={startListening} 
           />
-        )}
-        
-        {/* Hiệu ứng trượt vào/trượt ra */}
-        <AnimatePresence>
-          {isSearchVisible && (
-            <motion.div 
-              initial={{ x: 50, opacity: 0, visibility: "hidden" }}
-              animate={{ x: 0, opacity: 1, visibility: "visible" }}
-              exit={{ x: 50, opacity: 0, visibility: "hidden", transition: { duration: 0.3 } }}
-              transition={{ duration: 0.3 }}
-              className="relative w-full max-w-md mx-auto"
-            >
-              <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-              <form onSubmit={handleSearch}>
-                <input
-                  className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  type="text"
-                  placeholder="Find my products"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                />
-              </form>
-              <FaMicrophone 
-                className={`absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer ${isListening ? "text-red-600" : "text-pink-500"}`} 
-                onClick={startListening} 
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
         
         {/* User (Avatar + Dropdown) */}
         {isLoggedIn ? (
@@ -204,7 +193,7 @@ export default function Header() {
                 </button>
 
                 {showMenu && (
-                  <div className="absolute left-10 top-8 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
+                  <div className="absolute right-5 top-14 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-10">
                     <Link
                       href="/profile"
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
