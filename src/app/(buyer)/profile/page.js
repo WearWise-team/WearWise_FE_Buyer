@@ -71,14 +71,26 @@ export default function ProfilePage() {
       }
     }
   }, [])
-
-  // Update URL when tab changes
-  useEffect(() => {
-    if (selectedTab) {
-      // Update URL without refreshing the page
-      window.history.pushState({}, "", `/profile?tab=${selectedTab}`)
-    }
-  }, [selectedTab])
+    // Check for MoMo payment status on mount
+    useEffect(() => {
+      const resultCode = searchParams.get("resultCode")
+      if (resultCode && resultCode !== "0") {
+        // Payment failed
+        // notify("error", "Payment failed. Please try again.") // Show notification
+        router.push("/cart") // Redirect to cart page
+      } else if (resultCode === "0") {
+        // Payment success
+        notify("success", "Payment successful!") // Show success notification
+      }
+    }, [searchParams, router, notify])
+  
+  // // Update URL when tab changes
+  // useEffect(() => {
+  //   if (selectedTab) {
+  //     // Update URL without refreshing the page
+  //     // window.history.pushState({}, "", `/profile?tab=${selectedTab}`)
+  //   }
+  // }, [selectedTab])
 
   // Set initial tab from URL parameter
   useEffect(() => {
@@ -148,44 +160,6 @@ export default function ProfilePage() {
       throw error
     }
   }
-
-  useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (!router.isReady) return
-
-      const query = router.query
-      const resultCode = query?.resultCode
-
-      if (resultCode !== undefined) {
-        if (resultCode === "0") {
-          try {
-            const response = await fetch("http://127.0.0.1:8000/api/orders", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                status: "completed",
-                userId: userId,
-                orderId: `${explode(":", query.orderId)[0]}`,
-              }),
-            })
-
-            if (response.ok) {
-              notify("Payment Successful", "Your order has been completed.", "topRight", "success")
-            } else {
-              notify("Update Failed", "Could not update order status.", "topRight", "error")
-            }
-          } catch (error) {
-            notify("Error", "Something went wrong.", "topRight", "error")
-          }
-        } else {
-          notify("Payment Failed", "Your payment was not successful.", "topRight", "error")
-        }
-        router.replace("/profile", undefined, { shallow: true })
-      }
-    }
-
-    checkPaymentStatus()
-  }, [router.query, router, router.isReady, notify, userId])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

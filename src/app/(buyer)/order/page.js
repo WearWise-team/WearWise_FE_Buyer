@@ -107,7 +107,6 @@ export default function Page() {
             tempOrderId,
           }),
         )
-
         // Redirect to Momo payment page
         window.location.href = data.payUrl
         return true
@@ -142,7 +141,7 @@ export default function Page() {
       localStorage.removeItem("total")
 
       // Redirect to profile page
-      // router.push("/profile")
+      router.push("/profile")
       return true
     } catch (error) {
       console.error("Failed to create order:", error)
