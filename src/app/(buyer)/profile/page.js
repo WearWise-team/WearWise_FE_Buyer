@@ -12,10 +12,6 @@ import UserProfile from "@/components/UserProfile"
 import WishlistItems from "@/components/WishlistItem"
 
 function explode(delimiter, string, limit) {
-  //  discuss at: https://locutus.io/php/explode/
-  // original by: Kevin van Zonneveld (https://kvz.io)
-  //   example 1: explode(' ', 'Kevin van Zonneveld')
-  //   returns 1: [ 'Kevin', 'van', 'Zonneveld' ]
   if (arguments.length < 2 || typeof delimiter === "undefined" || typeof string === "undefined") {
     return null
   }
@@ -58,7 +54,6 @@ export default function ProfilePage() {
   const notify = useNotification()
   const router = useRouter()
 
-  // Fetch userId from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -71,35 +66,23 @@ export default function ProfilePage() {
       }
     }
   }, [])
-    // Check for MoMo payment status on mount
+
     useEffect(() => {
       const resultCode = searchParams.get("resultCode")
       if (resultCode && resultCode !== "0") {
-        // Payment failed
-        // notify("error", "Payment failed. Please try again.") // Show notification
-        router.push("/cart") // Redirect to cart page
+        router.push("/cart") 
       } else if (resultCode === "0") {
         // Payment success
-        notify("success", "Payment successful!") // Show success notification
+        notify("success", "Payment successful!") 
       }
     }, [searchParams, router, notify])
-  
-  // // Update URL when tab changes
-  // useEffect(() => {
-  //   if (selectedTab) {
-  //     // Update URL without refreshing the page
-  //     // window.history.pushState({}, "", `/profile?tab=${selectedTab}`)
-  //   }
-  // }, [selectedTab])
 
-  // Set initial tab from URL parameter
   useEffect(() => {
     if (tabParam) {
       setSelectedTab(tabParam)
     }
   }, [tabParam])
 
-  // Memoized fetch function for orders
   const fetchOrders = useCallback(async () => {
     if (!userId || selectedTab !== "orders") return
 
@@ -118,7 +101,6 @@ export default function ProfilePage() {
     }
   }, [userId, selectedTab])
 
-  // Memoized fetch function for wishlists
   const fetchWishlists = useCallback(async () => {
     if (!userId || selectedTab !== "wishlist") return
 
@@ -137,7 +119,6 @@ export default function ProfilePage() {
     }
   }, [userId, selectedTab])
 
-  // Fetch data when dependencies change
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
@@ -150,7 +131,6 @@ export default function ProfilePage() {
     setSelectedTab(e.key)
   }
 
-  // Handle removing wishlist item
   const handleRemoveWishlistItem = async (itemId) => {
     try {
       await removeWishlistItem(itemId)

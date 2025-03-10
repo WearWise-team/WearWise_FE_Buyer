@@ -57,7 +57,7 @@ export default function Page() {
 
     if (!user?.email) {
       notify("Missing Information", "Please enter your email before confirming your order.", "topRight", "error")
-      return false // Fixed typo: was "return falseA"
+      return false
     }
 
     return true
@@ -185,35 +185,25 @@ export default function Page() {
 
   // Check for payment status on component mount
   useEffect(() => {
-    // This would typically be handled by a callback URL from Momo
-    // For this example, we'll check URL parameters
+
     const checkPaymentStatus = async () => {
       // Get URL parameters
       const urlParams = new URLSearchParams(window.location.search)
       const resultCode = urlParams.get("resultCode")
-      // If we have payment result parameters
       if (resultCode) {
-        // Get pending order data from localStorage
         const pendingOrderData = localStorage.getItem("pendingOrderData")
 
         if (pendingOrderData) {
           const orderData = JSON.parse(pendingOrderData)
-
-          // If payment was successful (resultCode === "0")
           if (resultCode === "0") {
             try {
-              // Payment failed
             notify(
               "Payment Failed",
               "Your payment was not successful. Please try again or choose a different payment method.",
               "topRight",
               "error",
             )
-
-            // Clear the pending order data
             localStorage.removeItem("pendingOrderData")
-
-            // Redirect back to the cart page
             router.push("/cart")
            
               
