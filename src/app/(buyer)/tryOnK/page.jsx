@@ -348,7 +348,7 @@ export default function Home() {
             className={styles.card}
             title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
           >
-            <div className={styles.resultContainer}>
+            <div className={styles.uploader}>
               {isLoading ? (
                 <div className={styles.loadingContainer}>
                   <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
