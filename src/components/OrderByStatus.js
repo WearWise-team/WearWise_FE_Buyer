@@ -94,7 +94,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
               <div className={`flex items-center gap-6 ${index > 0 ? "pt-4 border-t" : ""}`}>
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <Image
-                    src={item.image || "/placeholder.svg"}
+                    src={item.main_image || "/placeholder.svg"}
                     alt={item.product_name}
                     fill
                     className="object-cover rounded-md"

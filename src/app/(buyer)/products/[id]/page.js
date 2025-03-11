@@ -246,23 +246,23 @@ export default function DetailProduct({ params }) {
 
               <div className="flex items-center mb-4">
                 <span className="text-3xl font-bold">
-                  ${product ? product.price : 0}
+                  <span className="text-xl text-red-500">đ</span>{product ? parseFloat(product.price).toFixed(3) : 0}
                 </span>
                 {product && product.discounts.length > 0 ? (
                   <div className="ml-2">
                     {product.discounts.map((discount) => {
                       // Tính giá sau giảm giá
-                      const discountedPrice = percentageOf(
+                      const discountedPrice = parseFloat(percentageOf(
                         product.price,
                         discount.percentage
-                      );
+                      ).toFixed(3));
                       return (
                         <p key={discount.id} className="flex items-center">
                           <span className="text-gray-500">
                             {discount.code} -
                           </span>
                           <span className="text-gray-500 ml-2 line-through">
-                            ${discountedPrice.toFixed(2)}
+                            {discountedPrice.toFixed(2)} đ
                           </span>
                           <span className="text-red-500 ml-2">
                             {discount.percentage}%
@@ -430,55 +430,7 @@ export default function DetailProduct({ params }) {
                           {product && product.reviews.length}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2 w-1/3 justify-evenly">
-                        <button className="flex items-center justify-evenly w-10 h-10 rounded-full bg-gray-200">
-                          <FaSlidersH />
-                        </button>
-                        <button className="flex items-center justify-center px-4 py-2 rounded-full bg-gray-200">
-                          Latest <FaChevronDown className="ml-2" />
-                        </button>
-                        <button
-                          className="flex items-center justify-center px-4 py-2 rounded-full bg-black text-white"
-                          onClick={() => setShowReviewForm(true)}
-                        >
-                          Write a Review
-                        </button>
-                      </div>
                     </div>
-                    {/* Show form */}
-                    {showReviewForm && (
-                      <div className="p-4 border rounded-lg shadow-lg bg-gray-100 mt-4">
-                        <h2 className="text-lg font-semibold mb-2">
-                          Write a Review
-                        </h2>
-                        <Rate
-                          allowHalf
-                          defaultValue={rating}
-                          onChange={handleChange}
-                        />
-                        <textarea
-                          className="w-full p-2 mt-2 border rounded-lg"
-                          rows="4"
-                          placeholder="Share your thoughts..."
-                          value={reviewText}
-                          onChange={(e) => setReviewText(e.target.value)}
-                        ></textarea>
-                        <div className="flex justify-end space-x-2 mt-2">
-                          <button
-                            className="px-4 py-2 bg-gray-300 rounded-lg"
-                            onClick={() => setShowReviewForm(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            className="px-4 py-2 bg-black text-white rounded-lg"
-                            onClick={handleSubmitReview}
-                          >
-                            Submit
-                          </button>
-                        </div>
-                      </div>
-                    )}
                     <div className="flex flex-wrap gap-8">
                       {product.reviews.length > 0 &&
                         product.reviews.map((review, index) => (

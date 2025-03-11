@@ -27,15 +27,15 @@ export default function Card({ product, rating }) {
           <div className="flex items-center text-yellow-500">
             <Rate value={rating} disabled />
           </div>
-          <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
+          <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}/5</span>
         </div>
 
         {/* Hiển thị giá */}
         <div className="flex items-center">
-          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>${discountedPrice}</span>
+          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>{parseFloat(discountedPrice).toFixed(3)}đ</span>
           {discount && (
             <>
-              <span className="text-sm text-gray-500 line-through ml-2">${price}</span>
+              <span className="text-sm text-gray-500 line-through ml-2">{price}đ</span>
               <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
                 -{Math.floor(discount.pivot.percentage)}%
               </span>
