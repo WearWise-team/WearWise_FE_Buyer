@@ -29,7 +29,7 @@ export default function DetailProduct({ params }) {
   const notify = useNotification();
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
@@ -63,13 +63,6 @@ export default function DetailProduct({ params }) {
     setRating(value);
     console.log("User rated:", value);
   };
-
-  // const handleSubmitReview = () => {
-  //   console.log("Review Submitted:", { rating, reviewText });
-  //   setShowReviewForm(false);
-  //   setReviewText("");
-  //   setRating(0);
-  // };
 
   const handleAddToCart = (
     productId,
@@ -135,20 +128,20 @@ export default function DetailProduct({ params }) {
 
   const toggleFavorite = async () => {
     try {
-      const token = localStorage.getItem("accessToken"); // Lấy token từ localStorage (hoặc cookies)
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         console.error("User not authenticated");
         return;
       }
   
       const headers = {
-        Authorization: `Bearer ${token}`, // Gửi token để xác thực
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
   
       if (!isFavorite) {
         await axios.post(
-          "http://127.0.0.1:8000/api/wishlists",
+          `${API_BASE_URL}/api/wishlists`,
           { product_id: id },
           { headers }
         );
@@ -158,7 +151,7 @@ export default function DetailProduct({ params }) {
           "topRight"
         )
       } else {
-        await axios.delete(`http://127.0.0.1:8000/api/wishlists/${id}`, { headers });
+        await axios.delete(`${API_BASE_URL}/api/wishlists/${id}`, { headers });
         notify(
           "Product deleted wishlist Successfully",
           "Your product has been added to the wishlist.",
@@ -199,7 +192,11 @@ export default function DetailProduct({ params }) {
               <div className="flex flex-col items-center justify-evenly h-full mb-4">
                 {(product?.images && product.images.length > 0
                   ? product.images
-                  : [product?.image, product?.image, product?.image]
+                  : [
+                      product?.main_image,
+                      product?.main_image,
+                      product?.main_image,
+                    ]
                 ).map((value, index) =>
                   value ? (
                     <Image
@@ -219,7 +216,11 @@ export default function DetailProduct({ params }) {
                   alt="Main product image"
                   className="w-full rounded-lg"
                   height="800"
-                  src={product ? product.image : "https://placehold.co/100x100"}
+                  src={
+                    product
+                      ? product.main_image
+                      : "https://placehold.co/100x100"
+                  }
                   width="600"
                 />
               </div>
@@ -312,7 +313,7 @@ export default function DetailProduct({ params }) {
                           : "bg-white text-gray-800"
                       } transition-all duration-300 hover:shadow-md`}
                     >
-                      {size.shirt_size + "-" + size.target_audience}
+                      {size.name}
                     </button>
                   ))}
                 </div>
@@ -385,8 +386,8 @@ export default function DetailProduct({ params }) {
                               className="w-20 h-20 rounded-full"
                               height="100"
                               src={
-                                product
-                                  ? product.supplier.avatar
+                                product?.supplier?.avatar
+                                  ? product?.supplier?.avatar
                                   : "https://placehold.co/100x100"
                               }
                               width="100"

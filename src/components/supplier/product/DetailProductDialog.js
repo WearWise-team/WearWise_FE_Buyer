@@ -4,9 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -25,12 +22,13 @@ export default function DetailProductDialog({
   useEffect(() => {
     setDetailProduct(product);
   }, [product]);
+console.log(detailProduct);
 
   if (!product) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg p-6 bg-white text-gray-800 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-xl w-full h-auto max-h-[90vh] overflow-y-auto p-6 bg-white text-gray-800 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-xl">Detail Product</DialogTitle>
         </DialogHeader>
@@ -73,11 +71,7 @@ export default function DetailProductDialog({
               <Input
                 id="detail-size"
                 value={[
-                  ...new Set(
-                    detailProduct?.sizes?.map(
-                      (size) => size?.shirt_size || size?.pant_size
-                    )
-                  ),
+                  ...new Set(detailProduct?.sizes?.map((size) => size?.name)),
                 ].join(", ")}
                 disabled
               />
@@ -101,6 +95,14 @@ export default function DetailProductDialog({
               disabled
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="detail-image">Image</Label>
+          <img
+            src={detailProduct?.main_image}
+            alt={detailProduct?.name}
+            className="max-h-48 object-contain rounded-lg shadow-md"
+          />
         </div>
         <DialogFooter className="flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose}>

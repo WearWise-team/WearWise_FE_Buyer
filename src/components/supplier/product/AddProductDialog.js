@@ -1,15 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Dialog,
   DialogContent,
@@ -18,45 +12,175 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getSizes } from "@/apiServices/size/page";
+import { getColors } from "@/apiServices/colors/page";
+import { X } from "lucide-react";
+import { getSupplierByUserID } from "@/apiServices/suppliers/page";
+import { useNotification } from "@/apiServices/NotificationService";
 
 export default function AddProductDialog({ isOpen, onClose, onAdd }) {
-  const [newProduct, setNewProduct] = useState({
+  const [formData, setFormData] = useState({
     name: "",
-    category: "",
-    price: "",
-    stock: "",
-    size: "",
-    color: "",
-    status: "in-stock",
     description: "",
+    category: "",
+    price: 0,
+    quantity: 1,
+    supplier_id: "",
+    images: [],
+    main_image: "",
+    colors: [],
+    sizes: [],
   });
 
-  const handleAddProduct = () => {
-    const productToAdd = {
-      ...newProduct,
-      id: Date.now().toString(),
-      price: Number.parseFloat(newProduct.price),
-      stock: Number.parseInt(newProduct.stock),
-      createdAt: new Date().toISOString(),
+  const [sizes, setSizes] = useState([]);
+  const [colors, setColors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const notify = useNotification();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  useEffect(() => {
+    const fetchSizes = async () => {
+      try {
+        const sizes = await getSizes();
+        setSizes(sizes);
+      } catch (error) {
+        console.error("Fetch sizes error:", error);
+      }
     };
+    fetchSizes();
+  }, []);
 
-    onAdd(productToAdd);
-    setNewProduct({
-      name: "",
-      category: "",
-      price: "",
-      stock: "",
-      size: "",
-      color: "",
-      status: "in-stock",
-      description: "",
-    });
-    onClose();
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const response = await getColors();
+        setColors(response.data);
+      } catch (error) {
+        console.error("Fetch colors error:", error);
+      }
+    };
+    fetchColors();
+  }, []);
+
+  useEffect(() => {
+    const fetchSupplier = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+
+      try {
+        const user = JSON.parse(userData);
+        const supplier = await getSupplierByUserID(user.id);
+        setFormData((prev) => ({
+          ...prev,
+          supplier_id: supplier.id,
+        }));
+      } catch (error) {
+        console.error("Fetch supplier error:", error);
+      }
+    };
+    fetchSupplier();
+  }, []);
+
+  const handleImageChange = (e, type) => {
+    const files = Array.from(e.target.files);
+    if (type === "main") {
+      setFormData({ ...formData, main_image: files[0] });
+    } else {
+      setFormData({
+        ...formData,
+        images: files.slice(0, 3),
+      });
+    }
+  };
+
+  const removeSubImage = (index) => {
+    const updatedImages = formData.images.filter((_, i) => i !== index);
+    setFormData({ ...formData, images: updatedImages });
+  };
+
+  const removeImage = (type, index = null) => {
+    if (type === "main") {
+      setFormData({ ...formData, main_image: null });
+    } else {
+      const updatedImages = formData.images.filter((_, i) => i !== index);
+      setFormData({ ...formData, images: updatedImages });
+    }
+  };
+
+  const handleAddProduct = async () => {
+    setLoading(true);
+    try {
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("description", formData.description);
+      form.append("price", Number(formData.price));
+      form.append("quantity", Number(formData.quantity));
+      form.append("category", formData.category);
+      form.append("supplier_id", formData.supplier_id);
+      if (Array.isArray(formData.sizes) && formData.sizes.length > 0) {
+        formData.sizes.forEach((size) => {
+          if (size.value !== undefined) {
+            form.append("sizes[]", size.value); // Gửi ID
+          }
+        });
+      } else {
+        console.warn("⚠️ formData.sizes is empty or invalid!");
+      }
+      if (Array.isArray(formData.colors) && formData.colors.length > 0) {
+        formData.colors.forEach((color) => {
+          if (color.value !== undefined) {
+            form.append("colors[]", color.value); 
+          }
+        });
+      } else {
+        console.warn("⚠️ formData.colors is empty or invalid!");
+      }
+      if (formData.main_image) {
+        form.append("main_image", formData.main_image);
+      } else {
+        console.warn("⚠️ main_image is missing!");
+      }
+
+      if (Array.isArray(formData.images) && formData.images.length > 0) {
+        formData.images.forEach((img) => {
+          form.append("images[]", img);
+        });
+      } else {
+        console.warn("⚠️ images is empty or not an array!");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
+        method: "POST",
+        body: form,
+      });
+      const result = await response.json();
+      if (response.ok) {
+        notify("Add product successfull", "success");
+        onAdd(result.data);
+        setFormData({
+          name: "",
+          category: "",
+          price: "",
+          quantity: 1,
+          sizes: [],
+          colors: [],
+          main_image: null,
+          images: [],
+          description: "",
+          supplier_id: "",
+        });
+        onClose();
+      } else {
+        console.error("❌ API Error:", result.errors);
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+    }
+    setLoading(false);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg p-6 bg-white text-gray-800 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-xl w-full h-auto max-h-[90vh] overflow-y-auto p-6 bg-white text-gray-800 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-xl">Add New Product</DialogTitle>
           <DialogDescription className="text-gray-500">
@@ -68,9 +192,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
             <Label htmlFor="name">Product Name</Label>
             <Input
               id="name"
-              value={newProduct.name}
+              value={formData.name}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, name: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
             />
           </div>
@@ -78,9 +202,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
             <Label htmlFor="category">Category</Label>
             <Input
               id="category"
-              value={newProduct.category}
+              value={formData.category}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, category: e.target.value })
+                setFormData({ ...formData, category: e.target.value })
               }
             />
           </div>
@@ -90,80 +214,121 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
               <Input
                 id="price"
                 type="number"
-                value={newProduct.price}
+                value={formData.price}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, price: e.target.value })
+                  setFormData({ ...formData, price: e.target.value })
                 }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
+              <Label htmlFor="quantity">Quantity</Label>
               <Input
-                id="stock"
+                id="quantity"
                 type="number"
-                value={newProduct.stock}
+                value={formData.quantity}
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, stock: e.target.value })
+                  setFormData({ ...formData, quantity: e.target.value })
                 }
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="size">Size</Label>
-              <Input
-                id="size"
-                value={newProduct.size}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, size: e.target.value })
+              <Label htmlFor="sizes">Size</Label>
+              <MultiSelect
+                id="sizes"
+                options={sizes.map((size) => ({
+                  label: size.name,
+                  value: size.id,
+                }))}
+                value={formData.sizes}
+                onChange={(values) =>
+                  setFormData({ ...formData, sizes: values })
                 }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
-              <Input
-                id="color"
-                value={newProduct.color}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, color: e.target.value })
+              <Label htmlFor="colors">Color</Label>
+              <MultiSelect
+                id="colors"
+                options={colors.map((color) => ({
+                  label: color.name,
+                  value: color.id,
+                }))}
+                value={formData.colors}
+                onChange={(values) =>
+                  setFormData({ ...formData, colors: values })
                 }
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={newProduct.status}
-              onValueChange={(value) =>
-                setNewProduct({ ...newProduct, status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="in-stock">In Stock</SelectItem>
-                <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Main Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, "main")}
+            />
+            {formData.main_image && (
+              <div className="relative w-32 h-32 mt-2">
+                <img
+                  src={URL.createObjectURL(formData.main_image)}
+                  alt="Main"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                  onClick={() => removeImage("main")}
+                >
+                  {" "}
+                  <X size={16} />{" "}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>Additional Images (Max 3)</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleImageChange(e, "sub")}
+            />
+            <div className="flex gap-2 mt-2">
+              {formData.images.map((img, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={URL.createObjectURL(img)}
+                    alt="Sub"
+                    className="w-24 h-24 object-cover"
+                  />
+                  <button
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                    onClick={() => removeSubImage(index)}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={newProduct.description}
+              value={formData.description}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, description: e.target.value })
+                setFormData({ ...formData, description: e.target.value })
               }
             />
           </div>
         </div>
         <DialogFooter className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleAddProduct}>
-            Add Product
+          <Button type="submit" onClick={handleAddProduct} disabled={loading}>
+            {loading ? "Adding..." : "Add Product"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -3,7 +3,7 @@ import { Rate } from 'antd';
 
 export default function Card({ product, rating }) {
   const percentageOf = (value, percentage) => (value * percentage) / 100;
-  const { name, image, price, discounts } = product;
+  const { name, main_image, price, discounts } = product;
 
   const discount = discounts?.length ? discounts[discounts.length - 1] : null;
   const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)).toFixed(2) : price;
@@ -13,7 +13,7 @@ export default function Card({ product, rating }) {
       <div className="relative aspect-[2/2] w-full overflow-hidden rounded-t-lg">
         <Image
           fill
-          src={image || "https://placehold.co/100x100"}
+          src={main_image || "https://placehold.co/100x100"}
           alt={name}
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

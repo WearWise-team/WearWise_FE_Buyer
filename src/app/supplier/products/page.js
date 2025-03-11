@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash, Eye } from "lucide-react";
+import { Pencil, Trash, Eye, ArrowUp, ArrowDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +39,10 @@ export default function ProductsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({
+      key: null,
+      direction: "asc",
+    });
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -53,8 +57,14 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
-  console.log(products);
-  
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -62,9 +72,18 @@ export default function ProductsPage() {
       product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const sortedFilteredProducts = [...filteredProducts].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+    if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = filteredProducts.slice(
+  const currentProducts = (sortedFilteredProducts || []).slice(
     indexOfFirstItem,
     indexOfLastItem
   );
@@ -115,11 +134,23 @@ export default function ProductsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Rating</TableHead>
+              {["name", "category", "price", "quantity", "rating_avg"].map(
+                (key) => (
+                  <TableHead
+                    key={key}
+                    onClick={() => handleSort(key)}
+                    className="cursor-pointer"
+                  >
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                    {sortConfig.key === key &&
+                      (sortConfig.direction === "asc" ? (
+                        <ArrowUp className="inline ml-1" />
+                      ) : (
+                        <ArrowDown className="inline ml-1" />
+                      ))}
+                  </TableHead>
+                )
+              )}
               <TableHead>Size</TableHead>
               <TableHead>Color</TableHead>
               <TableHead>Actions</TableHead>
@@ -127,7 +158,7 @@ export default function ProductsPage() {
           </TableHeader>
           <TableBody>
             {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
+              currentProducts?.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category}</TableCell>
@@ -137,8 +168,8 @@ export default function ProductsPage() {
                   <TableCell>
                     {[
                       ...new Set(
-                        product.sizes.map(
-                          (size) => size.shirt_size || size.pant_size
+                        product.sizes?.map(
+                          (size) => size.name
                         )
                       ),
                     ].join(", ")}
@@ -147,7 +178,7 @@ export default function ProductsPage() {
                   <TableCell>
                     <TableCell>
                       {[
-                        ...new Set(product.colors.map((color) => color.name)),
+                        ...new Set(product.colors?.map((color) => color.name)),
                       ].join(", ")}
                     </TableCell>
                   </TableCell>
