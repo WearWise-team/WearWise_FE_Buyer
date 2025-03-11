@@ -30,9 +30,9 @@ export default function ReviewButton({ itemId, isOpen, onToggle, onReviewSuccess
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          itemId,
-          rating,
-          comment,
+          order_item_id: itemId,
+          rating:rating,
+          content:comment,
         }),
       })
 

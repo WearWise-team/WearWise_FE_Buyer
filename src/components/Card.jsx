@@ -1,12 +1,12 @@
-import Image from "next/image";
-import { Rate } from 'antd';
+import Image from "next/image"
+import { Rate } from "antd"
 
 export default function Card({ product, rating }) {
   const percentageOf = (value, percentage) => (value * percentage) / 100;
   const { name, main_image, price, discounts } = product;
 
-  const discount = discounts?.length ? discounts[discounts.length - 1] : null;
-  const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)).toFixed(2) : price;
+  const discount = discounts?.length ? discounts[discounts.length - 1] : null
+  const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)) : price
 
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -15,7 +15,7 @@ export default function Card({ product, rating }) {
           fill
           src={main_image || "https://placehold.co/100x100"}
           alt={name}
-          className="object-cover"
+          className="object-cover"  
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
@@ -27,7 +27,7 @@ export default function Card({ product, rating }) {
           <div className="flex items-center text-yellow-500">
             <Rate value={rating} disabled />
           </div>
-          <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}/5</span>
+          <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
         </div>
 
         {/* Hiển thị giá */}
@@ -44,5 +44,6 @@ export default function Card({ product, rating }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
+

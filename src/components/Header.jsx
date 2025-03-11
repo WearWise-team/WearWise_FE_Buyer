@@ -120,13 +120,15 @@ export default function Header() {
       </Link>
 
       <nav className="flex items-center space-x-6 text-lg">
-          <NavLink href="/" label="Home" activePath={isActive("/")} />
-          <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
-          <NavLink href="/tryOnK" label="Try On with Kling AI" activePath={isActive("/tryOnK")} />
-          <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
-          <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
-        </nav>
-
+        <NavLink href="/" label="Home" activePath={isActive("/")} />
+        <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
+        <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
+        <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
+        <div className="nav-link-container">
+          <NavLink href="/tryOnK" label="Try On" activePath={isActive("/tryOnK")} />
+          <span className="new-badge">New</span>
+        </div>
+      </nav>
       
       <div className="flex items-center space-x-4 text-xl">
         <div 
@@ -155,8 +157,8 @@ export default function Header() {
             <div className="flex items-center space-x-4">
               {/* Wishlist với Badge */}
               <div className="relative">
-                <Link href="/wishlist" className="text-black hover:text-gray-600">
-                  <HeartOutlined className="text-2xl" />
+                <Link href="/profile?tab=wishlist" className="text-black hover:text-gray-600"> 
+                  <HeartOutlined className="text-2xl" /> 
                 </Link>
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center">

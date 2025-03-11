@@ -4,10 +4,10 @@ import { useState } from "react"
 import { Spin, Tag, Divider } from "antd"
 import { ShoppingOutlined } from "@ant-design/icons"
 import Image from "next/image"
-import PaymentButton from "./PaymentButton"
 import ReviewButton from "./ReviewButton"
 
 export default function OrdersByStatus({ orders, status, loading, notify }) {
+  console.log("orders:", orders)
   // State to track which items have their review forms open
   const [openReviewForms, setOpenReviewForms] = useState({})
   // State to track which items have been reviewed during this session
@@ -51,8 +51,8 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
       ...order,
       items: order.items.filter((item) => item.status === status),
     }))
-    .filter((order) => order.items.length > 0)
-
+    .filter((order) => order.items.length > 0);
+  console.log("filted",filteredOrders)
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -138,7 +138,6 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
               )}
               <p className="font-semibold text-lg">Total: {formatCurrency(order.total_amount)}</p>
             </div>
-            {status === "pending" && <PaymentButton order={order} notify={notify} />}
           </div>
         </div>
       ))}

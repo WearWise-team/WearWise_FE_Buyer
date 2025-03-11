@@ -287,7 +287,9 @@ export default function DetailProduct({ params }) {
                       key={color.id}
                       id={color.id}
                       onClick={() => setSelectedColor(color.id)}
-                      className="relative w-10 h-10 rounded-full border-gray-600 transition-all duration-300 hover:shadow-md"
+                      className={`relative w-10 h-10 rounded-full transition-all duration-300 shadow-md hover:shadow-lg ${
+                        selectedColor === color.id ? "shadow-xl scale-110" : ""
+                      }`}
                       style={{ backgroundColor: color.code }}
                     >
                       {selectedColor === color.id && (
