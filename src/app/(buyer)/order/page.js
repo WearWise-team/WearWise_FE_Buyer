@@ -20,7 +20,7 @@ export default function Page() {
   const [isPending, setIsPending] = useState(false)
   const notify = useNotification()
   const router = useRouter()
-
+  const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -79,7 +79,7 @@ export default function Page() {
       // Generate a temporary order ID for payment reference
       const tempOrderId = `TEMP_${user.id}_${Date.now()}`
 
-      const response = await fetch("http://localhost:8000/api/momo/payment", {
+      const response = await fetch(`${API_BASE_URL}/api/momo/payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -92,7 +92,7 @@ export default function Page() {
             paymentMethod: "momo",
           }),
         }),
-      })
+      });
 
       const data = await response.json()
 
@@ -342,7 +342,7 @@ export default function Page() {
                         alt={item.product.name}
                         className="w-16 h-16 rounded-lg object-cover"
                         height={64}
-                        src={item.product.image || "https://placehold.co/64x64"}
+                        src={item.product.main_image || "https://placehold.co/64x64"}
                         width={64}
                       />
                       <div>

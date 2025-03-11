@@ -200,15 +200,15 @@ const Cart = () => {
                       className="w-16 h-16 rounded-lg mr-4"
                       height={60}
                       width={60}
-                      src={item.product.image}
+                      src={item.product.main_image}
                     />
                     <div>
                       <h2 className="font-semibold">{item.product.name}</h2>
                       <p className="text-sm text-gray-500">
-                        Size: {item.size.shirt_size}, Color: {item.color.name}
+                        Size: {item.size?.name}, Color: {item.color?.name}
                       </p>
                       <p className="font-bold mt-2">
-                        {Number(item.product.price).toFixed(2)}
+                        {Number(item.product?.price).toFixed(2)}
                       </p>
                       <div className="flex items-center mt-2">
                         <button

@@ -4,13 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
 
 export default function EditProductDialog({
   isOpen,
@@ -30,17 +24,32 @@ export default function EditProductDialog({
   useEffect(() => {
     setEditedProduct(product);
   }, [product]);
-
+  
   const handleEditProduct = () => {
     onEdit(editedProduct);
     onClose();
   };
+  console.log(editedProduct?.images);
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedProduct((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), reader.result],
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   if (!product) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg p-6 bg-white text-gray-800 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-xl w-full h-auto max-h-[90vh] overflow-y-auto p-6 bg-white text-gray-800 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-xl">Edit Product</DialogTitle>
           <DialogDescription className="text-gray-500">
@@ -80,7 +89,7 @@ export default function EditProductDialog({
               <Input
                 id="edit-price"
                 type="text"
-                value={`${editedProduct?.price || 0 } VND `}
+                value={`${editedProduct?.price || 0} VND `}
                 onChange={(e) =>
                   setEditedProduct({
                     ...editedProduct,
@@ -109,12 +118,13 @@ export default function EditProductDialog({
               <Label htmlFor="edit-size">Size</Label>
               <Input
                 id="edit-size"
-                value={editedProduct?.sizes?.map((size) => size.shirt_size || size.pant_size)
-                      .join(", ")}
+                value={editedProduct?.sizes
+                  ?.map((size) => size.name)
+                  .join(", ")}
                 onChange={(e) =>
                   setEditedProduct({
                     ...editedProduct,
-                    size: e.target.value,
+                    sizes: e.target.value.split(", "),
                   })
                 }
               />
@@ -123,7 +133,9 @@ export default function EditProductDialog({
               <Label htmlFor="edit-color">Color</Label>
               <Input
                 id="edit-color"
-                value={editedProduct?.colors?.map((color) => color.name).join(", ")}
+                value={editedProduct?.colors
+                  ?.map((color) => color.name)
+                  .join(", ")}
                 onChange={(e) =>
                   setEditedProduct({
                     ...editedProduct,
@@ -144,6 +156,42 @@ export default function EditProductDialog({
                   description: e.target.value,
                 })
               }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Main Image</Label>
+            {editedProduct?.main_image && (
+              <img
+                src={editedProduct.main_image}
+                alt="Main"
+                className="max-h-48 object-contain rounded-lg shadow-md"
+              />
+            )}
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, "mainImage")}
+            />
+          </div>
+
+          {/* Ảnh phụ */}
+          <div className="space-y-2">
+            <Label>Additional Images (Max 3)</Label>
+            <div className="flex gap-2 flex-wrap">
+              {editedProduct?.images?.map((img, index) => (
+                <img
+                  key={index}
+                  src={img?.url}
+                  alt="Sub"
+                  className="w-20 h-20 object-cover rounded-lg border"
+                />
+              ))}
+            </div>
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleImageChange(e, "subImages")}
             />
           </div>
         </div>
