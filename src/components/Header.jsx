@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ShoppingCartOutlined, HeartOutlined, SearchOutlined } from "@ant-design/icons";
-import { motion, AnimatePresence } from "framer-motion";
 import { FaMicrophone } from "react-icons/fa";
 import { useRouter, usePathname } from "next/navigation";
 import { useNotification } from "@/apiServices/NotificationService";
@@ -134,7 +133,7 @@ export default function Header() {
         <div 
           className="relative"
         >
-          <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <SearchOutlined className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" onClick={handleSearch} />
           <form onSubmit={handleSearch}>
             <input
               className="w-full py-1 pl-12 pr-12 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
@@ -162,7 +161,7 @@ export default function Header() {
                 </Link>
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-3 h-3 flex items-center justify-center">
-                    {wishlistCount}
+                    {""}
                   </span>
                 )}
               </div>
