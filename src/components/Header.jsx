@@ -120,7 +120,7 @@ export default function Header() {
 
       <nav className="flex items-center space-x-6 text-lg">
         <NavLink href="/" label="Home" activePath={isActive("/")} />
-        <NavLink href="/products" label="Product" activePath={isActive("/products/*")} />
+        <NavLink href="/products" label="Products" activePath={isActive("/products/*")} />
         <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
         <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
         <div className="nav-link-container">

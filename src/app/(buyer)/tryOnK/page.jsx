@@ -8,7 +8,7 @@ import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
 
-const { Text, Title, Paragraph, Link } = Typography
+const { Text, Title, Paragraph } = Typography
 const { Dragger } = Upload
 // Sample data for examples
 const personExamples = [

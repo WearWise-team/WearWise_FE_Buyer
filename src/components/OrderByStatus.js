@@ -1,50 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Spin, Tag, Divider } from "antd"
-import { ShoppingOutlined } from "@ant-design/icons"
-import Image from "next/image"
-import ReviewButton from "./ReviewButton"
+import { useState } from "react";
+import { Spin, Tag, Divider } from "antd";
+import { ShoppingOutlined } from "@ant-design/icons";
+import Image from "next/image";
+import ReviewButton from "./ReviewButton";
 
 export default function OrdersByStatus({ orders, status, loading, notify }) {
-  console.log("orders:", orders)
+  console.log("orders:", orders);
   // State to track which items have their review forms open
-  const [openReviewForms, setOpenReviewForms] = useState({})
+  const [openReviewForms, setOpenReviewForms] = useState({});
   // State to track which items have been reviewed during this session
-  const [reviewedItems, setReviewedItems] = useState({})
+  const [reviewedItems, setReviewedItems] = useState({});
 
   // Toggle review form visibility for a specific item
   const toggleReviewForm = (itemId) => {
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
-    }))
-  }
+    }));
+  };
 
   // Mark an item as reviewed after successful submission
   const markAsReviewed = (itemId) => {
     setReviewedItems((prev) => ({
       ...prev,
       [itemId]: true,
-    }))
+    }));
     // Close the form when marked as reviewed
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: false,
-    }))
-  }
+    }));
+  };
 
   const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("en-US", {
+    Number.parseFloat(amount).toLocaleString("vi-VN", {
       style: "currency",
-      currency: "USD",
-    })
+      currency: "VND",
+    });
 
   const formatDate = (dateString) =>
-    new Date(dateString).toLocaleString("en-US", {
+    new Date(dateString).toLocaleString("vi-VN", {
       dateStyle: "medium",
       timeStyle: "short",
-    })
+    });
 
   const filteredOrders = orders
     .map((order) => ({
@@ -52,13 +52,13 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
       items: order.items.filter((item) => item.status === status),
     }))
     .filter((order) => order.items.length > 0);
-  console.log("filted",filteredOrders)
+  console.log("filted", filteredOrders);
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
         <Spin size="large" />
       </div>
-    )
+    );
   }
 
   if (filteredOrders.length === 0) {
@@ -67,20 +67,31 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
         <ShoppingOutlined className="text-4xl text-gray-400 mb-4" />
         <p className="text-gray-500">No {status} orders found.</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {filteredOrders.map((order) => (
-        <div key={order.id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div
+          key={order.id}
+          className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="font-semibold text-lg">Order #{order.id}</h3>
-              <p className="text-gray-500 text-sm">Placed on {formatDate(order.order_date)}</p>
+              <p className="text-gray-500 text-sm">
+                Placed on {formatDate(order.order_date)}
+              </p>
             </div>
             <Tag
-              color={status === "completed" ? "green" : status === "pending" ? "orange" : "red"}
+              color={
+                status === "completed"
+                  ? "green"
+                  : status === "pending"
+                  ? "orange"
+                  : "red"
+              }
               className="font-medium"
             >
               {status}
@@ -91,7 +102,11 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
 
           {order.items.map((item, index) => (
             <div key={item.order_item_id}>
-              <div className={`flex items-center gap-6 ${index > 0 ? "pt-4 border-t" : ""}`}>
+              <div
+                className={`flex items-center gap-6 ${
+                  index > 0 ? "pt-4 border-t" : ""
+                }`}
+              >
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <Image
                     src={item.main_image || "/placeholder.svg"}
@@ -121,7 +136,9 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                     isOpen={openReviewForms[item.order_item_id]}
                     onToggle={() => toggleReviewForm(item.order_item_id)}
                     onReviewSuccess={() => markAsReviewed(item.order_item_id)}
-                    isReviewed={item.reviewed || reviewedItems[item.order_item_id]}
+                    isReviewed={
+                      item.reviewed || reviewedItems[item.order_item_id]
+                    }
                     notify={notify}
                   />
                 </div>
@@ -134,14 +151,17 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
           <div className="flex justify-between items-center">
             <div>
               {order.payment_method !== "cod" && (
-                <p className="text-gray-600">Payment: {order.payment_method.toUpperCase()}</p>
+                <p className="text-gray-600">
+                  Payment: {order.payment_method.toUpperCase()}
+                </p>
               )}
-              <p className="font-semibold text-lg">Total: {formatCurrency(order.total_amount)}</p>
+              <p className="font-semibold text-lg">
+                Total: {formatCurrency(order.total_amount)}
+              </p>
             </div>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }
-

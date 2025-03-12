@@ -1,13 +1,88 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { Rate } from "antd"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart, X } from "lucide-react"
 import Link from "next/link"
+import { addToCart } from "@/apiServices/cart/page"
+import { useRouter } from "next/navigation"
+import { useNotification } from "@/apiServices/NotificationService"
 
 export default function Card({ product, rating }) {
+  const [showOptions, setShowOptions] = useState(false)
+  const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedSize, setSelectedSize] = useState(null)
+  const router = useRouter()
+  const notify = useNotification()
+
+  const formatCurrency = (amount) =>
+    Number.parseFloat(amount).toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+
+  const colors = product.colors?.map((color) => ({
+    id: color.id,
+    name: color.name,
+    code: color.code,
+    created_at: color.created_at,
+    updated_at: color.updated_at,
+    pivot: color.pivot,
+  }))
+
+  const sizes = product.sizes?.map((size) => ({
+    id: size.id,
+    name: size.name,
+    shirt_size: size.shirt_size,
+    pant_size: size.pant_size,
+    minimun_weight: size.minimun_weight,
+    maximun_weight: size.maximun_weight,
+    minimun_height: size.minimun_height,
+    maximun_height: size.target_audience,
+    created_at: size.created_at,
+    updated_at: size.updated_at,
+    pivot: size.pivot,
+  }))
+
+  const handleAddToCart = () => {
+    if (!selectedColor) {
+      notify("Product Color Required", "Please select a color for this product.", "topRight", "warning")
+      return
+    }
+
+    if (!selectedSize) {
+      notify("Product Size Required", "Please select a size for this product.", "topRight", "warning")
+      return
+    }
+
+    const isUserLogin = localStorage.getItem("user")
+    if (!isUserLogin) {
+      notify("Login Required", "You must login to add this product to the cart.", "topRight", "warning")
+      router.push("/login")
+      return
+    }
+
+    const newItem = {
+      product_id: id,
+      product_color_id: selectedColor,
+      product_size_id: selectedSize,
+      quantity: "1",
+    }
+
+    addToCart(newItem)
+      .then(() => {
+        notify("Product Added Successfully", "Your product has been added to the cart.", "topRight")
+        setShowOptions(false)
+      })
+      .catch((error) => {
+        console.error("Add to cart error:", error)
+        notify("Error Adding Product", "There was a problem adding this product to your cart.", "topRight", "error")
+      })
+  }
+
   const percentageOf = (value, percentage) => (value * percentage) / 100
-  const { name, main_image, price, discounts } = product
+  const { id, name, main_image, price, discounts } = product
 
   const discount = discounts?.length ? discounts[discounts.length - 1] : null
   const discountPercentage = discount?.pivot?.percentage ?? 0
@@ -15,9 +90,9 @@ export default function Card({ product, rating }) {
   const discountedPrice = price !== undefined && !isNaN(price) ? price - percentageOf(price, discountPercentage) : 0
 
   const safeDiscountedPrice =
-    discountedPrice !== undefined && !isNaN(discountedPrice) ? Number.parseFloat(discountedPrice).toFixed(3) : "0.000"
+    discountedPrice !== undefined && !isNaN(discountedPrice) ? formatCurrency(Number.parseFloat(discountedPrice)) : "0.000"
   return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative">
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-[2/2] w-full overflow-hidden rounded-t-lg">
           <Image
@@ -32,7 +107,6 @@ export default function Card({ product, rating }) {
       <div className="p-4">
         <h2 className="text-base font-medium text-gray-900 mb-2">{name}</h2>
 
-        {/* Hiển thị Rating */}
         {typeof rating === "number" && (
           <div className="flex items-center mb-2">
             <div className="flex items-center text-yellow-500">
@@ -42,12 +116,11 @@ export default function Card({ product, rating }) {
           </div>
         )}
 
-        {/* Hiển thị giá */}
         <div className="flex items-center mb-3">
-          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>{safeDiscountedPrice}đ</span>
+          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>{safeDiscountedPrice}</span>
           {discount && (
             <>
-              <span className="text-sm text-gray-500 line-through ml-2">{price}đ</span>
+              <span className="text-sm text-gray-500 line-through ml-2">{formatCurrency(price)}</span>
               <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
                 -{Math.floor(discountPercentage)}%
               </span>
@@ -55,15 +128,82 @@ export default function Card({ product, rating }) {
           )}
         </div>
 
-        {/* Buy Now Button */}
-        <button
+        {
+          sizes && <>
+            <button
           className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
-          onClick={() => console.log("Buy Now clicked for", name)}
+          onMouseEnter={() => setShowOptions(true)}
         >
-          <ShoppingCart className="w-4 h-4 mr-2 " />
-          Buy Now
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Add to Cart
         </button>
+          </>
+        }
       </div>
+
+      {/* Options Panel on Hover */}
+      {showOptions && (
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-lg shadow-lg p-4 z-10 transform translate-y-full border border-gray-200"
+          onMouseLeave={() => setShowOptions(false)}
+        >
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-medium text-gray-900">Select Options</h3>
+            <button onClick={() => setShowOptions(false)} className="text-gray-500 hover:text-gray-700">
+              <X className="w-4 h-4" />
+              <span className="sr-only">Close</span>
+            </button>
+          </div>
+
+          {/* Color Selection */}
+          <div className="mb-3">
+            <p className="text-sm font-medium text-gray-700 mb-2">Color:</p>
+            <div className="flex gap-2">
+              {colors?.map((color) => (
+                <button
+                  key={color.id}
+                  onClick={() => setSelectedColor(color.id)}
+                  className={`w-8 h-8 rounded-full border-2 ${
+                    selectedColor === color.id ? "border-red-500" : "border-gray-300"
+                  }`}
+                  style={{ backgroundColor: color.code }}
+                  aria-label={`Color: ${color.name}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Size Selection */}
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">Size:</p>
+            <div className="flex gap-2">
+              {sizes?.map((size) => (
+                <button
+                  key={size.id}
+                  onClick={() => setSelectedSize(size.id)}
+                  className={`w-8 h-8 flex items-center justify-center rounded border ${
+                    selectedSize === size.id
+                      ? "bg-red-500 text-white border-red-500"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-red-300"
+                  }`}
+                >
+                  {size.shirt_size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Buy Button */}
+          <button
+            onClick={handleAddToCart}
+            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
+            disabled={!selectedColor || !selectedSize}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Add now
+          </button>
+        </div>
+      )}
     </div>
   )
 }

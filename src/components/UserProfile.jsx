@@ -10,7 +10,6 @@ import {
   Form,
   Tabs,
   Table,
-  Tag,
   Avatar,
   Typography,
   Row,
@@ -18,12 +17,11 @@ import {
   Descriptions,
   Empty,
   Spin,
-  message,
 } from "antd"
 import { EditOutlined, UserOutlined, InboxOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
-import { viewProfile, updateProfile } from "@/apiServices/users/page";
-import { useNotification } from "@/apiServices/NotificationService";
+import { viewProfile, updateProfile } from "@/apiServices/users/page"
+import { useNotification } from "@/apiServices/NotificationService"
 const { Title, Text } = Typography
 
 export default function UserProfile({ orders = [] }) {
@@ -31,15 +29,14 @@ export default function UserProfile({ orders = [] }) {
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [form] = Form.useForm()
-  const notify = useNotification();
+  const notify = useNotification()
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        setIsLoading(true);
-        const data = await viewProfile();
-        setUser(data);
-  
+        setIsLoading(true)
+        const data = await viewProfile()
+        setUser(data)
         if (data) {
           form.setFieldsValue({
             name: data.name,
@@ -51,63 +48,76 @@ export default function UserProfile({ orders = [] }) {
             shirt_size: data.shirt_size,
             pant_size: data.pant_size,
             dob: data.dob ? dayjs(data.dob) : null,
-          });
+          })
         }
       } catch (error) {
-        console.error("Failed to load profile data", error);
+        console.error("Failed to load profile data", error)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-    fetchUserProfile();
-  }, [form]);
-  
+    }
+    fetchUserProfile()
+  }, [form])
+
+  useEffect(() => {
+    if (user?.dob) {
+      form.setFieldValue("dob", dayjs(user.dob))
+    }
+  }, [user?.dob, form])
 
   const handleSubmit = async (values) => {
     setIsLoading(true)
-    const formattedData = {
-      name: values.name,
-      address: values.address,
-      phone: values.phone,
-      email: user?.email || "",
-      weight: values.weight,
-      height: values.height,
-      shirt_size: values.shirt_size,
-      gender: values.gender,
-      pant_size: values.pant_size,
-      role: user.role,
-      avatar: user.avatar,
+    try {
+      const formattedData = {
+        name: values.name,
+        address: values.address,
+        phone: values.phone,
+        email: user?.email || "",
+        weight: values.weight,
+        height: values.height,
+        shirt_size: values.shirt_size,
+        gender: values.gender,
+        pant_size: values.pant_size,
+        role: user.role,
+        avatar: user.avatar,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
+      }
+
+      const updatedData = await updateProfile(user.id, formattedData)
+
+      if (!updatedData) {
+        notify("Failed to update profile.", "Please try again.", "topRight", "error")
+        return
+      }
+
+      setUser({ ...user, ...formattedData })
+      setIsEditing(false)
+      notify("Your profile has been updated successfully.", "successfully", "topRight")
+    } catch (error) {
+      console.error("Failed to update profile", error)
+      notify("Failed to update profile.", "Please try again.", "topRight", "error")
+    } finally {
+      setIsLoading(false)
     }
-
-    const updatedData = await updateProfile(user.id, formattedData);
-
-    if (!updatedData) {
-      notify("Failed to update profile.", "Please try again.", "topRight", "error");
-      return;
-    }
-
-    setUser(formattedData);
-    setIsEditing(false);
-    setIsLoading(false);
-    notify("Your profile has been updated successfully.", "successfully", "topRight");
-    return;
   }
 
   const handleCancel = () => {
-    form.setFieldsValue({
-      name: user.name,
-      phone: user.phone,
-      address: user.address,
-      gender: user.gender,
-      weight: user.weight,
-      height: user.height,
-      shirt_size: user.shirt_size,
-      pant_size: user.pant_size,
-    })
-    setIsEditing(false);
+    if (user) {
+      form.setFieldsValue({
+        name: user.name,
+        phone: user.phone,
+        address: user.address,
+        gender: user.gender,
+        weight: user.weight,
+        height: user.height,
+        shirt_size: user.shirt_size,
+        pant_size: user.pant_size,
+        dob: user.dob ? dayjs(user.dob) : null,
+      })
+    }
+    setIsEditing(false)
   }
 
-  // Define table columns
   const columns = [
     {
       title: "Order ID",
@@ -126,7 +136,9 @@ export default function UserProfile({ orders = [] }) {
       dataIndex: "items",
       key: "items",
       render: (items) =>
-        items.map((item) => `${item.product_name} x ${item.quantity} ${item.quantity === 1 ? "item" : "items"}`).join(", "),
+        items
+          .map((item) => `${item.product_name} x ${item.quantity} ${item.quantity === 1 ? "item" : "items"}`)
+          .join(", "),
     },
     {
       title: "Total amount",
@@ -205,9 +217,27 @@ export default function UserProfile({ orders = [] }) {
     >
       {isEditing ? (
         <Spin spinning={isLoading}>
-          {/* Fix: Pass the form instance to the Form component */}
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Form.Item name="name" label="Full Name" rules={[{ required: true, message: "Please enter your name" }]}>
+            <Form.Item
+              name="name"
+              label="Full Name"
+              rules={[
+                { required: true, message: "Please enter your full name!" },
+                { min: 2, message: "Name must be at least 2 characters long!" },
+                { pattern: /^[a-zA-Z\s]+$/, message: "Name can only contain letters and spaces!" },
+                {
+                  validator: (_, value) => {
+                    if (value && value.trim() === "") {
+                      return Promise.reject("Name cannot be only spaces!")
+                    }
+                    if (value && value.includes("  ")) {
+                      return Promise.reject("Name cannot contain consecutive spaces!")
+                    }
+                    return Promise.resolve()
+                  },
+                },
+              ]}
+            >
               <Input />
             </Form.Item>
 
@@ -216,15 +246,26 @@ export default function UserProfile({ orders = [] }) {
               <Text type="secondary">Email cannot be changed</Text>
             </Form.Item>
 
-            <Form.Item name="phone" label="Phone Number">
+            <Form.Item
+              name="phone"
+              label="Phone Number"
+              rules={[
+                { required: true, message: "Please enter your phone number!" },
+                { pattern: /^[0-9]{10}$/, message: "Phone number must be exactly 10 digits!" },
+              ]}
+            >
+              <Input maxLength={10} />
+            </Form.Item>
+
+            <Form.Item
+              name="address"
+              label="Address"
+              rules={[{ required: true, message: "Please enter your address!" }]}
+            >
               <Input />
             </Form.Item>
 
-            <Form.Item name="address" label="Address">
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="gender" label="Gender">
+            <Form.Item name="gender" label="Gender" rules={[{ required: true, message: "Please select your gender!" }]}>
               <Radio.Group>
                 <Radio value="male">Male</Radio>
                 <Radio value="female">Female</Radio>
@@ -232,19 +273,56 @@ export default function UserProfile({ orders = [] }) {
               </Radio.Group>
             </Form.Item>
 
-            <Form.Item name="weight" label="Weight (kg)">
+            <Form.Item
+              name="weight"
+              label="Weight (kg)"
+              rules={[
+                { required: true, message: "Please enter your weight!" },
+                {
+                  type: "number",
+                  min: 10,
+                  max: 500,
+                  message: "Weight must be between 10 and 500 kg!",
+                  transform: (value) => Number(value),
+                },
+              ]}
+            >
               <Input type="number" step="0.01" />
             </Form.Item>
 
-            <Form.Item name="height" label="Height (cm)">
+            <Form.Item
+              name="height"
+              label="Height (cm)"
+              rules={[
+                { required: true, message: "Please enter your height!" },
+                {
+                  type: "number",
+                  min: 50,
+                  max: 250,
+                  message: "Height must be between 50 and 250 cm!",
+                  transform: (value) => Number(value),
+                },
+              ]}
+            >
               <Input type="number" step="0.01" />
             </Form.Item>
 
-            <Form.Item name="shirt_size" label="Shirt Size">
+            <Form.Item
+              name="shirt_size"
+              label="Shirt Size"
+              rules={[
+                { required: true, message: "Please enter your shirt size!" },
+                { pattern: /^(XS|S|M|L|XL|XXL)$/, message: "Shirt size must be XS, S, M, L, XL, or XXL!" },
+              ]}
+            >
               <Input />
             </Form.Item>
 
-            <Form.Item name="pant_size" label="Pant Size">
+            <Form.Item
+              name="pant_size"
+              label="Pant Size"
+              rules={[{ required: true, message: "Please enter your pant size!" }]}
+            >
               <Input />
             </Form.Item>
 
@@ -266,3 +344,4 @@ export default function UserProfile({ orders = [] }) {
     </Card>
   )
 }
+
