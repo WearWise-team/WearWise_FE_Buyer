@@ -10,11 +10,10 @@ import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
 
 const { Text, Title, Paragraph, Link } = Typography
 const { Dragger } = Upload
-const { TabPane } = Tabs
 // Sample data for examples
 const personExamples = [
   "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
-  "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRBx6bDmdeKzfFoXFZ2yL3Rz-eVJ1a05etYWDRbvK1cdfNhi5tp",
+  "https://skinoutfits.com/wp-content/uploads/2023/08/Jensen-Huang-Nvidia-CEO-Black-Biker-Leather-Jacket-Online-At-Superstar-Jackets-3.jpg",
   "https://cdn.24h.com.vn/upload/1-2021/images/2021-03-12/Phat-hien-nguoi-dep-157884103_540208743608984_4158627500730650223_n-1615519993-786-width1080height1349.jpg",
   "https://danviet.mediacdn.vn/upload/3-2019/images/2019-09-04/3-1567585403-width650height651.jpg",
 ]

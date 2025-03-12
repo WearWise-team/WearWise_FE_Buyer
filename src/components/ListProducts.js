@@ -25,9 +25,7 @@ export default function ListProducts({ title }) {
 
               return (
                 <div key={product.id} className="product-item">
-                  <Link href={`/products/${product.id}`}>
-                    <Card product={product} rating={rating} />
-                  </Link>
+                  <Card product={product} rating={rating} />
                 </div>
               );
             })}
