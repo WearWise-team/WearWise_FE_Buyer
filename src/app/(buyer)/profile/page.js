@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Menu } from "antd";
-import { UserOutlined, ShoppingOutlined, HeartOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  ShoppingOutlined,
+  HeartOutlined,
+} from "@ant-design/icons";
 import { getUserOrders } from "@/apiServices/orders/page";
 import { getUserWishlists } from "@/apiServices/wishlists/page";
 import { useNotification } from "@/apiServices/NotificationService";
@@ -40,8 +44,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const resultCode = searchParams.get("resultCode");
+    const buy_now_product = localStorage.getItem("buy_now_product");
     if (resultCode && resultCode !== "0") {
-      router.push("/cart");
+      if (buy_now_product) {
+        router.push("/order/now");
+      } else {
+        router.push("/cart");
+      }
     } else if (resultCode === "0") {
       // Payment success
       notify("success", "Payment successful!");
@@ -131,7 +140,11 @@ export default function ProfilePage() {
 
         <div className="space-y-6">
           {selectedTab === "orders" && (
-            <OrdersList orders={orders} loading={loadingOrders} notify={notify} />
+            <OrdersList
+              orders={orders}
+              loading={loadingOrders}
+              notify={notify}
+            />
           )}
 
           {selectedTab === "wishlist" && (
@@ -139,7 +152,7 @@ export default function ProfilePage() {
               wishlistItems={wishlistItems}
               loading={loadingWishlist}
               notify={notify}
-              onRefresh={fetchWishlists}  // Pass only the refresh function
+              onRefresh={fetchWishlists} // Pass only the refresh function
             />
           )}
 
