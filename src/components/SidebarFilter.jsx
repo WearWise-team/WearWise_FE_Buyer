@@ -10,10 +10,10 @@ export default function SidebarFilter() {
   const [filters, setFilters] = useState({
     categories: [],
     minPrice: 0,
-    maxPrice: 200,
+    maxPrice: 200000,
     colors: [],
     sizes: [],
-    sortBy: "",
+    sortPrice: "asc",
   });
 
   const [colors, setColors] = useState([]); // Lưu trữ màu từ API
@@ -47,7 +47,7 @@ export default function SidebarFilter() {
   };
 
   const handleSortChange = (e) => {
-    setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
+    setFilters((prev) => ({ ...prev, sortPrice: e.target.value }));
   };
 
   const applyFilters = () => {
@@ -129,7 +129,7 @@ export default function SidebarFilter() {
         />
         <input
           type="number"
-          value={filters.maxPrice ?? 200}
+          value={filters.maxPrice ?? 0}
           onChange={(e) => handlePriceChange(e, "maxPrice")}
           placeholder="Max Price"
           className="w-full border rounded px-2 py-1"
@@ -172,14 +172,15 @@ export default function SidebarFilter() {
 
       {/* Sort by Price */}
       <div className="mb-6">
-        <h4 className="font-medium mb-2">Sort by</h4>
+        <h4 className="font-medium mb-2">Sort by price</h4>
         <select
-          value={filters.sortBy}
+          value={filters.sortPrice}
           onChange={handleSortChange}
           className="w-full border rounded px-2 py-1"
         >
           <option value="">Select</option>
-          <option value="price_asc">Price: Low to High</option>
+          <option value="asc">Price: Low to High</option>
+          <option value="desc">Price: High to Low</option>
         </select>
       </div>
 

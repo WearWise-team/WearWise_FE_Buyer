@@ -13,6 +13,8 @@ const nextConfig = {
       "bizweb.dktcdn.net",
       "pos.nvncdn.com",
       "res.cloudinary.com",
+      "product.hstatic.net",
+      "media.tenor.com"
     ],
     remotePatterns: [
       {

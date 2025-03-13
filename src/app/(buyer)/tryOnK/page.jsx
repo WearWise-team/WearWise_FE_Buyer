@@ -8,13 +8,12 @@ import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
 
-const { Text, Title, Paragraph, Link } = Typography
+const { Text, Title, Paragraph } = Typography
 const { Dragger } = Upload
-const { TabPane } = Tabs
 // Sample data for examples
 const personExamples = [
   "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
-  "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRBx6bDmdeKzfFoXFZ2yL3Rz-eVJ1a05etYWDRbvK1cdfNhi5tp",
+  "https://skinoutfits.com/wp-content/uploads/2023/08/Jensen-Huang-Nvidia-CEO-Black-Biker-Leather-Jacket-Online-At-Superstar-Jackets-3.jpg",
   "https://cdn.24h.com.vn/upload/1-2021/images/2021-03-12/Phat-hien-nguoi-dep-157884103_540208743608984_4158627500730650223_n-1615519993-786-width1080height1349.jpg",
   "https://danviet.mediacdn.vn/upload/3-2019/images/2019-09-04/3-1567585403-width650height651.jpg",
 ]
@@ -22,8 +21,8 @@ const personExamples = [
 const garmentExamples = [
   "https://timshop.timhortons.ca/cdn/shop/files/retro-logo-tshirt-back-1000px.png?v=1707853862&width=1000",
   "https://media.istockphoto.com/id/1152838910/vi/anh/blazer-nam-m%C3%A0u-xanh-%C4%91%E1%BA%ADm-tr%C3%AAn-n%E1%BB%81n-c%C3%B4-l%E1%BA%ADp.jpg?s=612x612&w=0&k=20&c=E1U6Q5jRmtEoC0VorvlVFENFqhfajobXJLWZp4M8Nrc=",
+  "https://product.hstatic.net/200000690725/product/ewcw001_54058105257_o_8e31ef77217942c5a8e31a0738d2c495_master.jpg",
   "https://bizweb.dktcdn.net/thumb/1024x1024/100/366/518/products/ao-day3.jpg",
-  "https://pos.nvncdn.com/80a557-93682/ps/20220604_AFEpQHuTof5b1zeNCBiIBNFK.jpeg",
 ]
 
 export default function Home() {
@@ -33,6 +32,168 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const notify = useNotification()
+  const items = [
+    {
+      key: "step1",
+      label: <Text style={{ fontSize: "18px" }}>Step 1: Model Image</Text>,
+      children: (
+        <Card
+          title={<Title level={3} style={{ fontSize: "18px" }}>Upload Model Image</Title>}
+          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          variant="outlined"
+        >
+          <Row gutter={24}>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={[
+                  "Clear single-person photo",
+                  "Full body or half-body shot",
+                  "Unobstructed clothing on the model",
+                  "Simple pose",
+                  "Model wearing simple, fitted clothing",
+                  "Obstructed model's face is acceptable",
+                ]}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Space>
+                      <CheckCircleFilled style={{ color: "#52c41a" }} />
+                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Col>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={[
+                  "Group photos",
+                  "Leaning or seated poses",
+                  "Obstructed clothing areas (by hands, hair, etc.)",
+                  "Complex poses",
+                  "Model wearing bulky clothing",
+                ]}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Space>
+                      <CloseCircleFilled style={{ color: "#f5222d" }} />
+                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Col>
+          </Row>
+        </Card>
+      )
+    },
+    {
+      key: "step2",
+      label: <Text style={{ fontSize: "18px" }}>Step 2: Product Image</Text>,
+      children: (
+        <Card
+          title={<Title level={3} style={{ fontSize: "18px" }}>Upload Product Image</Title>}
+          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          variant="outlined"
+        >
+          <Row gutter={24}>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={[
+                  "Single clothing item",
+                  "White background flat lay",
+                  "Simple and clear clothing details",
+                  "Focus on the garment as the main subject",
+                  "Clear and unobstructed clothing",
+                ]}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Space>
+                      <CheckCircleFilled style={{ color: "#52c41a" }} />
+                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Col>
+            <Col xs={24} md={12}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={[
+                  "Multiple clothing items in a single image",
+                  "Only bottom wear",
+                  "Complex backgrounds",
+                  "Clothing with intricate patterns or prints",
+                  "Additional floating watermarks",
+                  "Clothing that is folded or obscured",
+                ]}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Space>
+                      <CloseCircleFilled style={{ color: "#f5222d" }} />
+                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                    </Space>
+                  </List.Item>
+                )}
+              />
+            </Col>
+          </Row>
+        </Card>
+      )
+    },
+    {
+      key: "step3",
+      label: <Text style={{ fontSize: "18px" }}>Step 3: Results</Text>,
+      children: (
+        <Card
+          title={<Title level={3} style={{ fontSize: "20px" }}>Generated Results</Title>}
+          extra={<Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
+          variant="outlined"
+        >
+          <Paragraph style={{ fontSize: "16px" }}>
+            After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on result.
+          </Paragraph>
+          <Divider orientation="left">Example Results</Divider>
+          <Row gutter={[24, 24]}>
+            {["Model Image", "Product Image", "Try-on Result"].map((title, index) => (
+              <Col xs={24} md={8} key={index}>
+                <Card variant="outlined" className="result-card">
+                  <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>{title}</Title>
+                  <div style={{ textAlign: "center" }}>
+                    <img
+                      src={`/${index === 0 ? "008.jpg" : index === 1 ? "02_upper.png" : "Cl6-G2fK.png"}?height=300&width=200`}
+                      alt={`${title} example`}
+                      style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0" }}
+                    />
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+          <Card type="inner" title="Available Features" style={{ marginTop: "24px" }} variant="outlined">
+            <List
+              itemLayout="horizontal"
+              dataSource={[
+                "Image quality enhancement and background preservation",
+                "Multiple export options including high-resolution images",
+              ]}
+              renderItem={(item) => (
+                <List.Item>
+                  <Text style={{ fontSize: "15px" }}>{item}</Text>
+                </List.Item>
+              )}
+            />
+          </Card>
+        </Card>
+      )
+    }
+  ];
 
   const validationImage = (file) => {
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]
@@ -348,7 +509,7 @@ export default function Home() {
             className={styles.card}
             title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
           >
-            <div className={styles.resultContainer}>
+            <div className={styles.uploader}>
               {isLoading ? (
                 <div className={styles.loadingContainer}>
                   <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
@@ -383,191 +544,7 @@ export default function Home() {
         </Col>
       </Row>
 
-      <Tabs defaultActiveKey="step1" type="card" style={{ marginBottom: "30px" }}>
-        <Tabs.TabPane tab={<Text style={{ fontSize: "18px" }}>Step 1: Model Image</Text>} key="step2">
-          <Card
-            title={<Title level={3} style={{ fontSize: "18px" }}>Upload Model Image</Title>}
-            extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
-          >
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={[
-                    "Clear single-person photo",
-                    "Full body or half-body shot",
-                    "Unobstructed clothing on the model",
-                    "Simple pose",
-                    "Model wearing simple, fitted clothing",
-                    "Obstructed model's face is acceptable",
-                  ]}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <Space>
-                        <CheckCircleFilled style={{ color: "#52c41a" }} />
-                        <Text style={{ fontSize: "16px" }}>{item}</Text>
-                      </Space>
-                    </List.Item>
-                  )}
-                />
-              </Col>
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={[
-                    "Group photos",
-                    "Leaning or seated poses",
-                    "Obstructed clothing areas (by hands, hair, etc.)",
-                    "Complex poses",
-                    "Model wearing bulky clothing",
-                  ]}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <Space>
-                        <CloseCircleFilled style={{ color: "#f5222d" }} />
-                        <Text style={{ fontSize: "16px" }}>{item}</Text>
-                      </Space>
-                    </List.Item>
-                  )}
-                />
-              </Col>
-            </Row>
-          </Card>
-        </Tabs.TabPane>
-
-        <Tabs.TabPane tab={<Text style={{ fontSize: "18px" }}>Step 2: Product Image</Text>} key="step1">
-          <Card
-            title={<Title level={3} style={{ fontSize: "18px" }}>Upload Product Image</Title>}
-            extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
-          >
-            <Row gutter={24}>
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={[
-                    "Single clothing item",
-                    "White background flat lay",
-                    "Simple and clear clothing details",
-                    "Focus on the garment as the main subject",
-                    "Clear and unobstructed clothing",
-                  ]}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <Space>
-                        <CheckCircleFilled style={{ color: "#52c41a" }} />
-                        <Text style={{ fontSize: "16px" }}>{item}</Text>
-                      </Space>
-                    </List.Item>
-                  )}
-                />
-              </Col>
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={[
-                    "Multiple clothing items in a single image",
-                    "Only bottom wear",
-                    "Complex backgrounds",
-                    "Clothing with intricate patterns or prints",
-                    "Additional floating watermarks",
-                    "Clothing that is folded or obscured",
-                  ]}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <Space>
-                        <CloseCircleFilled style={{ color: "#f5222d" }} />
-                        <Text style={{ fontSize: "16px" }}>{item}</Text>
-                      </Space>
-                    </List.Item>
-                  )}
-                />
-              </Col>
-            </Row>
-          </Card>
-        </Tabs.TabPane>
-
-        <TabPane tab={<Text style={{ fontSize: "18px" }}>Step 3: Results</Text>} key="step3">
-            <Card
-              title={
-                <Title level={3} style={{ fontSize: "20px" }}>
-                  Generated Results
-                </Title>
-              }
-              extra={<Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
-            >
-              <Paragraph style={{ fontSize: "16px" }}>
-                After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on
-                result.
-              </Paragraph>
-
-              <Divider orientation="left">Example Results</Divider>
-
-              <Row gutter={[24, 24]}>
-                <Col xs={24} md={8}>
-                  <Card bordered={false} className="result-card">
-                    <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
-                      Model Image
-                    </Title>
-                    <div style={{ textAlign: "center" }}>
-                      <img
-                        src="/008.jpg?height=300&width=200"
-                        alt="Model image example"
-                        style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0" }}
-                      />
-                    </div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8} style={{textAlign: "center"}} >
-                  <Card bordered={false} className="result-card">
-                    <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
-                      Product Image
-                    </Title>
-                    <div style={{ textAlign: "center" }}>
-                      <img
-                        src="/02_upper.png?height=300&width=200"
-                        alt="Product image example"
-                        style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0", objectFit: "cover" }}
-                      />
-                    </div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Card bordered={false} className="result-card">
-                    <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
-                      Try-on Result
-                    </Title>
-                    <div style={{ textAlign: "center" }}>
-                      <img
-                        src="/Cl6-G2fK.png?height=300&width=200"
-                        alt="Try-on result example"
-                        style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0" }}
-                      />
-                    </div>
-                  </Card>
-                </Col>
-              </Row>
-
-              <Card type="inner" title="Available Features" style={{ marginTop: "24px" }}>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={[
-                    "Image quality enhancement and background preservation",
-                    "Multiple export options including high-resolution images",
-                  ]}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <Text style={{ fontSize: "15px" }}>{item}</Text>
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Card>
-          </TabPane>
-      </Tabs>
+      <Tabs items={items} />;
 
       <section style={{ marginBottom: "30px" }}>
         <Title level={3} style={{ fontSize: "22px" }}>Tips for Best Results</Title>

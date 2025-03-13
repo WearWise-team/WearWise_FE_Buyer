@@ -1,48 +1,42 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Spin, Tag, Divider } from "antd"
-import { ShoppingOutlined } from "@ant-design/icons"
-import Image from "next/image"
-import ReviewButton from "./ReviewButton"
+import { useState } from "react";
+import { Spin, Tag, Divider } from "antd";
+import { ShoppingOutlined } from "@ant-design/icons";
+import Image from "next/image";
+import ReviewButton from "./ReviewButton";
 
 export default function OrdersByStatus({ orders, status, loading, notify }) {
-  console.log("orders:", orders)
+  console.log("orders:", orders);
   // State to track which items have their review forms open
-  const [openReviewForms, setOpenReviewForms] = useState({})
+  const [openReviewForms, setOpenReviewForms] = useState({});
   // State to track which items have been reviewed during this session
-  const [reviewedItems, setReviewedItems] = useState({})
+  const [reviewedItems, setReviewedItems] = useState({});
 
   // Toggle review form visibility for a specific item
   const toggleReviewForm = (itemId) => {
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
-    }))
-  }
+    }));
+  };
 
   const markAsReviewed = (itemId) => {
     setReviewedItems((prev) => ({
       ...prev,
       [itemId]: true,
-    }))
+    }));
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: false,
-    }))
-  }
-
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    })
+    }));
+  };
 
   const formatDate = (dateString) =>
-    new Date(dateString).toLocaleString("en-US", {
+    new Date(dateString).toLocaleString("vi-VN", {
       dateStyle: "medium",
       timeStyle: "short",
-    })
+    });
 
   const filteredOrders = orders
     .map((order) => ({
@@ -50,13 +44,13 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
       items: order.items.filter((item) => item.status === status),
     }))
     .filter((order) => order.items.length > 0);
-  console.log("filted",filteredOrders)
+  console.log("filted", filteredOrders);
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
         <Spin size="large" />
       </div>
-    )
+    );
   }
 
   if (filteredOrders.length === 0) {
@@ -65,7 +59,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
         <ShoppingOutlined className="text-4xl text-gray-400 mb-4" />
         <p className="text-gray-500">No {status} orders found.</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -122,7 +116,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{formatCurrency(item.price)}</p>
+                  <p className="font-semibold">{(item.price)}</p>
                 </div>
               </div>
 
@@ -154,7 +148,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                 </p>
               )}
               <p className="font-semibold text-lg">
-                Total: {formatCurrency(order.total_amount)}
+                Total: {(order.total_amount)}
               </p>
             </div>
           </div>
@@ -163,4 +157,3 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
     </div>
   );
 }
-

@@ -22,8 +22,6 @@ export default function Sidebar() {
   const handleLogout = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      console.log(accessToken);
-      
       if (!accessToken) {
         console.error("Access token không tồn tại.");
         return;

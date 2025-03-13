@@ -66,8 +66,7 @@ export default function Page() {
   // Handle Momo payment
   const handleMomoPayment = async () => {
     setIsPending(true)
-    const exchangeRate = 25000
-    const amountVND = Math.round(totalAmount * exchangeRate)
+    const amountVND = Math.round(totalAmount)
 
     if (amountVND < 1000 || amountVND > 50000000) {
       notify("Payment Error", "Amount must be from 1,000 to 50,000,000 VND", "topRight", "error")
@@ -368,11 +367,11 @@ export default function Page() {
               <div>
                 <div className="flex justify-between mb-1 mt-8">
                   <span>Discount</span>
-                  <span className="text-red-500">-${discount}</span>
+                  <span className="text-red-500">-{(discount)}đ</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>${totalAmount}</span>
+                  <span>{(totalAmount)}đ</span>
                 </div>
               </div>
               <button

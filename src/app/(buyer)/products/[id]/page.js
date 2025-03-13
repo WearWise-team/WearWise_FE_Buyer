@@ -27,11 +27,10 @@ export default function DetailProduct({ params }) {
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
   const [cart, setCart] = useState([]);
   const notify = useNotification();
+  const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
   const resolvedParams = use(params);
   const { id } = resolvedParams;
@@ -58,11 +57,6 @@ export default function DetailProduct({ params }) {
       );
     }
   }, [product]);
-
-  const handleChange = (value) => {
-    setRating(value);
-    console.log("User rated:", value);
-  };
 
   const handleAddToCart = (
     productId,
@@ -113,7 +107,7 @@ export default function DetailProduct({ params }) {
       quantity: quantity,
     };
 
-    setCart([...cart, newItem]); 
+    setCart([...cart, newItem]);
 
     addToCart(newItem)
       .then((response) =>
@@ -133,12 +127,12 @@ export default function DetailProduct({ params }) {
         console.error("User not authenticated");
         return;
       }
-  
+
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-  
+
       if (!isFavorite) {
         await axios.post(
           `${API_BASE_URL}/api/wishlists`,
@@ -149,23 +143,84 @@ export default function DetailProduct({ params }) {
           "Product Added wishlist Successfully",
           "Your product has been added to the wishlist.",
           "topRight"
-        )
+        );
       } else {
         await axios.delete(`${API_BASE_URL}/api/wishlists/${id}`, { headers });
         notify(
           "Product deleted wishlist Successfully",
           "Your product has been added to the wishlist.",
           "topRight"
-        )
+        );
       }
-  
+
       setIsFavorite(!isFavorite);
     } catch (error) {
       console.error("Error updating wishlist:", error);
     }
   };
-  
-  const percentageOf = (value, percentage) => (value * percentage) / 100;
+
+  const handleBuyNow = (product, selectedColor, selectedSize) => {
+    if (!selectedColor) {
+      notify(
+        "Product Color Required",
+        "Please select a color for this product.",
+        "topRight",
+        "warning"
+      );
+      return;
+    }
+
+    const isUserLogin = localStorage.getItem("user");
+    const isAlreadyInCart = cart.some(
+      (item) =>
+        item.product_id === product.id &&
+        item.product_color_id === selectedColor &&
+        item.product_size_id === selectedSize
+    );
+    if (isAlreadyInCart && isUserLogin) {
+      notify(
+        "Product Added to Cart",
+        "Your product has been added to the cart.",
+        "topRight",
+        "warning"
+      );
+      return;
+    } else if (!isUserLogin) {
+      notify(
+        "Login Required",
+        "You must login to add this product to the cart.",
+        "topRight",
+        "warning"
+      );
+      router.push("/login");
+      return;
+    }
+    localStorage.setItem("buy_now_product", JSON.stringify(product));
+    localStorage.setItem(
+      "buy_now_product_colorId",
+      JSON.stringify(selectedColor)
+    );
+    localStorage.setItem(
+      "buy_now_product_sizeId",
+      JSON.stringify(selectedSize)
+    );
+    localStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    router.push("/order/now");
+  };
+
+ const percentageOf = (value, percentage) => {
+   const numValue = parseFloat(
+     value.toString().replace(/\./g, "").replace("đ", "").trim()
+   );
+   const numPercentage = parseFloat(percentage);
+
+   return !isNaN(numValue) && !isNaN(numPercentage)
+     ? ((numValue * numPercentage) / 100).toLocaleString("vi-VN", {
+         minimumFractionDigits: 3,
+         maximumFractionDigits: 3,
+       })
+     : "0";
+ };
 
   if (isLoading) {
     return <WearwiseLoading></WearwiseLoading>;
@@ -175,7 +230,6 @@ export default function DetailProduct({ params }) {
     <>
       <div className="bg-white text-gray-800">
         <div className="container mx-16 p-4">
-          {/* Breadcrumb */}
           <nav className="text-sm mb-4 flex gap-2 text-end">
             <Link className="text-gray-500 hover:text-gray-700" href="/">
               Home
@@ -187,7 +241,6 @@ export default function DetailProduct({ params }) {
           </nav>
 
           <div className="flex flex-col lg:flex-row">
-            {/* Hình ảnh sản phẩm */}
             <div className="flex items-center justify-between gap-5 lg:w-1/2">
               <div className="flex flex-col items-center justify-evenly h-full mb-4">
                 {(product?.images && product.images.length > 0
@@ -226,10 +279,9 @@ export default function DetailProduct({ params }) {
               </div>
             </div>
 
-            {/* Chi tiết sản phẩm */}
             <div className="lg:w-1/2 lg:pl-8">
               <h1 className="text-2xl font-bold mb-2">
-                {product ? product.name : "is loading..."}
+                {product ? product.name : "loading..."}
               </h1>
 
               <div className="flex items-center mb-2">
@@ -246,15 +298,15 @@ export default function DetailProduct({ params }) {
 
               <div className="flex items-center mb-4">
                 <span className="text-3xl font-bold">
-                  ${product ? product.price : 0}
+                  {product
+                    ? product.price.toLocaleString("vi-VN")
+                    : 0}đ
                 </span>
                 {product && product.discounts.length > 0 ? (
                   <div className="ml-2">
                     {product.discounts.map((discount) => {
-                      // Tính giá sau giảm giá
-                      const discountedPrice = percentageOf(
-                        product.price,
-                        discount.percentage
+                      const discountedPrice = parseFloat(
+                        percentageOf(product.price, discount.percentage)
                       );
                       return (
                         <p key={discount.id} className="flex items-center">
@@ -262,7 +314,7 @@ export default function DetailProduct({ params }) {
                             {discount.code} -
                           </span>
                           <span className="text-gray-500 ml-2 line-through">
-                            ${discountedPrice.toFixed(2)}
+                            {discountedPrice}
                           </span>
                           <span className="text-red-500 ml-2">
                             {discount.percentage}%
@@ -278,7 +330,6 @@ export default function DetailProduct({ params }) {
                 {product ? product.description : ""}
               </p>
 
-              {/* Chọn màu */}
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Select Colors</h2>
                 <div className="flex space-x-2">
@@ -300,7 +351,6 @@ export default function DetailProduct({ params }) {
                 </div>
               </div>
 
-              {/* Chọn Size */}
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Choose Size</h2>
                 <div className="flex space-x-2">
@@ -309,15 +359,33 @@ export default function DetailProduct({ params }) {
                       key={size.id}
                       id={size.id}
                       onClick={() => setSelectedSize(size.id)}
-                      className={`px-4 py-2 border border-spacing-1 rounded-md ${
+                      className={`px-4 py-2 border border-spacing-1 rounded-xl ${
                         selectedSize === size.id
                           ? "bg-gray-800 text-white"
                           : "bg-white text-gray-800"
-                      } transition-all duration-300 hover:shadow-md`}
+                      } transition-all duration-300 hover:shadow-xl`}
                     >
                       {size.name}
                     </button>
                   ))}
+                </div>
+              </div>
+              <div className="mb-4">
+                <h2 className="text-lg font-medium mb-2">Quantity</h2>
+                <div className="flex items-center mt-2">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="px-2 py-1 bg-gray-300 rounded"
+                  >
+                    -
+                  </button>
+                  <span className="px-4">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="px-2 py-1 bg-gray-300 rounded"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
               <div className="flex items-center space-x-4 mb-4">
@@ -329,17 +397,30 @@ export default function DetailProduct({ params }) {
                   //   }
                   // }}
                 >
-                  <button className="px-4 py-2 bg-black text-white rounded-lg">
+                  <button className="px-4 py-2 bg-pink-700 text-white rounded-xl">
                     Try to 2D
                   </button>
                 </Link>
                 <button
-                  className="px-4 py-2 bg-black text-white rounded-lg"
+                  className="px-4 py-2 bg-pink-700 text-white rounded-xl flex"
                   onClick={() =>
-                    handleAddToCart(product?.id, selectedColor, selectedSize, 1)
+                    handleAddToCart(
+                      product?.id,
+                      selectedColor,
+                      selectedSize,
+                      quantity
+                    )
                   }
                 >
                   Add to Cart
+                </button>
+                <button
+                  className="px-4 py-2 bg-pink-700 text-white rounded-xl flex relative"
+                  onClick={() =>
+                    handleBuyNow(product, selectedColor, selectedSize, quantity)
+                  }
+                >
+                  Buy Now
                 </button>
               </div>
             </div>
@@ -430,55 +511,7 @@ export default function DetailProduct({ params }) {
                           {product && product.reviews.length}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2 w-1/3 justify-evenly">
-                        <button className="flex items-center justify-evenly w-10 h-10 rounded-full bg-gray-200">
-                          <FaSlidersH />
-                        </button>
-                        <button className="flex items-center justify-center px-4 py-2 rounded-full bg-gray-200">
-                          Latest <FaChevronDown className="ml-2" />
-                        </button>
-                        <button
-                          className="flex items-center justify-center px-4 py-2 rounded-full bg-black text-white"
-                          onClick={() => setShowReviewForm(true)}
-                        >
-                          Write a Review
-                        </button>
-                      </div>
                     </div>
-                    {/* Show form */}
-                    {showReviewForm && (
-                      <div className="p-4 border rounded-lg shadow-lg bg-gray-100 mt-4">
-                        <h2 className="text-lg font-semibold mb-2">
-                          Write a Review
-                        </h2>
-                        <Rate
-                          allowHalf
-                          defaultValue={rating}
-                          onChange={handleChange}
-                        />
-                        <textarea
-                          className="w-full p-2 mt-2 border rounded-lg"
-                          rows="4"
-                          placeholder="Share your thoughts..."
-                          value={reviewText}
-                          onChange={(e) => setReviewText(e.target.value)}
-                        ></textarea>
-                        <div className="flex justify-end space-x-2 mt-2">
-                          <button
-                            className="px-4 py-2 bg-gray-300 rounded-lg"
-                            onClick={() => setShowReviewForm(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            className="px-4 py-2 bg-black text-white rounded-lg"
-                            onClick={handleSubmitReview}
-                          >
-                            Submit
-                          </button>
-                        </div>
-                      </div>
-                    )}
                     <div className="flex flex-wrap gap-8">
                       {product.reviews.length > 0 &&
                         product.reviews.map((review, index) => (

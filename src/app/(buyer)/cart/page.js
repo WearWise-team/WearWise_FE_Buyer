@@ -208,7 +208,7 @@ const Cart = () => {
                         Size: {item.size?.name}, Color: {item.color?.name}
                       </p>
                       <p className="font-bold mt-2">
-                        {Number(item.product?.price).toFixed(2)}
+                        {Number(item.product?.price)}
                       </p>
                       <div className="flex items-center mt-2">
                         <button
@@ -259,17 +259,17 @@ const Cart = () => {
               <h2 className="text-xl font-bold mb-4">Order Summary</h2>
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{(subtotal)}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span>Discount</span>
                 <span className="text-red-500">
-                  -${totalDiscount.toFixed(2)}
+                  -{(totalDiscount)}
                 </span>
               </div>
               <div className="flex justify-between font-bold text-lg mb-4">
                 <span>Total</span>
-                <span>${(subtotal - totalDiscount).toFixed(2)}</span>
+                <span>{(subtotal - totalDiscount)}</span>
               </div>
               <input
                 type="text"

@@ -71,7 +71,7 @@ const ProductPage = () => {
     };
 
     fetchProducts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, products]);
 
   const updateProductList = (result) => {
@@ -151,7 +151,7 @@ const ProductPage = () => {
           ) : result ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {productList.map((product) => (
-                <Link href={`/products/${product.id}`} key={product.id}>
+                <div key={product.id}>
                   <Card
                     product={product}
                     rating={
@@ -163,7 +163,7 @@ const ProductPage = () => {
                         : 0
                     }
                   />
-                </Link>
+                </div>
               ))}
             </div>
           ) : (
