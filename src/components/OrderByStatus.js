@@ -21,13 +21,11 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
     }))
   }
 
-  // Mark an item as reviewed after successful submission
   const markAsReviewed = (itemId) => {
     setReviewedItems((prev) => ({
       ...prev,
       [itemId]: true,
     }))
-    // Close the form when marked as reviewed
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: false,
@@ -73,14 +71,25 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
   return (
     <div className="space-y-6">
       {filteredOrders.map((order) => (
-        <div key={order.id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div
+          key={order.id}
+          className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="font-semibold text-lg">Order #{order.id}</h3>
-              <p className="text-gray-500 text-sm">Placed on {formatDate(order.order_date)}</p>
+              <p className="text-gray-500 text-sm">
+                Placed on {formatDate(order.order_date)}
+              </p>
             </div>
             <Tag
-              color={status === "completed" ? "green" : status === "pending" ? "orange" : "red"}
+              color={
+                status === "completed"
+                  ? "green"
+                  : status === "pending"
+                  ? "orange"
+                  : "red"
+              }
               className="font-medium"
             >
               {status}
@@ -91,10 +100,14 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
 
           {order.items.map((item, index) => (
             <div key={item.order_item_id}>
-              <div className={`flex items-center gap-6 ${index > 0 ? "pt-4 border-t" : ""}`}>
+              <div
+                className={`flex items-center gap-6 ${
+                  index > 0 ? "pt-4 border-t" : ""
+                }`}
+              >
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <Image
-                    src={item.image || "/placeholder.svg"}
+                    src={item.main_image || "https://placehold.co/100x100"}
                     alt={item.product_name}
                     fill
                     className="object-cover rounded-md"
@@ -121,7 +134,9 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                     isOpen={openReviewForms[item.order_item_id]}
                     onToggle={() => toggleReviewForm(item.order_item_id)}
                     onReviewSuccess={() => markAsReviewed(item.order_item_id)}
-                    isReviewed={item.reviewed || reviewedItems[item.order_item_id]}
+                    isReviewed={
+                      item.reviewed || reviewedItems[item.order_item_id]
+                    }
                     notify={notify}
                   />
                 </div>
@@ -134,14 +149,18 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
           <div className="flex justify-between items-center">
             <div>
               {order.payment_method !== "cod" && (
-                <p className="text-gray-600">Payment: {order.payment_method.toUpperCase()}</p>
+                <p className="text-gray-600">
+                  Payment: {order.payment_method.toUpperCase()}
+                </p>
               )}
-              <p className="font-semibold text-lg">Total: {formatCurrency(order.total_amount)}</p>
+              <p className="font-semibold text-lg">
+                Total: {formatCurrency(order.total_amount)}
+              </p>
             </div>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }
 

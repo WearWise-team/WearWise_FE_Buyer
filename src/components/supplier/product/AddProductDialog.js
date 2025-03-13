@@ -17,6 +17,7 @@ import { getColors } from "@/apiServices/colors/page";
 import { X } from "lucide-react";
 import { getSupplierByUserID } from "@/apiServices/suppliers/page";
 import { useNotification } from "@/apiServices/NotificationService";
+import { getDiscounts } from "@/apiServices/discounts/page";
 
 export default function AddProductDialog({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -24,18 +25,21 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
     description: "",
     category: "",
     price: 0,
-    quantity: 1,
+    quantity: 0,
     supplier_id: "",
     images: [],
     main_image: "",
     colors: [],
     sizes: [],
+    discounts: [],
   });
 
   const [sizes, setSizes] = useState([]);
   const [colors, setColors] = useState([]);
+  const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const notify = useNotification();
+  const [errors, setErrors] = useState({});
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   useEffect(() => {
     const fetchSizes = async () => {
@@ -60,6 +64,19 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
     };
     fetchColors();
   }, []);
+
+  useEffect(() => {
+    const fetchDiscount = async () => {
+      try {
+        const discounts = await getDiscounts();
+        setDiscounts(discounts);
+      } catch (error) {
+        console.error("Fetch colors error:", error);
+      }
+    };
+    fetchDiscount();
+  }, []);
+
 
   useEffect(() => {
     const fetchSupplier = async () => {
@@ -108,6 +125,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
 
   const handleAddProduct = async () => {
     setLoading(true);
+    setErrors({});
     try {
       const form = new FormData();
       form.append("name", formData.name);
@@ -119,7 +137,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
       if (Array.isArray(formData.sizes) && formData.sizes.length > 0) {
         formData.sizes.forEach((size) => {
           if (size.value !== undefined) {
-            form.append("sizes[]", size.value); // Gửi ID
+            form.append("sizes[]", size.value);
           }
         });
       } else {
@@ -128,11 +146,21 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
       if (Array.isArray(formData.colors) && formData.colors.length > 0) {
         formData.colors.forEach((color) => {
           if (color.value !== undefined) {
-            form.append("colors[]", color.value); 
+            form.append("colors[]", color.value);
           }
         });
       } else {
         console.warn("⚠️ formData.colors is empty or invalid!");
+      }
+
+      if (Array.isArray(formData.discounts) && formData.discounts.length > 0) {
+        formData.discounts.forEach((discount) => {
+          if (discount.value !== undefined) {
+            form.append("discounts[]", discount.value);
+          }
+        });
+      } else {
+        console.warn("⚠️ formData.discounts is empty or invalid!");
       }
       if (formData.main_image) {
         form.append("main_image", formData.main_image);
@@ -152,17 +180,20 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
         method: "POST",
         body: form,
       });
+
       const result = await response.json();
+
       if (response.ok) {
-        notify("Add product successfull", "success");
+        notify("✅ Add product successful!", "success");
         onAdd(result.data);
         setFormData({
           name: "",
           category: "",
           price: "",
-          quantity: 1,
+          quantity: "",
           sizes: [],
           colors: [],
+          discounts: [],
           main_image: null,
           images: [],
           description: "",
@@ -170,12 +201,16 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
         });
         onClose();
       } else {
-        console.error("❌ API Error:", result.errors);
+        notify(" Error adding product!", "error");
+        if (result.errors) {
+          setErrors(result.errors);
+        }
       }
     } catch (error) {
-      console.error("Error adding product:", error);
+      notify(" Network error. Please try again.", "error");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -197,16 +232,41 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                 setFormData({ ...formData, name: e.target.value })
               }
             />
+            {errors.name && <p className="text-red-500">{errors.name[0]}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+              />
+              {errors.category && (
+                <p className="text-red-500">{errors.category[0]}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="discounts">Discount</Label>
+              <MultiSelect
+                id="discounts"
+                options={discounts.map((discount) => ({
+                  label: `${discount.code} - ${Math.round(
+                    discount.percentage
+                  )}%`,
+                  value: discount.id,
+                }))}
+                value={formData.discounts}
+                onChange={(values) =>
+                  setFormData({ ...formData, discounts: values })
+                }
+              />
+              {errors.discounts && (
+                <p className="text-red-500">{errors.discounts[0]}</p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -219,6 +279,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   setFormData({ ...formData, price: e.target.value })
                 }
               />
+              {errors.price && (
+                <p className="text-red-500">{errors.price[0]}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="quantity">Quantity</Label>
@@ -230,6 +293,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   setFormData({ ...formData, quantity: e.target.value })
                 }
               />
+              {errors.quantity && (
+                <p className="text-red-500">{errors.quantity[0]}</p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -246,6 +312,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   setFormData({ ...formData, sizes: values })
                 }
               />
+              {errors.sizes && (
+                <p className="text-red-500">{errors.sizes[0]}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="colors">Color</Label>
@@ -260,6 +329,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   setFormData({ ...formData, colors: values })
                 }
               />
+              {errors.colors && (
+                <p className="text-red-500">{errors.colors[0]}</p>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -284,6 +356,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   <X size={16} />{" "}
                 </button>
               </div>
+            )}
+            {errors.main_image && (
+              <p className="text-red-500">{errors.main_image[0]}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -310,6 +385,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                   </button>
                 </div>
               ))}
+              {errors.images && (
+                <p className="text-red-500">{errors.images[0]}</p>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -321,6 +399,9 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
                 setFormData({ ...formData, description: e.target.value })
               }
             />
+            {errors.description && (
+              <p className="text-red-500">{errors.description[0]}</p>
+            )}
           </div>
         </div>
         <DialogFooter className="flex justify-end space-x-2">

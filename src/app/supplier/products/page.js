@@ -28,35 +28,57 @@ import {
 import AddProductDialog from "@/components/supplier/product/AddProductDialog";
 import EditProductDialog from "@/components/supplier/product/EditProductDialog";
 import DetailProductDialog from "@/components/supplier/product/DetailProductDialog";
-import { getProductWithSizeAndColor } from "@/apiServices/products/page";
+import { getSupplierByUserID } from "@/apiServices/suppliers/page";
+import { deleteProduct, getProductBySupplierID } from "@/apiServices/products/page";
+import { useNotification } from "@/apiServices/NotificationService";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [supplierID, setSupplierID] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-    const [sortConfig, setSortConfig] = useState({
-      key: null,
-      direction: "asc",
-    });
-  const itemsPerPage = 10
+  const notify = useNotification();
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+  const itemsPerPage = 10;
+  useEffect(() => {
+    const fetchSupplier = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+
+      try {
+        const user = JSON.parse(userData);
+        const supplier = await getSupplierByUserID(user.id);
+        setSupplierID(supplier.id);
+      } catch (error) {
+        console.error("Fetch supplier error:", error);
+      }
+    };
+
+    fetchSupplier();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!supplierID) return;
+
       try {
-        const products = await getProductWithSizeAndColor();   
+        const products = await getProductBySupplierID(supplierID);
         setProducts(products);
       } catch (error) {
         console.error("Fetch products error:", error);
       }
     };
-    fetchProducts();
-  }, []);
 
+    fetchProducts();
+  }, [supplierID]);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -98,13 +120,24 @@ export default function ProductsPage() {
     setProducts(updatedProducts);
   };
 
-  const handleDeleteProduct = () => {
-    const updatedProducts = products.filter(
-      (product) => product.id !== selectedProduct.id
-    );
-    setProducts(updatedProducts);
-    setIsDeleteDialogOpen(false);
+  const handleDeleteProduct = async () => {
+    try {
+      await deleteProduct(selectedProduct.id);
+
+      const updatedProducts = products.filter(
+        (product) => product.id !== selectedProduct.id
+      );
+
+      setProducts(updatedProducts);
+      setIsDeleteDialogOpen(false);
+
+      notify("Product deleted successfully!", "success");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      notify("Failed to delete product! ❌", "error");
+    }
   };
+
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
@@ -153,6 +186,7 @@ export default function ProductsPage() {
               )}
               <TableHead>Size</TableHead>
               <TableHead>Color</TableHead>
+              <TableHead>Discount</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -166,21 +200,23 @@ export default function ProductsPage() {
                   <TableCell>{product.quantity}</TableCell>
                   <TableCell>{product.rating_avg}</TableCell>
                   <TableCell>
+                    {[...new Set(product.sizes?.map((size) => size.name))].join(
+                      ", "
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {[
+                      ...new Set(product.colors?.map((color) => color.name)),
+                    ].join(", ")}
+                  </TableCell>
+                  <TableCell>
                     {[
                       ...new Set(
-                        product.sizes?.map(
-                          (size) => size.name
+                        product.discounts?.map(
+                          (discount) => `${Math.round(discount.percentage)}%`
                         )
                       ),
                     ].join(", ")}
-                  </TableCell>
-
-                  <TableCell>
-                    <TableCell>
-                      {[
-                        ...new Set(product.colors?.map((color) => color.name)),
-                      ].join(", ")}
-                    </TableCell>
                   </TableCell>
                   <TableCell className="flex space-x-2">
                     <Button

@@ -6,16 +6,15 @@ export default function Card({ product, rating }) {
   const { name, main_image, price, discounts } = product;
 
   const discount = discounts?.length ? discounts[discounts.length - 1] : null
-  const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)) : price
-
+  const discountedPrice = discount ? (price - percentageOf(price, discount.pivot.percentage)) : price  
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="relative aspect-[2/2] w-full overflow-hidden rounded-t-lg">
         <Image
           fill
-          src={main_image || "https://placehold.co/100x100"}
+          src={product?.main_image || "https://placehold.co/100x100"}
           alt={name}
-          className="object-cover"  
+          className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
@@ -32,10 +31,16 @@ export default function Card({ product, rating }) {
 
         {/* Hiển thị giá */}
         <div className="flex items-center">
-          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>${discountedPrice}</span>
+          <span
+            className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}
+          >
+            ${discountedPrice}
+          </span>
           {discount && (
             <>
-              <span className="text-sm text-gray-500 line-through ml-2">${price}</span>
+              <span className="text-sm text-gray-500 line-through ml-2">
+                ${price}
+              </span>
               <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
                 -{Math.floor(discount.pivot.percentage)}%
               </span>
@@ -44,6 +49,6 @@ export default function Card({ product, rating }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 

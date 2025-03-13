@@ -22,7 +22,6 @@ export default function DetailProductDialog({
   useEffect(() => {
     setDetailProduct(product);
   }, [product]);
-console.log(detailProduct);
 
   if (!product) return null;
 
@@ -37,14 +36,31 @@ console.log(detailProduct);
             <Label htmlFor="detail-name">Product Name</Label>
             <Input id="detail-name" value={detailProduct?.name} disabled />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="detail-category">Category</Label>
-            <Input
-              id="detail-category"
-              value={detailProduct?.category}
-              disabled
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="detail-category">Category</Label>
+              <Input
+                id="detail-category"
+                value={detailProduct?.category}
+                disabled
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="detail-discount">Discount</Label>
+              <Input
+                id="detail-discount"
+                value={[
+                  ...new Set(
+                    product.discounts?.map(
+                      (discount) => `${Math.round(discount.percentage)}%`
+                    )
+                  ),
+                ].join(", ")}
+                disabled
+              />
+            </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="detail-price">Price</Label>
