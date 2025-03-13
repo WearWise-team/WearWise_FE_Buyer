@@ -21,11 +21,6 @@ export default function Page() {
   const notify = useNotification()
   const router = useRouter()
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -372,11 +367,11 @@ export default function Page() {
               <div>
                 <div className="flex justify-between mb-1 mt-8">
                   <span>Discount</span>
-                  <span className="text-red-500">-{formatCurrency(discount)}đ</span>
+                  <span className="text-red-500">-{(discount)}đ</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>{formatCurrency(totalAmount)}đ</span>
+                  <span>{(totalAmount)}đ</span>
                 </div>
               </div>
               <button

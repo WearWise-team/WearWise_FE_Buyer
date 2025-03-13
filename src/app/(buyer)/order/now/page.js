@@ -23,12 +23,6 @@ export default function Page() {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedItem = localStorage.getItem("buy_now_product");
@@ -483,7 +477,7 @@ export default function Page() {
                               ?.name || "N/A"}
                           </p>
                           <p className="text-sm font-semibold text-gray-700 mt-1">
-                            {formatCurrency(item.price || 0)}
+                            {(item.price || 0)}
                           </p>
                         </div>
                       </div>
@@ -492,7 +486,7 @@ export default function Page() {
                           Qty: {quantity || 1}
                         </p>
                         <p className="text-lg font-bold text-gray-900">
-                          {formatCurrency((item.price || 0) * (quantity || 1))}
+                          {((item.price || 0) * (quantity || 1))}
                         </p>
                       </div>
                     </div>
@@ -508,12 +502,12 @@ export default function Page() {
                 <div className="flex justify-between mb-1 mt-8">
                   <span>Discount</span>
                   <span className="text-red-500">
-                    -${formatCurrency(discount || 0)}
+                    -${(discount || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>${formatCurrency(totalAmount || 0)}</span>
+                  <span>${(totalAmount || 0)}</span>
                 </div>
               </div>
               <button

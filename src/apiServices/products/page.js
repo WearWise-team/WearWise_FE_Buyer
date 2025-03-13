@@ -3,9 +3,8 @@ import fetchData from "@/apiServices/api/page";
 export const getProducts = () => fetchData("products");
 
 export const getProductWithSizeAndColor = () => fetchData("productswithsize");
-
+export const getProductBySupplierID = (id) => fetchData(`productsbysupplierID/${id}`);
 export const getProductById = (id) => fetchData(`products/${id}`);
-
 export const getProductDetails = (id) => fetchData(`products/more/${id}`);
 export const createProduct = (productData) =>
   fetchData("products", "POST", productData);

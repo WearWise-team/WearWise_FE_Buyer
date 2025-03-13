@@ -20,12 +20,6 @@ const Cart = () => {
   const notify = useNotification();
   const router = useRouter();
 
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -214,7 +208,7 @@ const Cart = () => {
                         Size: {item.size?.name}, Color: {item.color?.name}
                       </p>
                       <p className="font-bold mt-2">
-                        {formatCurrency(Number(item.product?.price))}
+                        {Number(item.product?.price)}
                       </p>
                       <div className="flex items-center mt-2">
                         <button
@@ -265,17 +259,17 @@ const Cart = () => {
               <h2 className="text-xl font-bold mb-4">Order Summary</h2>
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
+                <span>{(subtotal)}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span>Discount</span>
                 <span className="text-red-500">
-                  -{formatCurrency(totalDiscount)}
+                  -{(totalDiscount)}
                 </span>
               </div>
               <div className="flex justify-between font-bold text-lg mb-4">
                 <span>Total</span>
-                <span>{formatCurrency(subtotal - totalDiscount)}</span>
+                <span>{(subtotal - totalDiscount)}</span>
               </div>
               <input
                 type="text"

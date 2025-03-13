@@ -29,7 +29,6 @@ export default function EditProductDialog({
     onEdit(editedProduct);
     onClose();
   };
-  console.log(editedProduct?.images);
   const handleImageChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {

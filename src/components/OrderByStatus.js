@@ -21,24 +21,16 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
     }));
   };
 
-  // Mark an item as reviewed after successful submission
   const markAsReviewed = (itemId) => {
     setReviewedItems((prev) => ({
       ...prev,
       [itemId]: true,
     }));
-    // Close the form when marked as reviewed
     setOpenReviewForms((prev) => ({
       ...prev,
       [itemId]: false,
     }));
   };
-
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleString("vi-VN", {
@@ -109,7 +101,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
               >
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <Image
-                    src={item.main_image || "/placeholder.svg"}
+                    src={item.main_image || "https://placehold.co/100x100"}
                     alt={item.product_name}
                     fill
                     className="object-cover rounded-md"
@@ -124,7 +116,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{formatCurrency(item.price)}</p>
+                  <p className="font-semibold">{(item.price)}</p>
                 </div>
               </div>
 
@@ -156,7 +148,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                 </p>
               )}
               <p className="font-semibold text-lg">
-                Total: {formatCurrency(order.total_amount)}
+                Total: {(order.total_amount)}
               </p>
             </div>
           </div>

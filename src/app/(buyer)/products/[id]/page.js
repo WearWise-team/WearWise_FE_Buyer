@@ -35,12 +35,6 @@ export default function DetailProduct({ params }) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
 
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-
   useEffect(() => {
     if (product === null) {
       setIsLoading(true);
@@ -214,7 +208,19 @@ export default function DetailProduct({ params }) {
     router.push("/order/now");
   };
 
-  const percentageOf = (value, percentage) => (value * percentage) / 100;
+ const percentageOf = (value, percentage) => {
+   const numValue = parseFloat(
+     value.toString().replace(/\./g, "").replace("đ", "").trim()
+   );
+   const numPercentage = parseFloat(percentage);
+
+   return !isNaN(numValue) && !isNaN(numPercentage)
+     ? ((numValue * numPercentage) / 100).toLocaleString("vi-VN", {
+         minimumFractionDigits: 3,
+         maximumFractionDigits: 3,
+       })
+     : "0";
+ };
 
   if (isLoading) {
     return <WearwiseLoading></WearwiseLoading>;
@@ -292,15 +298,15 @@ export default function DetailProduct({ params }) {
 
               <div className="flex items-center mb-4">
                 <span className="text-3xl font-bold">
-                  {product ? formatCurrency(parseFloat(product.price)) : 0}
+                  {product
+                    ? product.price.toLocaleString("vi-VN")
+                    : 0}đ
                 </span>
                 {product && product.discounts.length > 0 ? (
                   <div className="ml-2">
                     {product.discounts.map((discount) => {
-                      const discountedPrice = formatCurrency(
-                        parseFloat(
-                          percentageOf(product.price, discount.percentage)
-                        )
+                      const discountedPrice = parseFloat(
+                        percentageOf(product.price, discount.percentage)
                       );
                       return (
                         <p key={discount.id} className="flex items-center">
@@ -308,7 +314,7 @@ export default function DetailProduct({ params }) {
                             {discount.code} -
                           </span>
                           <span className="text-gray-500 ml-2 line-through">
-                            {formatCurrency(discountedPrice)}
+                            {discountedPrice}
                           </span>
                           <span className="text-red-500 ml-2">
                             {discount.percentage}%

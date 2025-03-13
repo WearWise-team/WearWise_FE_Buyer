@@ -16,12 +16,6 @@ export default function Card({ product, rating }) {
   const router = useRouter()
   const notify = useNotification()
 
-  const formatCurrency = (amount) =>
-    Number.parseFloat(amount).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-
   const colors = product.colors?.map((color) => ({
     id: color.id,
     name: color.name,
@@ -85,12 +79,23 @@ export default function Card({ product, rating }) {
   const { id, name, main_image, price, discounts } = product
 
   const discount = discounts?.length ? discounts[discounts.length - 1] : null
-  const discountPercentage = discount?.pivot?.percentage ?? 0
+  const discountPercentage = discount?.percentage ?? 0
+const parsePrice = (price) => {
+  if (typeof price === "string") {
+    return parseFloat(price.replace(/\./g, "")); // Loại bỏ dấu chấm ngăn cách nghìn
+  }
+  return parseFloat(price);
+};
 
-  const discountedPrice = price !== undefined && !isNaN(price) ? price - percentageOf(price, discountPercentage) : 0
+const discountedPrice =
+  price !== undefined && !isNaN(parsePrice(price))
+    ? parsePrice(price) - percentageOf(parsePrice(price), discountPercentage)
+    : 0;
 
-  const safeDiscountedPrice =
-    discountedPrice !== undefined && !isNaN(discountedPrice) ? formatCurrency(Number.parseFloat(discountedPrice)) : "0.000"
+const safeDiscountedPrice =
+  discountedPrice !== undefined && !isNaN(discountedPrice)
+    ? discountedPrice
+    : 0;
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 relative">
       <Link href={`/products/${product.id}`}>
@@ -105,22 +110,32 @@ export default function Card({ product, rating }) {
         </div>
       </Link>
       <div className="p-4">
-        <h2 className="text-base font-medium text-gray-900 mb-2">{name}</h2>
+        <h2 className="text-base font-medium text-gray-900 mb-2 line-clamp-1">
+          {name}
+        </h2>
 
         {typeof rating === "number" && (
           <div className="flex items-center mb-2">
             <div className="flex items-center text-yellow-500">
               <Rate value={rating} disabled />
             </div>
-            <span className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}/5</span>
+            <span className="ml-2 text-sm text-gray-600">
+              {rating.toFixed(1)}/5
+            </span>
           </div>
         )}
 
         <div className="flex items-center mb-3">
-          <span className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}>{safeDiscountedPrice}</span>
+          <span
+            className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}
+          >
+            {safeDiscountedPrice.toLocaleString("vi-VN")}đ
+          </span>
           {discount && (
             <>
-              <span className="text-sm text-gray-500 line-through ml-2">{formatCurrency(price)}</span>
+              <span className="text-sm text-gray-500 line-through ml-2">
+                {price.toLocaleString("vi-VN")}đ
+              </span>
               <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
                 -{Math.floor(discountPercentage)}%
               </span>
@@ -128,17 +143,17 @@ export default function Card({ product, rating }) {
           )}
         </div>
 
-        {
-          sizes && <>
+        {sizes && (
+          <>
             <button
-          className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
-          onMouseEnter={() => setShowOptions(true)}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Add to Cart
-        </button>
+              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
+              onMouseEnter={() => setShowOptions(true)}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Add to Cart
+            </button>
           </>
-        }
+        )}
       </div>
 
       {/* Options Panel on Hover */}
@@ -149,7 +164,10 @@ export default function Card({ product, rating }) {
         >
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-medium text-gray-900">Select Options</h3>
-            <button onClick={() => setShowOptions(false)} className="text-gray-500 hover:text-gray-700">
+            <button
+              onClick={() => setShowOptions(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               <X className="w-4 h-4" />
               <span className="sr-only">Close</span>
             </button>
@@ -159,12 +177,14 @@ export default function Card({ product, rating }) {
           <div className="mb-3">
             <p className="text-sm font-medium text-gray-700 mb-2">Color:</p>
             <div className="flex gap-2">
-              {colors?.map((color) => (
+              {colors?.map((color, index) => (
                 <button
-                  key={color.id}
+                  key={index}
                   onClick={() => setSelectedColor(color.id)}
                   className={`w-8 h-8 rounded-full border-2 ${
-                    selectedColor === color.id ? "border-red-500" : "border-gray-300"
+                    selectedColor === color.id
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   style={{ backgroundColor: color.code }}
                   aria-label={`Color: ${color.name}`}
@@ -177,9 +197,9 @@ export default function Card({ product, rating }) {
           <div className="mb-4">
             <p className="text-sm font-medium text-gray-700 mb-2">Size:</p>
             <div className="flex gap-2">
-              {sizes?.map((size) => (
+              {sizes?.map((size, index) => (
                 <button
-                  key={size.id}
+                  key={index}
                   onClick={() => setSelectedSize(size.id)}
                   className={`w-8 h-8 flex items-center justify-center rounded border ${
                     selectedSize === size.id
@@ -205,6 +225,6 @@ export default function Card({ product, rating }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
