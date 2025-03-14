@@ -6,7 +6,6 @@ import {
   Card,
   Input,
   Radio,
-  DatePicker,
   Form,
   Tabs,
   Table,
@@ -219,6 +218,7 @@ export default function UserProfile({ orders = [] }) {
         <Spin spinning={isLoading}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item
+              id="name"
               name="name"
               label="Full Name"
               rules={[
@@ -247,6 +247,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="phone"
               name="phone"
               label="Phone Number"
               rules={[
@@ -258,6 +259,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="address"
               name="address"
               label="Address"
               rules={[{ required: true, message: "Please enter your address!" }]}
@@ -265,7 +267,9 @@ export default function UserProfile({ orders = [] }) {
               <Input />
             </Form.Item>
 
-            <Form.Item name="gender" label="Gender" rules={[{ required: true, message: "Please select your gender!" }]}>
+            <Form.Item 
+            id="gender"
+            name="gender" label="Gender" rules={[{ required: true, message: "Please select your gender!" }]}>
               <Radio.Group>
                 <Radio value="male">Male</Radio>
                 <Radio value="female">Female</Radio>
@@ -274,6 +278,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="weight"
               name="weight"
               label="Weight (kg)"
               rules={[
@@ -291,6 +296,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="height"
               name="height"
               label="Height (cm)"
               rules={[
@@ -308,6 +314,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="shirt"
               name="shirt_size"
               label="Shirt Size"
               rules={[
@@ -319,6 +326,7 @@ export default function UserProfile({ orders = [] }) {
             </Form.Item>
 
             <Form.Item
+              id="pant"
               name="pant_size"
               label="Pant Size"
               rules={[{ required: true, message: "Please enter your pant size!" }]}

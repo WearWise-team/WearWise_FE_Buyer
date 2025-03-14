@@ -76,20 +76,18 @@ const Cart = () => {
     setSubtotal(total);
     setTotalDiscount(totalDiscount);
 
-    localStorage.setItem("discount", totalDiscount.toFixed(2));
-    localStorage.setItem("total", (total - totalDiscount).toFixed(2));
+    localStorage.setItem("discount", totalDiscount);
+    localStorage.setItem("total", total - totalDiscount);
   };
 
   useEffect(() => {
     if (discountCode) {
       if (totalDiscount > 0) {
-        localStorage.setItem("discount", totalDiscount.toFixed(2));
-        localStorage.setItem("total", (subtotal - totalDiscount).toFixed(2));
+        localStorage.setItem("discount", totalDiscount);
+        localStorage.setItem("total", subtotal - totalDiscount);
         notify(
           "Discount Applied",
-          `Your discount has been successfully applied. You saved ${totalDiscount.toFixed(
-            2
-          )} VND.`,
+          `Your discount has been successfully applied. You saved ${totalDiscount} VND.`,
           "topRight"
         );
       } else {
@@ -207,9 +205,7 @@ const Cart = () => {
                       <p className="text-sm text-gray-500">
                         Size: {item.size?.name}, Color: {item.color?.name}
                       </p>
-                      <p className="font-bold mt-2">
-                        {Number(item.product?.price)}
-                      </p>
+                      <p className="font-bold mt-2">{item.product?.price}đ</p>
                       <div className="flex items-center mt-2">
                         <button
                           onClick={() =>
@@ -259,18 +255,21 @@ const Cart = () => {
               <h2 className="text-xl font-bold mb-4">Order Summary</h2>
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
-                <span>{(subtotal)}</span>
+                <span>{(subtotal * 1000).toLocaleString("vi-VN")}đ</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span>Discount</span>
-                <span className="text-red-500">
-                  -{(totalDiscount)}
+                <span className="text-pink-500">
+                  -{(totalDiscount * 1000).toLocaleString("vi-VN")}đ
                 </span>
               </div>
               <div className="flex justify-between font-bold text-lg mb-4">
                 <span>Total</span>
-                <span>{(subtotal - totalDiscount)}</span>
+                <span>
+                  {((subtotal - totalDiscount) * 1000).toLocaleString("vi-VN")}đ
+                </span>
               </div>
+
               <input
                 type="text"
                 className="w-full border p-2 rounded mb-2"
@@ -309,7 +308,7 @@ const Cart = () => {
                 Cancel
               </button>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
+                className="bg-pink-500 text-white px-4 py-2 rounded"
                 onClick={confirmRemoveItem}
               >
                 Remove

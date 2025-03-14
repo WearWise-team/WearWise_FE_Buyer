@@ -127,7 +127,7 @@ const safeDiscountedPrice =
 
         <div className="flex items-center mb-3">
           <span
-            className={`text-lg font-bold ${discount ? "text-red-500" : ""}`}
+            className={`text-lg font-bold ${discount ? "text-pink-500" : ""}`}
           >
             {safeDiscountedPrice.toLocaleString("vi-VN")}đ
           </span>
@@ -136,7 +136,7 @@ const safeDiscountedPrice =
               <span className="text-sm text-gray-500 line-through ml-2">
                 {price.toLocaleString("vi-VN")}đ
               </span>
-              <span className="ml-2 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
+              <span className="ml-2 text-pink-500 bg-red-50 px-2 py-0.5 rounded-full text-xs">
                 -{Math.floor(discountPercentage)}%
               </span>
             </>
@@ -146,8 +146,8 @@ const safeDiscountedPrice =
         {sizes && (
           <>
             <button
-              className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
-              onMouseEnter={() => setShowOptions(true)}
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
+              onClick={() => setShowOptions(true)}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Add to Cart
@@ -183,7 +183,7 @@ const safeDiscountedPrice =
                   onClick={() => setSelectedColor(color.id)}
                   className={`w-8 h-8 rounded-full border-2 ${
                     selectedColor === color.id
-                      ? "border-red-500"
+                      ? "border-pink-500"
                       : "border-gray-300"
                   }`}
                   style={{ backgroundColor: color.code }}
@@ -203,7 +203,7 @@ const safeDiscountedPrice =
                   onClick={() => setSelectedSize(size.id)}
                   className={`w-8 h-8 flex items-center justify-center rounded border ${
                     selectedSize === size.id
-                      ? "bg-red-500 text-white border-red-500"
+                      ? "bg-pink-500 text-white border-pink-500"
                       : "bg-white text-gray-700 border-gray-300 hover:border-red-300"
                   }`}
                 >
@@ -216,7 +216,7 @@ const safeDiscountedPrice =
           {/* Buy Button */}
           <button
             onClick={handleAddToCart}
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-xl flex items-center justify-center transition-colors duration-200"
             disabled={!selectedColor || !selectedSize}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />

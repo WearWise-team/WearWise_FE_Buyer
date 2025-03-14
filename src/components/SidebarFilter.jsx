@@ -10,7 +10,7 @@ export default function SidebarFilter() {
   const [filters, setFilters] = useState({
     categories: [],
     minPrice: 0,
-    maxPrice: 200000,
+    maxPrice: 300,
     colors: [],
     sizes: [],
     sortPrice: "asc",
@@ -89,7 +89,7 @@ export default function SidebarFilter() {
       {/* Categories */}
       <div className="mb-6">
         <h4 className="font-medium mb-2 text-gray-800">Categories</h4>
-        {["T-shirts", "Shorts", "Shirts", "Hoodies", "Jeans"].map((category) => (
+        {["T-shirts", "Shorts", "Shirts", "Hoodies", "Pants", "Sweater"].map((category) => (
           <label key={category} className="flex items-center space-y-3 space-x-3 cursor-pointer">
             <input
               type="checkbox"

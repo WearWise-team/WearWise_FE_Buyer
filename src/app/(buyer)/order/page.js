@@ -66,7 +66,7 @@ export default function Page() {
   // Handle Momo payment
   const handleMomoPayment = async () => {
     setIsPending(true)
-    const amountVND = Math.round(totalAmount)
+    const amountVND = Math.round(totalAmount * 1000)
 
     if (amountVND < 1000 || amountVND > 50000000) {
       notify("Payment Error", "Amount must be from 1,000 to 50,000,000 VND", "topRight", "error")
@@ -217,7 +217,7 @@ export default function Page() {
             }
           } else {
             // Create the actual order now that payment is confirmed
-            const response = await createOrderFromCart(orderData.userId, orderData.totalAmount, "pending", "momo")
+            const response = await createOrderFromCart(orderData.userId, orderData.totalAmount * 1000, "pending", "momo")
 
             if (response && !response.error) {
               notify(
@@ -350,15 +350,12 @@ export default function Page() {
                           Size: {item.size.shirt_size}, Color: {item.color.name}
                         </p>
                         <p className="text-sm font-semibold text-gray-700 mt-1">
-                          ${Number(item.product.price).toFixed(2)}
+                          {item.product.price}đ
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-gray-700 font-semibold">Qty: {item.quantity}</p>
-                      <p className="text-lg font-bold text-gray-900">
-                        ${(item.product.price * item.quantity).toFixed(2)}
-                      </p>
                     </div>
                   </div>
                 ))}
@@ -367,11 +364,11 @@ export default function Page() {
               <div>
                 <div className="flex justify-between mb-1 mt-8">
                   <span>Discount</span>
-                  <span className="text-red-500">-{(discount)}đ</span>
+                  <span className="text-red-500">-{(discount * 1000).toLocaleString("vi-VN")}đ</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>{(totalAmount)}đ</span>
+                  <span>{(totalAmount * 1000).toLocaleString("vi-VN")}đ</span>
                 </div>
               </div>
               <button

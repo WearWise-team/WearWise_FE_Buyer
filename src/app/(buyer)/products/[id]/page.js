@@ -22,7 +22,7 @@ export default function DetailProduct({ params }) {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [activeTab, setActiveTab] = useState("Details");
   const tabs = ["Details", "Rating & Reviews", "FAQs"];
   const [cart, setCart] = useState([]);
@@ -32,6 +32,12 @@ export default function DetailProduct({ params }) {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   const [rating, setRating] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const images =
+    product?.images && product.images.length > 0
+      ? product.images
+      : [product?.main_image, product?.main_image, product?.main_image];
   const resolvedParams = use(params);
   const { id } = resolvedParams;
 
@@ -64,10 +70,10 @@ export default function DetailProduct({ params }) {
     productSizeId,
     quantity
   ) => {
-    if (!selectedColor) {
+    if (!selectedColor || !selectedSize) {
       notify(
-        "Product Color Required",
-        "Please select a color for this product.",
+        "Product Color and Size Required",
+        "Please select a color and size for this product.",
         "topRight",
         "warning"
       );
@@ -109,15 +115,17 @@ export default function DetailProduct({ params }) {
 
     setCart([...cart, newItem]);
 
-    addToCart(newItem)
-      .then((response) =>
-        notify(
-          "Product Added Successfully",
-          "Your product has been added to the inventory.",
-          "topRight"
+    if (selectedColor && selectedSize) {
+      addToCart(newItem)
+        .then(() =>
+          notify(
+            "Product Added Successfully",
+            "Your product has been added to the inventory.",
+            "topRight"
+          )
         )
-      )
-      .catch((error) => console.error("Add to cart error:", error));
+        .catch((error) => console.error("Add to cart error:", error));
+    }
   };
 
   const toggleFavorite = async () => {
@@ -160,10 +168,10 @@ export default function DetailProduct({ params }) {
   };
 
   const handleBuyNow = (product, selectedColor, selectedSize) => {
-    if (!selectedColor) {
+    if (!selectedColor || !selectedSize) {
       notify(
-        "Product Color Required",
-        "Please select a color for this product.",
+        "Product Color and Size Required",
+        "Please select a color and size for this product.",
         "topRight",
         "warning"
       );
@@ -208,19 +216,18 @@ export default function DetailProduct({ params }) {
     router.push("/order/now");
   };
 
- const percentageOf = (value, percentage) => {
-   const numValue = parseFloat(
-     value.toString().replace(/\./g, "").replace("đ", "").trim()
-   );
-   const numPercentage = parseFloat(percentage);
+  const percentageOf = (value, percentage) => {
+    const numValue = parseFloat(
+      value.toString().replace(/\./g, "").replace("đ", "").trim()
+    );
+    const numPercentage = parseFloat(percentage);
 
-   return !isNaN(numValue) && !isNaN(numPercentage)
-     ? ((numValue * numPercentage) / 100).toLocaleString("vi-VN", {
-         minimumFractionDigits: 3,
-         maximumFractionDigits: 3,
-       })
-     : "0";
- };
+    if (isNaN(numValue) || isNaN(numPercentage)) return "0";
+
+    const result = Math.round((numValue * numPercentage) / 100);
+
+    return result.toLocaleString("vi-VN");
+  };
 
   if (isLoading) {
     return <WearwiseLoading></WearwiseLoading>;
@@ -243,22 +250,22 @@ export default function DetailProduct({ params }) {
           <div className="flex flex-col lg:flex-row">
             <div className="flex items-center justify-between gap-5 lg:w-1/2">
               <div className="flex flex-col items-center justify-evenly h-full mb-4">
-                {(product?.images && product.images.length > 0
-                  ? product.images
-                  : [
-                      product?.main_image,
-                      product?.main_image,
-                      product?.main_image,
-                    ]
-                ).map((value, index) =>
+                {images.map((value, index) =>
                   value ? (
                     <Image
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className="w-20 h-20 rounded-lg"
+                      className={`w-20 h-20 rounded-lg cursor-pointer ${
+                        selectedImage === (value.url ? value.url : value)
+                          ? "border-2 border-pink-500"
+                          : ""
+                      }`}
                       height="100"
                       src={value.url ? value.url : value}
                       width="100"
+                      onClick={() =>
+                        setSelectedImage(value.url ? value.url : value)
+                      }
                     />
                   ) : null
                 )}
@@ -270,9 +277,9 @@ export default function DetailProduct({ params }) {
                   className="w-full rounded-lg"
                   height="800"
                   src={
-                    product
-                      ? product.main_image
-                      : "https://placehold.co/100x100"
+                    selectedImage
+                      ? selectedImage
+                      : product.main_image
                   }
                   width="600"
                 />
@@ -298,15 +305,14 @@ export default function DetailProduct({ params }) {
 
               <div className="flex items-center mb-4">
                 <span className="text-3xl font-bold">
-                  {product
-                    ? product.price.toLocaleString("vi-VN")
-                    : 0}đ
+                  {product ? product.price.toLocaleString("vi-VN") : 0}đ
                 </span>
                 {product && product.discounts.length > 0 ? (
                   <div className="ml-2">
                     {product.discounts.map((discount) => {
-                      const discountedPrice = parseFloat(
-                        percentageOf(product.price, discount.percentage)
+                      const discountedPrice = percentageOf(
+                        product.price,
+                        discount.percentage
                       );
                       return (
                         <p key={discount.id} className="flex items-center">
@@ -314,10 +320,10 @@ export default function DetailProduct({ params }) {
                             {discount.code} -
                           </span>
                           <span className="text-gray-500 ml-2 line-through">
-                            {discountedPrice}
+                            {discountedPrice}đ
                           </span>
-                          <span className="text-red-500 ml-2">
-                            {discount.percentage}%
+                          <span className="text-pink-500 ml-2">
+                            {(discount.percentage * 1).toFixed(0)}%
                           </span>
                         </p>
                       );
@@ -344,7 +350,7 @@ export default function DetailProduct({ params }) {
                       style={{ backgroundColor: color.code }}
                     >
                       {selectedColor === color.id && (
-                        <RiCheckboxCircleLine className="absolute text-white text-2xl top-2 right-2" />
+                        <RiCheckboxCircleLine className="absolute text-pink-500 text-2xl top-2 right-2" />
                       )}
                     </button>
                   ))}
@@ -390,19 +396,19 @@ export default function DetailProduct({ params }) {
               </div>
               <div className="flex items-center space-x-4 mb-4">
                 <Link
-                  href="/tryOn"
-                  // onClick={() => {
-                  //   if (typeof window !== "undefined") {
-                  //     localStorage.setItem("tryOnImage", product.image); // Lưu ảnh vào localStorage
-                  //   }
-                  // }}
+                  href="/tryOnK"
+                  onClick={() => {
+                    if (typeof window !== "undefined" && selectedImage) {
+                      localStorage.setItem("tryOnImage", selectedImage);
+                    }
+                  }}
                 >
-                  <button className="px-4 py-2 bg-pink-700 text-white rounded-xl">
+                  <button className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-xl">
                     Try to 2D
                   </button>
                 </Link>
                 <button
-                  className="px-4 py-2 bg-pink-700 text-white rounded-xl flex"
+                  className="px-4 mt-4 py-2 bg-pink-500 text-white rounded-xl flex"
                   onClick={() =>
                     handleAddToCart(
                       product?.id,
@@ -415,7 +421,7 @@ export default function DetailProduct({ params }) {
                   Add to Cart
                 </button>
                 <button
-                  className="px-4 py-2 bg-pink-700 text-white rounded-xl flex relative"
+                  className="px-4 py-2 mt-4 bg-pink-500 text-white rounded-xl flex relative"
                   onClick={() =>
                     handleBuyNow(product, selectedColor, selectedSize, quantity)
                   }

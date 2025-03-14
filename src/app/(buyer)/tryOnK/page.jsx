@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Tag, Divider} from "antd"
+import { useState, useEffect } from "react"
+import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Divider } from "antd"
 import { UploadOutlined, InboxOutlined, LoadingOutlined } from "@ant-design/icons"
 import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled } from "@ant-design/icons"
+import { DeleteOutlined, SwapOutlined } from "@ant-design/icons"
 import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
@@ -32,19 +33,34 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const notify = useNotification()
+
+  useEffect(() => {
+    const storedGarmentImage = localStorage.getItem("tryOnImage");
+    if (storedGarmentImage) {
+      setGarmentImage(storedGarmentImage);
+      localStorage.removeItem("tryOnImage");
+    }
+  }, []);
+  
   const items = [
     {
       key: "step1",
       label: <Text style={{ fontSize: "18px" }}>Step 1: Model Image</Text>,
       children: (
         <Card
-          title={<Title level={3} style={{ fontSize: "18px" }}>Upload Model Image</Title>}
+          title={
+            <Title level={3} style={{ fontSize: "18px" }}>
+              Upload Model Image
+            </Title>
+          }
           extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
           <Row gutter={24}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
+              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+                Recommended
+              </Title>
               <List
                 itemLayout="horizontal"
                 dataSource={[
@@ -66,7 +82,9 @@ export default function Home() {
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
+              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+                Not Recommended
+              </Title>
               <List
                 itemLayout="horizontal"
                 dataSource={[
@@ -88,20 +106,26 @@ export default function Home() {
             </Col>
           </Row>
         </Card>
-      )
+      ),
     },
     {
       key: "step2",
       label: <Text style={{ fontSize: "18px" }}>Step 2: Product Image</Text>,
       children: (
         <Card
-          title={<Title level={3} style={{ fontSize: "18px" }}>Upload Product Image</Title>}
+          title={
+            <Title level={3} style={{ fontSize: "18px" }}>
+              Upload Product Image
+            </Title>
+          }
           extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
           <Row gutter={24}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>Recommended</Title>
+              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+                Recommended
+              </Title>
               <List
                 itemLayout="horizontal"
                 dataSource={[
@@ -122,7 +146,9 @@ export default function Home() {
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>Not Recommended</Title>
+              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+                Not Recommended
+              </Title>
               <List
                 itemLayout="horizontal"
                 dataSource={[
@@ -145,26 +171,33 @@ export default function Home() {
             </Col>
           </Row>
         </Card>
-      )
+      ),
     },
     {
       key: "step3",
       label: <Text style={{ fontSize: "18px" }}>Step 3: Results</Text>,
       children: (
         <Card
-          title={<Title level={3} style={{ fontSize: "20px" }}>Generated Results</Title>}
+          title={
+            <Title level={3} style={{ fontSize: "20px" }}>
+              Generated Results
+            </Title>
+          }
           extra={<Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
           variant="outlined"
         >
           <Paragraph style={{ fontSize: "16px" }}>
-            After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on result.
+            After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on
+            result.
           </Paragraph>
           <Divider orientation="left">Example Results</Divider>
           <Row gutter={[24, 24]}>
             {["Model Image", "Product Image", "Try-on Result"].map((title, index) => (
               <Col xs={24} md={8} key={index}>
                 <Card variant="outlined" className="result-card">
-                  <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>{title}</Title>
+                  <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
+                    {title}
+                  </Title>
                   <div style={{ textAlign: "center" }}>
                     <img
                       src={`/${index === 0 ? "008.jpg" : index === 1 ? "02_upper.png" : "Cl6-G2fK.png"}?height=300&width=200`}
@@ -191,9 +224,9 @@ export default function Home() {
             />
           </Card>
         </Card>
-      )
-    }
-  ];
+      ),
+    },
+  ]
 
   const validationImage = (file) => {
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png"]
@@ -239,6 +272,26 @@ export default function Home() {
     }
   }
 
+  // New function to handle file uploads from input elements
+  const handleImageUpload = (e, setImageFunction) => {
+    const file = e.target.files[0]
+    if (file && validationImage(file)) {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        setImageFunction(reader.result)
+        setResultImage(null)
+      }
+    }
+  }
+
+  // Fixed function to handle image deletion with event stopping
+  const handleDeleteImage = (e, setImageFunction) => {
+    e.stopPropagation() // Stop event propagation to prevent Dragger from opening file dialog
+    setImageFunction(null)
+    setResultImage(null)
+  }
+
   async function submitTryOn() {
     const personFile = personImage
     const garmentFile = garmentImage
@@ -270,17 +323,19 @@ export default function Home() {
           human_image: personBase64,
           cloth_image: garmentBase64,
         })
-        console.log(response);
-        const result = response;
+        console.log(response)
+        const result = response
 
-        if (
-          !result
-        ) {
+        if (!result) {
           clearInterval(progressInterval)
           setIsLoading(false)
 
-          const requestId = result.original?.data?.request_id || "No request ID"
-          const taskId = result.original?.data?.task_id || "No task ID"
+          // Added default values to prevent errors
+          const errorMessage = "Failed to process request"
+          const errorCode = "Unknown"
+          const requestId = result?.original?.data?.request_id || "No request ID"
+          const taskId = result?.original?.data?.task_id || "No task ID"
+
           notify(
             "Error Occurred",
             `Message: ${errorMessage}\nCode: ${errorCode}\nRequest ID: ${requestId} \nTask ID: ${taskId}`,
@@ -289,7 +344,7 @@ export default function Home() {
           )
           console.error("Error Details:", {
             requestId: requestId,
-            token: result.original?.token ? "Token received" : "No token",
+            token: result?.original?.token ? "Token received" : "No token",
           })
           if (errorCode === 1002) {
             console.warn("Authentication failed! Redirecting to login...")
@@ -302,9 +357,8 @@ export default function Home() {
         const taskId = result?.original?.data?.data?.task_id
 
         if (taskId && result.original.token) {
-
-          // Check the result every second until it's done or fails 
-          console.log(taskId, result.original.token);
+          // Check the result every second until it's done or fails
+          console.log(taskId, result.original.token)
           await checkTryOnResult(taskId, result.original.token, progressInterval)
           return
         }
@@ -411,13 +465,40 @@ export default function Home() {
               className={styles.uploader}
             >
               {personImage ? (
-                <img
-                  width={200}
-                  height={300}
-                  src={personImage || "/placeholder.svg"}
-                  alt="Person"
-                  className={`${styles.uploadedImage}`}
-                />
+                <div className="relative">
+                  <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    <button
+                      className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                      onClick={(e) => handleDeleteImage(e, setPersonImage)}
+                      title="Remove image"
+                      type="button"
+                    >
+                      <DeleteOutlined className="text-red-500 text-lg" />
+                    </button>
+                    <label
+                      htmlFor="person-upload-change"
+                      className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors cursor-pointer"
+                      title="Change image"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SwapOutlined className="text-blue-500 text-lg" />
+                    </label>
+                  </div>
+                  <img
+                    width={200}
+                    height={300}
+                    src={personImage || "/placeholder.svg"}
+                    alt="Person"
+                    className={`${styles.uploadedImage}`}
+                  />
+                  <input
+                    type="file"
+                    className="hidden"
+                    id="person-upload-change"
+                    onChange={(e) => handleImageUpload(e, setPersonImage)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
               ) : (
                 <div className={styles.uploadContent}>
                   <p className="ant-upload-drag-icon">
@@ -468,13 +549,40 @@ export default function Home() {
               className={styles.uploader}
             >
               {garmentImage ? (
-                <img
-                  width={200}
-                  height={300}
-                  src={garmentImage || "/placeholder.svg"}
-                  alt="Garment"
-                  className={styles.uploadedImage}
-                />
+                <div className="relative">
+                  <div className="absolute top-2 right-2 flex gap-2 z-10">
+                    <button
+                      className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                      onClick={(e) => handleDeleteImage(e, setGarmentImage)}
+                      title="Remove image"
+                      type="button"
+                    >
+                      <DeleteOutlined className="text-red-500 text-lg" />
+                    </button>
+                    <label
+                      htmlFor="garment-upload-change"
+                      className="bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 transition-colors cursor-pointer"
+                      title="Change image"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SwapOutlined className="text-blue-500 text-lg" />
+                    </label>
+                  </div>
+                  <img
+                    width={200}
+                    height={300}
+                    src={garmentImage || "/placeholder.svg"}
+                    alt="Garment"
+                    className={styles.uploadedImage}
+                  />
+                  <input
+                    type="file"
+                    className="hidden"
+                    id="garment-upload-change"
+                    onChange={(e) => handleImageUpload(e, setGarmentImage)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
               ) : (
                 <div className={styles.uploadContent}>
                   <p className="ant-upload-drag-icon">
@@ -544,13 +652,20 @@ export default function Home() {
         </Col>
       </Row>
 
-      <Tabs items={items} />;
+      <Tabs items={items} />
 
       <section style={{ marginBottom: "30px" }}>
-        <Title level={3} style={{ fontSize: "22px" }}>Tips for Best Results</Title>
+        <Title level={3} style={{ fontSize: "22px" }}>
+          Tips for Best Results
+        </Title>
         <Alert
           message={<Text style={{ fontSize: "18px" }}>Note</Text>}
-          description={<Text style={{ fontSize: "16px" }}>Discrepancies may occur in clothing details, especially with small text and logos. This is a common challenge in virtual try-on technology that we're continuously working to improve.</Text>}
+          description={
+            <Text style={{ fontSize: "16px" }}>
+              Discrepancies may occur in clothing details, especially with small text and logos. This is a common
+              challenge in virtual try-on technology that we're continuously working to improve.
+            </Text>
+          }
           type="info"
           showIcon
           icon={<InfoCircleFilled />}
@@ -560,3 +675,4 @@ export default function Home() {
     </main>
   )
 }
+
