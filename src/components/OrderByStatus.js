@@ -7,7 +7,6 @@ import Image from "next/image";
 import ReviewButton from "./ReviewButton";
 
 export default function OrdersByStatus({ orders, status, loading, notify }) {
-  console.log("orders:", orders);
   // State to track which items have their review forms open
   const [openReviewForms, setOpenReviewForms] = useState({});
   // State to track which items have been reviewed during this session
@@ -44,7 +43,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
       items: order.items.filter((item) => item.status === status),
     }))
     .filter((order) => order.items.length > 0);
-  console.log("filted", filteredOrders);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -116,7 +115,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">{(item.price)}</p>
+                  <p className="font-semibold">{item.price}đ</p>
                 </div>
               </div>
 
@@ -148,7 +147,7 @@ export default function OrdersByStatus({ orders, status, loading, notify }) {
                 </p>
               )}
               <p className="font-semibold text-lg">
-                Total: {(order.total_amount)}
+                Total: {(order.total_amount * 1).toFixed(3)}đ
               </p>
             </div>
           </div>
