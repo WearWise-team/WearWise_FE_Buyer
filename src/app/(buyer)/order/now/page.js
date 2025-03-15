@@ -83,7 +83,7 @@ export default function Page() {
 
   const handleMomoPayment = async () => {
     setIsPending(true);
-    const amountVND = Math.round(totalAmount);
+    const amountVND = Math.round(totalAmount * 1000);
 
     if (amountVND < 1000 || amountVND > 50000000) {
       notify(
@@ -477,16 +477,13 @@ export default function Page() {
                               ?.name || "N/A"}
                           </p>
                           <p className="text-sm font-semibold text-gray-700 mt-1">
-                            {(item.price || 0)}
+                            {(item.price || 0)}đ
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-gray-700 font-semibold">
                           Qty: {quantity || 1}
-                        </p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {((item.price || 0) * (quantity || 1))}
                         </p>
                       </div>
                     </div>
@@ -502,12 +499,12 @@ export default function Page() {
                 <div className="flex justify-between mb-1 mt-8">
                   <span>Discount</span>
                   <span className="text-red-500">
-                    -${(discount || 0)}
+                    -{(discount * 1000 || 0).toLocaleString("vi-VN")}đ
                   </span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>${(totalAmount || 0)}</span>
+                  <span>{(totalAmount * 1000 || 0).toLocaleString("vi-VN")}đ</span>
                 </div>
               </div>
               <button
