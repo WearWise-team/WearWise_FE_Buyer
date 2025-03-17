@@ -7,19 +7,21 @@ const ProductContext = createContext();
 
 export function ProductProvider({ children }) {
   const [products, setProducts] = useState([]);
+  const [productsHP, setProductsHP] = useState([]);
 
   useEffect(() => {
     if (products.length === 0) {
       getProducts()
         .then((data) => {
-          setProducts(data.slice(-4));
+          setProducts(data);
+          setProductsHP(data.slice(-4))
         })
         .catch((error) => console.error("Lỗi khi lấy sản phẩm:", error));
     }
   }, [products]);
 
   return (
-    <ProductContext.Provider value={{ products, setProducts }}>
+    <ProductContext.Provider value={{ productsHP, setProductsHP, products, setProducts,  }}>
       {children}
     </ProductContext.Provider>
   );

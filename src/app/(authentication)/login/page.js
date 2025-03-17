@@ -1,44 +1,50 @@
 // app/(authentication)/login/page.js
-"use client"
-import React from 'react'
-import { useState } from "react"
-import Link from "next/link"
-import { InputField } from '@/components/InputField'
+"use client";
+import React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { InputField } from "@/components/InputField";
+import { useRouter } from "next/navigation";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useNotification } from "@/apiServices/NotificationService";
 
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const notify = useNotification();
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     if (!formData.email) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid"
+      newErrors.email = "Email is invalid";
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required"
+      newErrors.password = "Password is required";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const res = await fetch("your-laravel-api/login", { // Thay thế bằng URL API thật
+      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,17 +58,27 @@ export default function LoginPage() {
         throw new Error(data.message || "Login failed");
       }
 
-      // Lưu token vào localStorage hoặc cookies
-      localStorage.setItem('accessToken', data.access_token);
+      notify("Login successful", "success");
 
-      // Chuyển hướng đến trang chủ
-      router.push("/");
+      // Lưu token và thông tin người dùng vào localStorage
+      localStorage.setItem(
+        "accessToken",
+        data.result.token.original.access_token
+      );
+      localStorage.setItem("user", JSON.stringify(data.result.user));
 
+      // Chuyển hướng dựa trên vai trò
+      const userRole = data.result.user.role;
+      if (userRole === "supplier") {
+        router.push("/supplier");
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       setErrors({
-        email: "Invalid credentials",
+        email: "Invalid email or password",
+        password: "Invalid email or password",
       });
-      console.error("Login error:", error); // Ghi log lỗi để debug
     } finally {
       setIsLoading(false);
     }
@@ -85,25 +101,47 @@ export default function LoginPage() {
           placeholder="robertfox@example.com"
         />
 
-        <InputField
-          label="Password"
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          error={errors.password}
-        />
+        <div className="relative">
+          <InputField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            error={errors.password}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-9 text-gray-500 hover:text-black"
+          >
+            {showPassword ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
+        </div>
 
         <div className="flex items-center justify-between">
           <label className="flex items-center space-x-2">
             <input type="checkbox" className="rounded border-gray-300" />
             <span className="text-sm text-gray-600">Remember Me</span>
           </label>
-          <Link href="/forgot-password" className="text-sm text-gray-600 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-gray-600 hover:underline"
+          >
             Forgot Password?
           </Link>
         </div>
 
-        <button type="submit" className="w-full rounded-lg bg-black text-white px-4 py-2 hover:bg-black/90" disabled={isLoading}>
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-black text-white px-4 py-2 hover:bg-black/90"
+          disabled={isLoading}
+        >
           {isLoading ? "Logging in..." : "Login"}
         </button>
 

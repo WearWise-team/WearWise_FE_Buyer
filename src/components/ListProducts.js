@@ -6,8 +6,7 @@ import Card from "./Card";
 import Link from "next/link";
 
 export default function ListProducts({ title }) {
-  const { products } = useProducts();
-  console.log(products);
+  const { productsHP } = useProducts();
   const router = useRouter();
 
   return (
@@ -15,15 +14,21 @@ export default function ListProducts({ title }) {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl text-center mb-8">{title}</h1>
 
-        {products.length > 0 ? (
+        {productsHP.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1 px-24">
-            {products.map((product) => (
-              <div key={product.id} className="product-item">
-                <Link href={`/products/${product.id}`}>
-                  <Card product={product} />
-                </Link>
-              </div>
-            ))}
+            {productsHP.map((product) => {
+              const rating =
+                product.reviews?.length > 0
+                  ? product.reviews.reduce((sum, cur) => sum + cur.rating, 0) /
+                    product.reviews.length
+                  : 0;
+
+              return (
+                <div key={product.id} className="product-item">
+                  <Card product={product} rating={rating} />
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center">No products found</div>

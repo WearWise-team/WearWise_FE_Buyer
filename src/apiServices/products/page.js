@@ -1,39 +1,42 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-const fetchData = async (
-  endpoint,
-  method = "GET",
-  body = null,
-  headers = {}
-) => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/${endpoint}`, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : null,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Fetch Error:", error);
-    throw error;
-  }
-};
+import fetchData from "@/apiServices/api/page";
+import { env } from "process";
 
 export const getProducts = () => fetchData("products");
 
+export const getProductWithSizeAndColor = () => fetchData("productswithsize");
+export const getProductBySupplierID = (id) =>
+  fetchData(`productsbysupplierID/${id}`);
 export const getProductById = (id) => fetchData(`products/${id}`);
+export const getProductDetails = (id) => fetchData(`products/more/${id}`);
 export const createProduct = (productData) =>
   fetchData("products", "POST", productData);
-export const updateProduct = (id, productData) =>
-  fetchData(`products/${id}`, "PUT", productData);
+
+export const updateProduct = async (id, productData) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/${id}`,
+    {
+      method: "POST",
+      body: productData,
+    }
+  );
+  return response.json();
+};
+
 export const deleteProduct = (id) => fetchData(`products/${id}`, "DELETE");
+
+export const searchProduct = (name) =>
+  fetchData("products/search", "POST", {
+    name: name,
+  });
+
+export const fetchFilteredProducts = async (filter) => {
+  try {
+    const result = await fetchData("products/filter", "POST", filter);
+    return result;
+  } catch (error) {
+    console.error("Fetch filter error:", error);
+    return [];
+  }
+};
 
 export default fetchData;
