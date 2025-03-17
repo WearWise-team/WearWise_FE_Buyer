@@ -45,8 +45,9 @@ export default function Header() {
     setIsLoggedIn(!!accessToken);
 
     const userData = JSON.parse(localStorage.getItem("user"));
-    if (userData && userData.image) {
-      setUserImage(userData.image);
+    const avatar = localStorage.getItem("avatar");
+    if (userData && userData.avatar || avatar) {
+      setUserImage(userData.avatar || avatar);
     }
   }, []);
 
