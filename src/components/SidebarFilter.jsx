@@ -1,4 +1,4 @@
-"use client"; // Đảm bảo đây là một Client Component
+"use client";
 
 import { useState, useEffect } from "react";
 import ColorFilter from "@/components/ColorFilter";
@@ -40,7 +40,6 @@ export default function SidebarFilter() {
     });
   };
   
-
   const handlePriceChange = (e, type) => {
     const value = e.target.value ? Number(e.target.value) : null;
     setFilters((prev) => ({ ...prev, [type]: value }));
@@ -89,7 +88,7 @@ export default function SidebarFilter() {
       {/* Categories */}
       <div className="mb-6">
         <h4 className="font-medium mb-2 text-gray-800">Categories</h4>
-        {["T-shirts", "Shorts", "Shirts", "Hoodies", "Pants", "Sweater"].map((category) => (
+        {["T-shirt", "Shorts", "Shirt", "Hoodies", "Pants", "Sweater"].map((category) => (
           <label key={category} className="flex items-center space-y-3 space-x-3 cursor-pointer">
             <input
               type="checkbox"

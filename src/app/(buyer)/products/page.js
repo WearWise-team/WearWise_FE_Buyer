@@ -50,10 +50,39 @@ const ProductPage = () => {
         } else if (
           params.has("minPrice") ||
           params.has("maxPrice") ||
-          params.has("categories")
+          params.has("categories") ||
+          params.has("colors") ||
+          params.has("sizes") ||
+          params.has("sortPrice")
         ) {
-          const filterParams = parseQueryToFilter(params);
-          const result = await fetchFilteredProducts(filterParams);
+          // Create a filter object to hold all filter parameters
+          const filterParams = {
+            categories: params.getAll("categories"),
+            colors: params.getAll("colors"),
+            sizes: params.getAll("sizes"),
+            sortPrice: params.get("sortPrice") || undefined,
+          };
+
+          // Add price filters if they exist
+          if (params.has("minPrice")) {
+            filterParams.minPrice = Number(params.get("minPrice"));
+          }
+
+          if (params.has("maxPrice")) {
+            filterParams.maxPrice = Number(params.get("maxPrice"));
+          }
+
+          console.log("Filter params:", filterParams);
+
+          // Only include non-empty arrays and defined values
+          const cleanedFilterParams = Object.fromEntries(
+            Object.entries(filterParams).filter(([_, value]) => {
+              if (Array.isArray(value)) return value.length > 0;
+              return value !== undefined && value !== null && value !== "";
+            })
+          );
+
+          const result = await fetchFilteredProducts(cleanedFilterParams);
           updateProductList(result);
         }
       } catch (error) {
