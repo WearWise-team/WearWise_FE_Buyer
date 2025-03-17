@@ -22,6 +22,9 @@ import dayjs from "dayjs"
 import { viewProfile, updateProfile } from "@/apiServices/users/page"
 import { useNotification } from "@/apiServices/NotificationService"
 const { Title, Text } = Typography
+import { Upload, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function UserProfile({ orders = [] }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -29,6 +32,8 @@ export default function UserProfile({ orders = [] }) {
   const [user, setUser] = useState(null)
   const [form] = Form.useForm()
   const notify = useNotification()
+  const [avatar, setAvatar] = useState(null)
+  const [fileList, setFileList] = useState([])
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -46,6 +51,7 @@ export default function UserProfile({ orders = [] }) {
             height: data.height,
             shirt_size: data.shirt_size,
             pant_size: data.pant_size,
+            avatar: avatar,
             dob: data.dob ? dayjs(data.dob) : null,
           })
         }
@@ -78,7 +84,7 @@ export default function UserProfile({ orders = [] }) {
         gender: values.gender,
         pant_size: values.pant_size,
         role: user.role,
-        avatar: user.avatar,
+        avatar: avatar,
         dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
       }
 
@@ -99,6 +105,34 @@ export default function UserProfile({ orders = [] }) {
       setIsLoading(false)
     }
   }
+
+  const handleUpload = async ({ file, fileList }) => {
+    setFileList(fileList);
+    const formData = new FormData();
+    formData.append("avatar", file.originFileObj);
+  
+    try {
+      const response = await fetch(`${BASE_URL}/api/buyer/profile/me`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+  
+      const data = await response.json();
+
+      if (response.ok) {
+        setAvatar(data.avatar_url);
+        localStorage.setItem("avatar", data.avatar_url);
+        notify("Upload success:", data.message, "topRight");
+      } else {
+        console.error("Upload failed.");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };  
 
   const handleCancel = () => {
     if (user) {
@@ -217,6 +251,24 @@ export default function UserProfile({ orders = [] }) {
       {isEditing ? (
         <Spin spinning={isLoading}>
           <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item label="Avatar" name="avatar" id="avatar" valuePropName="fileList">
+              <Upload
+                name="avatar"
+                listType="picture"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  const isImage = file.type.startsWith("image/");
+                  if (!isImage) {
+                    notify("You can only upload image files!", "", "topRight", "warning");
+                  }
+                  return isImage;
+                }}
+                onChange={handleUpload}
+                fileList={fileList}
+              >
+                <Button icon={<UploadOutlined />}>Upload Avatar</Button>
+              </Upload>
+            </Form.Item>
             <Form.Item
               id="name"
               name="name"
