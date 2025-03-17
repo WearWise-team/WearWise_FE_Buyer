@@ -2,7 +2,6 @@
 
 import { useState, use, useEffect } from "react";
 import { RiCheckboxCircleLine } from "react-icons/ri";
-import { FaSlidersH, FaChevronDown } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import axios from "axios";
@@ -167,6 +166,50 @@ export default function DetailProduct({ params }) {
     }
   };
 
+  const handleTryOn = () => {
+    if (!selectedColor || !selectedSize) {
+      notify(
+        "Product Color and Size Required",
+        "Please select a color and size for this product.",
+        "topRight",
+        "warning"
+      );
+      return;
+    }
+
+    const isUserLogin = localStorage.getItem("user");
+
+    if (!isUserLogin) {
+      notify(
+        "Login Required",
+        "You must login to add this product to the cart.",
+        "topRight",
+        "warning"
+      );
+      router.push("/login");
+      return;
+    }
+
+    localStorage.setItem("BuyNowWithTryOn", true);
+    localStorage.setItem("buy_now_product", JSON.stringify(product));
+    localStorage.setItem(
+      "buy_now_product_colorId",
+      JSON.stringify(selectedColor)
+    );
+    localStorage.setItem(
+      "buy_now_product_sizeId",
+      JSON.stringify(selectedSize)
+    );
+    localStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+
+    if (typeof window !== "undefined" && selectedImage) {
+      localStorage.setItem("tryOnImage", selectedImage);
+      router.push("/tryOnK");
+    } else {
+      notify("Please select an image to try on", "", "topRight", "warning");
+    }
+  };
+
   const handleBuyNow = (product, selectedColor, selectedSize) => {
     if (!selectedColor || !selectedSize) {
       notify(
@@ -276,11 +319,7 @@ export default function DetailProduct({ params }) {
                   alt="Main product image"
                   className="w-full rounded-lg"
                   height="800"
-                  src={
-                    selectedImage
-                      ? selectedImage
-                      : product.main_image
-                  }
+                  src={selectedImage ? selectedImage : product.main_image}
                   width="600"
                 />
               </div>
@@ -395,18 +434,15 @@ export default function DetailProduct({ params }) {
                 </div>
               </div>
               <div className="flex items-center space-x-4 mb-4">
-                <Link
-                  href="/tryOnK"
-                  onClick={() => {
-                    if (typeof window !== "undefined" && selectedImage) {
-                      localStorage.setItem("tryOnImage", selectedImage);
-                    }
-                  }}
+                <div
+                  onClick={() =>
+                    handleTryOn(product, selectedColor, selectedSize, quantity)
+                  }
                 >
                   <button className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-xl">
                     Try to 2D
                   </button>
-                </Link>
+                </div>
                 <button
                   className="px-4 mt-4 py-2 bg-pink-500 text-white rounded-xl flex"
                   onClick={() =>

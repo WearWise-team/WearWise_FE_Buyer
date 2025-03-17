@@ -8,6 +8,7 @@ import { DeleteOutlined, SwapOutlined } from "@ant-design/icons"
 import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
+import { useRouter } from "next/navigation"
 
 const { Text, Title, Paragraph } = Typography
 const { Dragger } = Upload
@@ -32,12 +33,16 @@ export default function Home() {
   const [resultImage, setResultImage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
-  const notify = useNotification()
+  const [BuyNowWithTryOn, setBuyNowWithTryOn] = useState(false);
+  const notify = useNotification();
+  const route = useRouter();
 
   useEffect(() => {
     const storedGarmentImage = localStorage.getItem("tryOnImage");
+    const BuyNowWithTryOn = localStorage.getItem("BuyNowWithTryOn");
     if (storedGarmentImage) {
       setGarmentImage(storedGarmentImage);
+      setBuyNowWithTryOn(BuyNowWithTryOn);
       localStorage.removeItem("tryOnImage");
     }
   }, []);
@@ -636,18 +641,29 @@ export default function Home() {
             </div>
 
             <Card className={styles.seedCard}>
-              <div className={styles.runButtonContainer}>
+            <div className={styles.runButtonContainer}>
+              <Button
+                type="primary"
+                onClick={() => submitTryOn()}
+                className={styles.runButton}
+                disabled={!personImage || !garmentImage || isLoading}
+                loading={isLoading}
+              >
+                {isLoading ? "Processing..." : "Run"}
+              </Button>
+
+              {/* Kiểm tra nếu cả resultImage và BuyNowWithTryOn có giá trị hợp lệ */}
+              {resultImage && BuyNowWithTryOn && (
                 <Button
+                  className={`${styles.runButton} mt-2`}
                   type="primary"
-                  onClick={() => submitTryOn()}
-                  className={styles.runButton}
-                  disabled={!personImage || !garmentImage || isLoading}
-                  loading={isLoading}
+                  onClick={() => route.push("/order/now")}
                 >
-                  {isLoading ? "Processing..." : "Run"}
+                  Buy Now
                 </Button>
-              </div>
-            </Card>
+              )}
+            </div>
+          </Card>
           </Card>
         </Col>
       </Row>
