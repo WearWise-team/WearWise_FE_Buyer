@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +19,7 @@ import { getColors } from "@/apiServices/colors/page";
 import { getDiscounts } from "@/apiServices/discounts/page";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { X } from "lucide-react";
+import { updateProduct } from "@/apiServices/products/page"; // Adjust the import path as needed
 // import { getSupplierByUserID } from "@/apiServices/suppliers/page";
 
 export default function EditProductDialog({
@@ -92,10 +95,105 @@ export default function EditProductDialog({
     setEditedProduct(product);
   }, [product]);
 
-  const handleEditProduct = () => {
-    onEdit(editedProduct);
-    onClose();
+  const handleEditProduct = async () => {
+    try {
+      const formData = new FormData();
+
+      const hasChanged = (original, edited) => {
+        if (Array.isArray(original) && Array.isArray(edited)) {
+          const origIds = (original || []).map((item) => item.id).sort();
+          const editIds = (edited || []).map((item) => item.id).sort();
+          return JSON.stringify(origIds) !== JSON.stringify(editIds);
+        }
+        return original !== edited && edited !== undefined && edited !== null;
+      };
+
+      // Kiểm tra và thêm dữ liệu vào FormData
+      if (hasChanged(product.name, editedProduct.name)) {
+        formData.append("name", editedProduct.name || "");
+      }
+
+      if (hasChanged(product.description, editedProduct.description)) {
+        formData.append("description", editedProduct.description || "");
+      }
+
+      if (hasChanged(product.price, editedProduct.price)) {
+        formData.append("price", editedProduct.price || 0);
+      }
+
+      if (hasChanged(product.quantity, editedProduct.quantity)) {
+        formData.append("quantity", editedProduct.quantity || 0);
+      }
+
+      if (
+        hasChanged(product.supplier_id, editedProduct.supplier_id) &&
+        editedProduct.supplier_id
+      ) {
+        formData.append("supplier_id", editedProduct.supplier_id);
+      }
+
+      if (
+        hasChanged(product.sizes, editedProduct.sizes) &&
+        editedProduct.sizes?.length
+      ) {
+        editedProduct.sizes.forEach((size) => {
+          formData.append("sizes[]", size.id);
+        });
+      }
+
+      if (
+        hasChanged(product.colors, editedProduct.colors) &&
+        editedProduct.colors?.length
+      ) {
+        editedProduct.colors.forEach((color) => {
+          formData.append("colors[]", color.id);
+        });
+      }
+
+      if (
+        hasChanged(product.discounts, editedProduct.discounts) &&
+        editedProduct.discounts?.length
+      ) {
+        editedProduct.discounts.forEach((discount) => {
+          formData.append("discounts[]", discount.id);
+        });
+      }
+
+      // Xử lý main_image
+      if (editedProduct.main_image instanceof File) {
+        formData.append("main_image", editedProduct.main_image);
+      }
+
+      // Xử lý additional images
+      if (editedProduct.images?.length) {
+        editedProduct.images.forEach((image) => {
+          if (image.file instanceof File) {
+            formData.append("images[]", image.file);
+          }
+        });
+      }
+
+      // Debug FormData
+      console.log("FormData contents:");
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      // Gọi API nếu có dữ liệu thay đổi
+      if (formData.entries().next().done === false) {
+        await updateProduct(editedProduct.id, formData);
+      } else {
+        console.log("No changes detected, skipping API call.");
+      }
+
+      // Cập nhật UI và đóng dialog
+      onEdit(editedProduct);
+      onClose();
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
   };
+
   const selectedDiscounts = editedProduct?.discounts?.map((discount) => ({
     value: discount.id,
     label: `${discount.code} - ${Math.round(discount.percentage)}%`,
@@ -121,14 +219,12 @@ export default function EditProductDialog({
 
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditedProduct((prev) => ({
-          ...prev,
-          main_image: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      // Store the actual file for form submission
+      setEditedProduct((prev) => ({
+        ...prev,
+        main_image: file,
+        main_image_preview: URL.createObjectURL(file), // Add preview URL
+      }));
     }
   };
 
@@ -142,20 +238,16 @@ export default function EditProductDialog({
   const handleSubImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const readers = files.map((file) => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-      });
+      // Store the actual files for form submission
+      const newImages = files.map((file) => ({
+        file: file,
+        url: URL.createObjectURL(file), // Create preview URL
+      }));
 
-      Promise.all(readers).then((newImages) => {
-        setEditedProduct((prev) => ({
-          ...prev,
-          images: [...(prev.images || []), ...newImages],
-        }));
-      });
+      setEditedProduct((prev) => ({
+        ...prev,
+        images: [...(prev.images || []), ...newImages],
+      }));
     }
   };
 
@@ -209,9 +301,14 @@ export default function EditProductDialog({
                   value: discount.id,
                 }))}
                 value={selectedDiscounts}
-                // onChange={(values) =>
-                //   setFormData({ ...formData, discounts: values })
-                // }
+                onChange={(values) => {
+                  setEditedProduct({
+                    ...editedProduct,
+                    discounts: values.map((v) =>
+                      discounts.find((d) => d.id === v.value)
+                    ),
+                  });
+                }}
               />
             </div>
           </div>
@@ -239,7 +336,7 @@ export default function EditProductDialog({
                 onChange={(e) =>
                   setEditedProduct({
                     ...editedProduct,
-                    stock: Number(e.target.value),
+                    quantity: Number(e.target.value),
                   })
                 }
               />
@@ -255,9 +352,14 @@ export default function EditProductDialog({
                   value: size.id,
                 }))}
                 value={selectedSizes}
-                // onChange={(values) =>
-                //   setFormData({ ...formData, discounts: values })
-                // }
+                onChange={(values) => {
+                  setEditedProduct({
+                    ...editedProduct,
+                    sizes: values.map((v) =>
+                      sizes.find((s) => s.id === v.value)
+                    ),
+                  });
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -269,9 +371,14 @@ export default function EditProductDialog({
                   value: color.id,
                 }))}
                 value={selectedColors}
-                // onChange={(values) =>
-                //   setFormData({ ...formData, discounts: values })
-                // }
+                onChange={(values) => {
+                  setEditedProduct({
+                    ...editedProduct,
+                    colors: values.map((v) =>
+                      colors.find((c) => c.id === v.value)
+                    ),
+                  });
+                }}
               />
             </div>
           </div>
@@ -293,7 +400,9 @@ export default function EditProductDialog({
             {editedProduct?.main_image ? (
               <div className="relative w-fit">
                 <img
-                  src={editedProduct.main_image}
+                  src={
+                    editedProduct.main_image_preview || editedProduct.main_image
+                  }
                   alt="Main"
                   className="max-h-48 object-contain rounded-lg shadow-md"
                 />
@@ -318,7 +427,7 @@ export default function EditProductDialog({
               {editedProduct?.images?.map((img, index) => (
                 <div key={index} className="relative w-20 h-20">
                   <img
-                    src={img.url}
+                    src={img.url || "/placeholder.svg"}
                     alt="Sub"
                     className="w-20 h-20 object-cover rounded-lg border"
                   />
