@@ -25,13 +25,13 @@ export const updateProduct = async (id, productData) => {
 export const deleteProduct = (id) => fetchData(`products/${id}`, "DELETE");
 
 export const searchProduct = (name) =>
-  fetchData("products/search", "POST", {
+  fetchData("buyer/products/search", "POST", {
     name: name,
   });
 
 export const fetchFilteredProducts = async (filter) => {
   try {
-    const result = await fetchData("products/filter", "POST", filter);
+    const result = await fetchData("buyer/products/filter", "POST", filter);
     return result;
   } catch (error) {
     console.error("Fetch filter error:", error);
