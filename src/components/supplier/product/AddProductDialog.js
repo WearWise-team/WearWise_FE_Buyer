@@ -1,3 +1,4 @@
+ "use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { X } from "lucide-react";
 import { getSupplierByUserID } from "@/apiServices/suppliers/page";
 import { useNotification } from "@/apiServices/NotificationService";
 import { getDiscounts } from "@/apiServices/discounts/page";
+import { useData } from "@/Context/DataContext";
 
 export default function AddProductDialog({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -33,50 +35,11 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
     sizes: [],
     discounts: [],
   });
-
-  const [sizes, setSizes] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const notify = useNotification();
   const [errors, setErrors] = useState({});
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-  useEffect(() => {
-    const fetchSizes = async () => {
-      try {
-        const sizes = await getSizes();
-        setSizes(sizes);
-      } catch (error) {
-        console.error("Fetch sizes error:", error);
-      }
-    };
-    fetchSizes();
-  }, []);
-
-  useEffect(() => {
-    const fetchColors = async () => {
-      try {
-        const response = await getColors();
-        setColors(response.data);
-      } catch (error) {
-        console.error("Fetch colors error:", error);
-      }
-    };
-    fetchColors();
-  }, []);
-
-  useEffect(() => {
-    const fetchDiscount = async () => {
-      try {
-        const discounts = await getDiscounts();
-        setDiscounts(discounts);
-      } catch (error) {
-        console.error("Fetch colors error:", error);
-      }
-    };
-    fetchDiscount();
-  }, []);
-
+  const { sizes, colors, discounts } = useData();
 
   useEffect(() => {
     const fetchSupplier = async () => {
