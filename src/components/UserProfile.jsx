@@ -22,9 +22,9 @@ import dayjs from "dayjs"
 import { viewProfile, updateProfile } from "@/apiServices/users/page"
 import { useNotification } from "@/apiServices/NotificationService"
 const { Title, Text } = Typography
-import { Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+import { Upload } from "antd"
+import { UploadOutlined } from "@ant-design/icons"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 export default function UserProfile({ orders = [] }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -51,12 +51,17 @@ export default function UserProfile({ orders = [] }) {
             height: data.height,
             shirt_size: data.shirt_size,
             pant_size: data.pant_size,
-            avatar: avatar,
+            avatar: data.avatar,
             dob: data.dob ? dayjs(data.dob) : null,
           })
+          // Set avatar state if it exists in the user data
+          if (data.avatar) {
+            setAvatar(data.avatar)
+          }
         }
       } catch (error) {
         console.error("Failed to load profile data", error)
+        notify("Failed to load profile", "Please try again", "topRight", "error")
       } finally {
         setIsLoading(false)
       }
@@ -84,7 +89,7 @@ export default function UserProfile({ orders = [] }) {
         gender: values.gender,
         pant_size: values.pant_size,
         role: user.role,
-        avatar: avatar,
+        avatar: avatar || user.avatar, // Use existing avatar if no new one is uploaded
         dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
       }
 
@@ -97,7 +102,7 @@ export default function UserProfile({ orders = [] }) {
 
       setUser({ ...user, ...formattedData })
       setIsEditing(false)
-      notify("Your profile has been updated successfully.", "successfully", "topRight")
+      notify("Your profile has been updated successfully.", "", "topRight", "success")
     } catch (error) {
       console.error("Failed to update profile", error)
       notify("Failed to update profile.", "Please try again.", "topRight", "error")
@@ -107,32 +112,37 @@ export default function UserProfile({ orders = [] }) {
   }
 
   const handleUpload = async ({ file, fileList }) => {
-    setFileList(fileList);
-    const formData = new FormData();
-    formData.append("avatar", file.originFileObj);
-  
+    setFileList(fileList)
+
+    // Only proceed if there's a file to upload
+    if (!file.originFileObj) return
+
+    const formData = new FormData()
+    formData.append("avatar", file.originFileObj)
+
     try {
       const response = await fetch(`${BASE_URL}/api/buyer/profile/me`, {
         method: "POST",
         body: formData,
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-      });
-  
-      const data = await response.json();
+      })
+
+      const data = await response.json()
 
       if (response.ok) {
-        setAvatar(data.avatar_url);
-        localStorage.setItem("avatar", data.avatar_url);
-        notify("Upload success:", data.message, "topRight");
+        setAvatar(data.avatar_url)
+        localStorage.setItem("avatar", data.avatar_url)
+        notify("Avatar uploaded successfully", "", "topRight", "success")
       } else {
-        console.error("Upload failed.");
+        notify("Upload failed", data.message || "Please try again", "topRight", "error")
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Error uploading file:", error)
+      notify("Upload failed", "Please try again", "topRight", "error")
     }
-  };  
+  }
 
   const handleCancel = () => {
     if (user) {
@@ -190,7 +200,7 @@ export default function UserProfile({ orders = [] }) {
           <Row gutter={[16, 16]}>
             <Col span={24}>
               <div style={{ display: "flex", alignItems: "center" }}>
-                <Avatar size={80} src={user.avatar} icon={<UserOutlined />} />
+                <Avatar size={80} src={user.avatar || avatar} icon={<UserOutlined />} />
                 <div style={{ marginLeft: 16 }}>
                   <Title level={4} style={{ margin: 0 }}>
                     {user.name}
@@ -250,24 +260,35 @@ export default function UserProfile({ orders = [] }) {
     >
       {isEditing ? (
         <Spin spinning={isLoading}>
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+          <Form name="myForm" form={form} layout="vertical" onFinish={handleSubmit}>
             <Form.Item label="Avatar" name="avatar" id="avatar" valuePropName="fileList">
-              <Upload
-                name="avatar"
-                listType="picture"
-                showUploadList={false}
-                beforeUpload={(file) => {
-                  const isImage = file.type.startsWith("image/");
-                  if (!isImage) {
-                    notify("You can only upload image files!", "", "topRight", "warning");
-                  }
-                  return isImage;
-                }}
-                onChange={handleUpload}
-                fileList={fileList}
-              >
-                <Button icon={<UploadOutlined />}>Upload Avatar</Button>
-              </Upload>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
+                <Avatar
+                  size={64}
+                  src={avatar || user?.avatar}
+                  icon={<UserOutlined />}
+                  style={{ marginRight: "16px" }}
+                />
+                <Upload
+                  name="avatar"
+                  listType="picture"
+                  showUploadList={false}
+                  beforeUpload={(file) => {
+                    const isImage = file.type.startsWith("image/")
+                    if (!isImage) {
+                      notify("You can only upload image files!", "", "topRight", "warning")
+                    }
+                    const isLt2M = file.size / 1024 / 1024 < 2
+                    if (!isLt2M) {
+                      notify("Image must be smaller than 2MB!", "", "topRight", "warning")
+                    }
+                    return isImage && isLt2M
+                  }}
+                  onChange={handleUpload}
+                >
+                  <Button icon={<UploadOutlined />}>Upload Avatar</Button>
+                </Upload>
+              </div>
             </Form.Item>
             <Form.Item
               id="name"
@@ -319,9 +340,12 @@ export default function UserProfile({ orders = [] }) {
               <Input />
             </Form.Item>
 
-            <Form.Item 
-            id="gender"
-            name="gender" label="Gender" rules={[{ required: true, message: "Please select your gender!" }]}>
+            <Form.Item
+              id="gender"
+              name="gender"
+              label="Gender"
+              rules={[{ required: true, message: "Please select your gender!" }]}
+            >
               <Radio.Group>
                 <Radio value="male">Male</Radio>
                 <Radio value="female">Female</Radio>

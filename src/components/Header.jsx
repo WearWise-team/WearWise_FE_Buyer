@@ -43,12 +43,14 @@ export default function Header() {
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     setIsLoggedIn(!!accessToken);
+    
     const userData = JSON.parse(localStorage.getItem("user"));
-    const avatar = localStorage.getItem("avatar") || "https://placehold.co/100x100";
+    const avatar = localStorage.getItem("avatar") || null;
+    
     if (userData && (userData.avatar || avatar)) {
-      setUserImage(userData.avatar || avatar);
+      setUserImage(avatar ? avatar : userData.avatar);
     }
-  }, []);
+  }, [localStorage.getItem("accessToken"), localStorage.getItem("user"), localStorage.getItem("avatar")]);
 
   const handleLogout = async () => {
     try {
