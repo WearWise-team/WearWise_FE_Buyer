@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./supplier.css";
+import { DataProvider } from "@/Context/DataContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,5 +11,5 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  return <>{children}</>;
+  return <DataProvider>{children}</DataProvider>;
 }

@@ -11,6 +11,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   LogOut,
+  DollarSign,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -74,6 +75,11 @@ export default function Sidebar() {
       name: "Comments",
       path: "/supplier/comments",
       icon: <MessageSquare className="h-5 w-5" />,
+    },
+    {
+      name: "Discounts",
+      path: "/supplier/discounts",
+      icon: <DollarSign className="h-5 w-5" />,
     },
     {
       name: "Logout",
