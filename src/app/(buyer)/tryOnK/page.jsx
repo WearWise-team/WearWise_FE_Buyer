@@ -9,6 +9,7 @@ import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
 import { useRouter } from "next/navigation"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 const { Text, Title, Paragraph } = Typography
 const { Dragger } = Upload
@@ -33,37 +34,41 @@ export default function Home() {
   const [resultImage, setResultImage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
-  const [BuyNowWithTryOn, setBuyNowWithTryOn] = useState(false);
-  const notify = useNotification();
-  const route = useRouter();
+  const [BuyNowWithTryOn, setBuyNowWithTryOn] = useState(false)
+  const notify = useNotification()
+  const route = useRouter()
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery("(max-width: 767px)")
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)")
 
   useEffect(() => {
-    const storedGarmentImage = localStorage.getItem("tryOnImage");
-    const BuyNowWithTryOn = localStorage.getItem("BuyNowWithTryOn");
+    const storedGarmentImage = localStorage.getItem("tryOnImage")
+    const BuyNowWithTryOn = localStorage.getItem("BuyNowWithTryOn")
     if (storedGarmentImage) {
-      setGarmentImage(storedGarmentImage);
-      setBuyNowWithTryOn(BuyNowWithTryOn);
-      localStorage.removeItem("tryOnImage");
+      setGarmentImage(storedGarmentImage)
+      setBuyNowWithTryOn(BuyNowWithTryOn)
+      localStorage.removeItem("tryOnImage")
     }
-  }, []);
-  
+  }, [])
+
   const items = [
     {
       key: "step1",
-      label: <Text style={{ fontSize: "18px" }}>Step 1: Model Image</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 1: Model Image</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "18px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "16px" : "18px" }}>
               Upload Model Image
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
-          <Row gutter={24}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: isMobile ? "18px" : "20px" }}>
                 Recommended
               </Title>
               <List
@@ -80,14 +85,14 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CheckCircleFilled style={{ color: "#52c41a" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: isMobile ? "18px" : "20px" }}>
                 Not Recommended
               </Title>
               <List
@@ -103,7 +108,7 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CloseCircleFilled style={{ color: "#f5222d" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
@@ -115,20 +120,20 @@ export default function Home() {
     },
     {
       key: "step2",
-      label: <Text style={{ fontSize: "18px" }}>Step 2: Product Image</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 2: Product Image</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "18px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "16px" : "18px" }}>
               Upload Product Image
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
-          <Row gutter={24}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: isMobile ? "18px" : "20px" }}>
                 Recommended
               </Title>
               <List
@@ -144,14 +149,14 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CheckCircleFilled style={{ color: "#52c41a" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: isMobile ? "18px" : "20px" }}>
                 Not Recommended
               </Title>
               <List
@@ -168,7 +173,7 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CloseCircleFilled style={{ color: "#f5222d" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
@@ -180,25 +185,25 @@ export default function Home() {
     },
     {
       key: "step3",
-      label: <Text style={{ fontSize: "18px" }}>Step 3: Results</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 3: Results</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "20px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "18px" : "20px" }}>
               Generated Results
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
           variant="outlined"
         >
-          <Paragraph style={{ fontSize: "16px" }}>
+          <Paragraph style={{ fontSize: isMobile ? "14px" : "16px" }}>
             After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on
             result.
           </Paragraph>
           <Divider orientation="left">Example Results</Divider>
-          <Row gutter={[24, 24]}>
+          <Row gutter={[16, 16]}>
             {["Model Image", "Product Image", "Try-on Result"].map((title, index) => (
-              <Col xs={24} md={8} key={index}>
+              <Col xs={24} sm={8} key={index}>
                 <Card variant="outlined" className="result-card">
                   <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
                     {title}
@@ -223,7 +228,7 @@ export default function Home() {
               ]}
               renderItem={(item) => (
                 <List.Item>
-                  <Text style={{ fontSize: "15px" }}>{item}</Text>
+                  <Text style={{ fontSize: isMobile ? "14px" : "15px" }}>{item}</Text>
                 </List.Item>
               )}
             />
@@ -448,8 +453,8 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Row gutter={16} className={styles.stepsRow}>
-        <Col span={8}>
+      <Row gutter={[16, 16]} className={styles.stepsRow}>
+        <Col xs={24} md={8}>
           <Card
             className={styles.card}
             title={
@@ -533,7 +538,7 @@ export default function Home() {
           </Card>
         </Col>
 
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card
             className={styles.card}
             title={
@@ -617,7 +622,7 @@ export default function Home() {
           </Card>
         </Col>
 
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card
             className={styles.card}
             title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
@@ -641,29 +646,29 @@ export default function Home() {
             </div>
 
             <Card className={styles.seedCard}>
-            <div className={styles.runButtonContainer}>
-              <Button
-                type="primary"
-                onClick={() => submitTryOn()}
-                className={styles.runButton}
-                disabled={!personImage || !garmentImage || isLoading}
-                loading={isLoading}
-              >
-                {isLoading ? "Processing..." : "Run"}
-              </Button>
-
-              {/* Kiểm tra nếu cả resultImage và BuyNowWithTryOn có giá trị hợp lệ */}
-              {resultImage && BuyNowWithTryOn && (
+              <div className={styles.runButtonContainer}>
                 <Button
-                  className={`${styles.runButton} mt-2`}
                   type="primary"
-                  onClick={() => route.push("/order/now")}
+                  onClick={() => submitTryOn()}
+                  className={styles.runButton}
+                  disabled={!personImage || !garmentImage || isLoading}
+                  loading={isLoading}
                 >
-                  Buy Now
+                  {isLoading ? "Processing..." : "Run"}
                 </Button>
-              )}
-            </div>
-          </Card>
+
+                {/* Kiểm tra nếu cả resultImage và BuyNowWithTryOn có giá trị hợp lệ */}
+                {resultImage && BuyNowWithTryOn && (
+                  <Button
+                    className={`${styles.runButton} mt-2`}
+                    type="primary"
+                    onClick={() => route.push("/order/now")}
+                  >
+                    Buy Now
+                  </Button>
+                )}
+              </div>
+            </Card>
           </Card>
         </Col>
       </Row>
@@ -671,13 +676,13 @@ export default function Home() {
       <Tabs items={items} />
 
       <section style={{ marginBottom: "30px" }}>
-        <Title level={3} style={{ fontSize: "22px" }}>
+        <Title level={3} style={{ fontSize: isMobile ? "20px" : "22px" }}>
           Tips for Best Results
         </Title>
         <Alert
-          message={<Text style={{ fontSize: "18px" }}>Note</Text>}
+          message={<Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Note</Text>}
           description={
-            <Text style={{ fontSize: "16px" }}>
+            <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>
               Discrepancies may occur in clothing details, especially with small text and logos. This is a common
               challenge in virtual try-on technology that we're continuously working to improve.
             </Text>

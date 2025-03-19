@@ -1,11 +1,10 @@
 "use client";
 
-import SidebarFilter from "@/components/SidebarFilter";
+import SidebarFilter from "@/components/SidebarFilterProducts";
 import { useProducts } from "@/Context/ProductContext";
 import Card from "@/components/Card";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   searchProduct,
   fetchFilteredProducts,
@@ -21,6 +20,52 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(true);
   const notify = useNotification();
+
+  // Hàm parse query thành filter object
+  const parseQueryToFilter = (params) => {
+    try {
+      const filter = {};
+
+      if (params.has("minPrice")) {
+        const minPrice = Number(params.get("minPrice"));
+        if (!isNaN(minPrice)) filter.minPrice = minPrice;
+      }
+
+      if (params.has("maxPrice")) {
+        const maxPrice = Number(params.get("maxPrice"));
+        if (!isNaN(maxPrice)) filter.maxPrice = maxPrice;
+      }
+
+      // Lấy tất cả các giá trị categories
+      const categoryValues = params.getAll("categories");
+      if (categoryValues.length > 0) {
+        filter.categories = categoryValues;
+      }
+
+      // Lấy tất cả các giá trị colors
+      const colorValues = params.getAll("colors");
+      if (colorValues.length > 0) {
+        filter.colors = colorValues;
+      }
+
+      // Lấy tất cả các giá trị sizes
+      const sizeValues = params.getAll("sizes");
+      if (sizeValues.length > 0) {
+        filter.sizes = sizeValues;
+      }
+
+      if (params.has("sortPrice")) {
+        const sortValue = params.get("sortPrice");
+        filter.sortPrice =
+          sortValue === "asc" || sortValue === "desc" ? sortValue : null;
+      }
+
+      return filter;
+    } catch (error) {
+      console.error("Error parsing filter query:", error);
+      return {};
+    }
+  };
 
   useEffect(() => {
     if (!searchQuery && productList.length === products.length) return;
@@ -55,34 +100,11 @@ const ProductPage = () => {
           params.has("sizes") ||
           params.has("sortPrice")
         ) {
-          // Create a filter object to hold all filter parameters
-          const filterParams = {
-            categories: params.getAll("categories"),
-            colors: params.getAll("colors"),
-            sizes: params.getAll("sizes"),
-            sortPrice: params.get("sortPrice") || undefined,
-          };
-
-          // Add price filters if they exist
-          if (params.has("minPrice")) {
-            filterParams.minPrice = Number(params.get("minPrice"));
-          }
-
-          if (params.has("maxPrice")) {
-            filterParams.maxPrice = Number(params.get("maxPrice"));
-          }
-
+          // Sử dụng hàm parseQueryToFilter để chuyển đổi query params thành filter object
+          const filterParams = parseQueryToFilter(params);
           console.log("Filter params:", filterParams);
 
-          // Only include non-empty arrays and defined values
-          const cleanedFilterParams = Object.fromEntries(
-            Object.entries(filterParams).filter(([_, value]) => {
-              if (Array.isArray(value)) return value.length > 0;
-              return value !== undefined && value !== null && value !== "";
-            })
-          );
-
-          const result = await fetchFilteredProducts(cleanedFilterParams);
+          const result = await fetchFilteredProducts(filterParams);
           updateProductList(result);
         }
       } catch (error) {
@@ -119,52 +141,13 @@ const ProductPage = () => {
     setResult(true);
   };
 
-  const parseQueryToFilter = (params) => {
-    try {
-      const filter = {};
-
-      if (params.has("minPrice")) {
-        const minPrice = Number(params.get("minPrice"));
-        if (!isNaN(minPrice)) filter.minPrice = minPrice;
-      }
-
-      if (params.has("maxPrice")) {
-        const maxPrice = Number(params.get("maxPrice"));
-        if (!isNaN(maxPrice)) filter.maxPrice = maxPrice;
-      }
-
-      if (params.has("categories")) {
-        filter.categories = params.get("categories").split(",");
-      }
-
-      if (params.has("colors")) {
-        filter.colors = params.get("colors").split(",");
-      }
-
-      if (params.has("sizes")) {
-        filter.sizes = params.get("sizes").split(",");
-      }
-
-      if (params.has("sortPrice")) {
-        const sortValue = params.get("sortPrice");
-        filter.sortPrice =
-          sortValue === "asc" || sortValue === "desc" ? sortValue : null;
-      }
-
-      return filter;
-    } catch (error) {
-      console.error("Error parsing filter query:", error);
-      return {};
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex gap-8">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         <SidebarFilter />
         <div className="flex-1">
           {productList.length > 0 && (
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <p
                 className="text-sm text-gray-600 cursor-pointer"
                 onClick={handleViewAll}
@@ -178,7 +161,7 @@ const ProductPage = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
             </div>
           ) : result ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               {productList.map((product) => (
                 <div key={product.id}>
                   <Card

@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { motion, useAnimationControls } from "framer-motion"
+import { motion } from "framer-motion"
 
 export default function InteractiveLogoMarquee() {
   // Example logos - replace with your actual logos
@@ -10,34 +9,13 @@ export default function InteractiveLogoMarquee() {
   // Duplicate logos to create a seamless loop
   const extendedLogos = [...logos, ...logos, ...logos]
 
-  const controls = useAnimationControls()
-  const [isPaused, setIsPaused] = useState(false)
-
-  const handleMouseEnter = () => {
-    controls.stop()
-    setIsPaused(true)
-  }
-
-  const handleMouseLeave = () => {
-    controls.start("move")
-    setIsPaused(false)
-  }
-
   return (
-    <div
-      className="overflow-hidden bg-[#CC2B52] py-6 relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="overflow-hidden bg-[#CC2B52] py-6 relative">
       <motion.div
         className="flex whitespace-nowrap"
-        variants={{
-          move: {
-            x: [0, "-100%"],
-          },
+        animate={{
+          x: [0, "-100%"],
         }}
-        initial="move"
-        animate={controls}
         transition={{
           duration: 20,
           repeat: Number.POSITIVE_INFINITY,
@@ -46,12 +24,7 @@ export default function InteractiveLogoMarquee() {
         }}
       >
         {extendedLogos.map((logo, index) => (
-          <motion.span
-            key={index}
-            className={`text-white text-2xl font-bold inline-block mx-8 cursor-pointer ${isPaused ? "hover:text-yellow-300" : ""}`}
-            whileHover={{ scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
+          <motion.span key={index} className="text-white text-2xl font-bold inline-block mx-8">
             {logo}
           </motion.span>
         ))}
