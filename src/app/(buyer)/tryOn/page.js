@@ -11,6 +11,7 @@ import {
   SwapOutlined,
 } from "@ant-design/icons";
 import { FaTshirt } from "react-icons/fa";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function TryOn2D() {
   const [personImage, setPersonImage] = useState(null);
@@ -88,7 +89,7 @@ export default function TryOn2D() {
       formData.append("cloth_image", dataURLtoFile(garmentImage, "garment.jpg"));
       formData.append("person_image", dataURLtoFile(personImage, "person.jpg"));
 
-      const response = await fetch("http://127.0.0.1:8000/api/virtual-tryon", {
+      const response = await fetch(`${BASE_URL}/api/virtual-tryon`, {
         method: "POST",
         body: formData,
         headers: {
