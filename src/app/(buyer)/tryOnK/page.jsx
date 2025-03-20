@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Divider } from "antd"
+import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Divider, Modal } from "antd"
 import { UploadOutlined, InboxOutlined, LoadingOutlined } from "@ant-design/icons"
-import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled } from "@ant-design/icons"
+import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled, DownloadOutlined, FullscreenOutlined} from "@ant-design/icons"
 import { DeleteOutlined, SwapOutlined } from "@ant-design/icons"
 import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
@@ -18,13 +18,13 @@ const personExamples = [
   "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
   "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437024/tryOn2D/an0qtrsraofn54lprdlr.jpg",
   "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435096/tryOn2D/krud7cclktsdpoegosrn.jpg",
-  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742436072/tryOn2D/uzszk5awad5cke9hqgvz.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480416/tryOn2D/er3uwnkqawopejlvbb4x.jpg",
 ]
 
 const garmentExamples = [
   "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437135/tryOn2D/wrboxj4bb0okscdj3ths.png",
   "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435899/tryOn2D/lci08lgr3gr1nwbm3zux.png",
-  "https://product.hstatic.net/200000690725/product/ewcw001_54058105257_o_8e31ef77217942c5a8e31a0738d2c495_master.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742483057/tryOn2D/xsjohhbrhjr7maiafvyc.jpg",
   "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435898/tryOn2D/phapcuqrsfsfalxvcwms.jpg",
 ]
 
@@ -37,6 +37,11 @@ export default function Home() {
   const [BuyNowWithTryOn, setBuyNowWithTryOn] = useState(false)
   const notify = useNotification()
   const route = useRouter()
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleOpenModal = () => setIsModalVisible(true);
+  const handleCloseModal = () => setIsModalVisible(false);
 
   // Responsive breakpoints
   const isMobile = useMediaQuery("(max-width: 767px)")
@@ -219,6 +224,31 @@ export default function Home() {
               </Col>
             ))}
           </Row>
+
+          {/* Thêm 3 hình ảnh mới */}
+          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+            {[
+              { title: "Model Image", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480416/tryOn2D/er3uwnkqawopejlvbb4x.jpg" },
+              { title: "Clothing Item", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742483057/tryOn2D/xsjohhbrhjr7maiafvyc.jpg" },
+              { title: "Result", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480417/tryOn2D/irdhln7uztl8vrapialf.jpg" },
+            ].map((item, index) => (
+              <Col xs={24} sm={8} key={index}>
+                <Card variant="outlined" className="result-card">
+                  <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
+                    {item.title}
+                  </Title>
+                  <div style={{ textAlign: "center" }}>
+                    <img
+                      src={item.src}
+                      alt={`${item.title} example`}
+                      style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0" }}
+                    />
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+
           <Card type="inner" title="Available Features" style={{ marginTop: "24px" }} variant="outlined">
             <List
               itemLayout="horizontal"
@@ -623,54 +653,95 @@ export default function Home() {
         </Col>
 
         <Col xs={24} md={8}>
-          <Card
-            className={styles.card}
-            title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
-          >
-            <div className={styles.uploader}>
-              {isLoading ? (
-                <div className={styles.loadingContainer}>
-                  <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-                  <div className={styles.progressContainer}>
-                    <div className={styles.progressBar} style={{ width: `${loadingProgress}%` }}></div>
-                  </div>
-                  <p className={styles.loadingText}>Processing... {Math.round(loadingProgress)}%</p>
+        <Card
+          className={styles.card}
+          title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
+        >
+          <div className={styles.uploader}>
+            {isLoading ? (
+              <div className={styles.loadingContainer}>
+                <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+                <div className={styles.progressContainer}>
+                  <div className={styles.progressBar} style={{ width: `${loadingProgress}%` }}></div>
                 </div>
-              ) : resultImage ? (
-                <img src={resultImage || "/placeholder.svg"} alt="Result" className={styles.uploadedImage} />
-              ) : (
-                <div className={styles.emptyResult}>
-                  <InboxOutlined style={{ fontSize: 48 }} />
+                <p className={styles.loadingText}>Processing... {Math.round(loadingProgress)}%</p>
+              </div>
+            ) : resultImage ? (
+              <>
+                <img
+                  src={resultImage}
+                  alt="Result"
+                  className={styles.uploadedImage}
+                  onClick={handleOpenModal} // Click vào ảnh để mở full screen
+                  style={{ cursor: "pointer" }}
+                />
+                <div className={styles.actionButtons}>
+                  <Button
+                    type="primary"
+                    icon={<FullscreenOutlined />}
+                    onClick={handleOpenModal}
+                    className="mt-2"
+                  >
+                    View Fullscreen
+                  </Button>
+                  <a href={resultImage} download="try-on-result.jpg">
+                    <Button
+                      type="default"
+                      icon={<DownloadOutlined />}
+                      className="mt-2 ml-2"
+                    >
+                      Download
+                    </Button>
+                  </a>
                 </div>
+              </>
+            ) : (
+              <div className={styles.emptyResult}>
+                <InboxOutlined style={{ fontSize: 48 }} />
+              </div>
+            )}
+          </div>
+
+          <Card className={styles.seedCard}>
+            <div className={styles.runButtonContainer}>
+              <Button
+                type="primary"
+                onClick={() => submitTryOn()}
+                className={styles.runButton}
+                disabled={!personImage || !garmentImage || isLoading}
+                loading={isLoading}
+              >
+                {isLoading ? "Processing..." : "Run"}
+              </Button>
+
+              {resultImage && BuyNowWithTryOn && (
+                <Button
+                  className={`${styles.runButton} mt-2`}
+                  type="primary"
+                  onClick={() => route.push("/order/now")}
+                >
+                  Buy Now
+                </Button>
               )}
             </div>
-
-            <Card className={styles.seedCard}>
-              <div className={styles.runButtonContainer}>
-                <Button
-                  type="primary"
-                  onClick={() => submitTryOn()}
-                  className={styles.runButton}
-                  disabled={!personImage || !garmentImage || isLoading}
-                  loading={isLoading}
-                >
-                  {isLoading ? "Processing..." : "Run"}
-                </Button>
-
-                {/* Kiểm tra nếu cả resultImage và BuyNowWithTryOn có giá trị hợp lệ */}
-                {resultImage && BuyNowWithTryOn && (
-                  <Button
-                    className={`${styles.runButton} mt-2`}
-                    type="primary"
-                    onClick={() => route.push("/order/now")}
-                  >
-                    Buy Now
-                  </Button>
-                )}
-              </div>
-            </Card>
           </Card>
-        </Col>
+        </Card>
+
+        {/* Modal hiển thị ảnh full màn hình */}
+        <Modal
+          open={isModalVisible}
+          footer={null}
+          onCancel={handleCloseModal}
+          centered
+          width={800}
+        >
+          <img
+            src={resultImage}
+            alt="Fullscreen Try-on Result"
+            style={{ width: "100%", height: "auto", borderRadius: "8px" }}
+          />
+        </Modal>
+      </Col>
       </Row>
 
       <Tabs items={items} />
