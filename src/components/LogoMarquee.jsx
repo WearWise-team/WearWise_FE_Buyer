@@ -10,7 +10,7 @@ export default function InteractiveLogoMarquee() {
   const extendedLogos = [...logos, ...logos, ...logos]
 
   return (
-    <div className="overflow-hidden bg-[#CC2B52] py-6 relative">
+    <div className="overflow-hidden bg-[#CC2B52] py-2 md:py-6 relative">
       <motion.div
         className="flex whitespace-nowrap"
         animate={{
@@ -24,7 +24,10 @@ export default function InteractiveLogoMarquee() {
         }}
       >
         {extendedLogos.map((logo, index) => (
-          <motion.span key={index} className="text-white text-2xl font-bold inline-block mx-8">
+          <motion.span
+            key={index}
+            className="text-white text-sm sm:text-lg md:text-2xl font-bold inline-block mx-2 sm:mx-4 md:mx-8"
+          >
             {logo}
           </motion.span>
         ))}

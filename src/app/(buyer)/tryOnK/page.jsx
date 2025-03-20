@@ -16,16 +16,16 @@ const { Dragger } = Upload
 // Sample data for examples
 const personExamples = [
   "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
-  "https://skinoutfits.com/wp-content/uploads/2023/08/Jensen-Huang-Nvidia-CEO-Black-Biker-Leather-Jacket-Online-At-Superstar-Jackets-3.jpg",
-  "https://cdn.24h.com.vn/upload/1-2021/images/2021-03-12/Phat-hien-nguoi-dep-157884103_540208743608984_4158627500730650223_n-1615519993-786-width1080height1349.jpg",
-  "https://danviet.mediacdn.vn/upload/3-2019/images/2019-09-04/3-1567585403-width650height651.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437024/tryOn2D/an0qtrsraofn54lprdlr.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435096/tryOn2D/krud7cclktsdpoegosrn.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742436072/tryOn2D/uzszk5awad5cke9hqgvz.jpg",
 ]
 
 const garmentExamples = [
-  "https://timshop.timhortons.ca/cdn/shop/files/retro-logo-tshirt-back-1000px.png?v=1707853862&width=1000",
-  "https://media.istockphoto.com/id/1152838910/vi/anh/blazer-nam-m%C3%A0u-xanh-%C4%91%E1%BA%ADm-tr%C3%AAn-n%E1%BB%81n-c%C3%B4-l%E1%BA%ADp.jpg?s=612x612&w=0&k=20&c=E1U6Q5jRmtEoC0VorvlVFENFqhfajobXJLWZp4M8Nrc=",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437135/tryOn2D/wrboxj4bb0okscdj3ths.png",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435899/tryOn2D/lci08lgr3gr1nwbm3zux.png",
   "https://product.hstatic.net/200000690725/product/ewcw001_54058105257_o_8e31ef77217942c5a8e31a0738d2c495_master.jpg",
-  "https://bizweb.dktcdn.net/thumb/1024x1024/100/366/518/products/ao-day3.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435898/tryOn2D/phapcuqrsfsfalxvcwms.jpg",
 ]
 
 export default function Home() {

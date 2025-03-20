@@ -296,7 +296,7 @@ export default function SidebarFilter() {
 
           <div className="p-4">
             {/* Price Range */}
-            <FilterSection title="Price Range" section="price">
+            <FilterSection title="Filter by Original Price" section="price">
               <div className="flex items-center gap-2">
                 <input
                   ref={minPriceRef}
@@ -447,7 +447,7 @@ export default function SidebarFilter() {
 
               {/* Price Range */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-800 mb-2">Price Range</h4>
+                <h4 className="font-medium text-gray-800 mb-2">Filter by Original Price</h4>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"

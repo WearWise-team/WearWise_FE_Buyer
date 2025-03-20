@@ -112,7 +112,7 @@ export default function ProductsPage() {
       notify("Discount deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting discount:", error);
-      notify("Failed to delete discount! ❌", "error");
+      notify("Failed to delete discount!", "error");
     }
   };
 

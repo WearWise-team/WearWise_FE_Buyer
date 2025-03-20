@@ -164,13 +164,13 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
         });
         onClose();
       } else {
-        notify(" Error adding product!", "error");
+        notify(" Error adding product!", "", "topRight", "error");
         if (result.errors) {
           setErrors(result.errors);
         }
       }
     } catch (error) {
-      notify(" Network error. Please try again.", "error");
+      notify(" Network error. Please try again.", "", "topRight", "error");
     } finally {
       setLoading(false);
     }

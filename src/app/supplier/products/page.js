@@ -136,7 +136,7 @@ export default function ProductsPage() {
       notify("Product deleted successfully!", "success");
     } catch (error) {
       console.error("Error deleting product:", error);
-      notify("Failed to delete product! ❌", "error");
+      notify("Failed to delete product!", "error");
     }
   };
 
