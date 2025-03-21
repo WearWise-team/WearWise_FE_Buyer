@@ -327,7 +327,7 @@ export default function Home() {
 
   // Fixed function to handle image deletion with event stopping
   const handleDeleteImage = (e, setImageFunction) => {
-    e.stopPropagation() // Stop event propagation to prevent Dragger from opening file dialog
+    e.stopPropagation()
     setImageFunction(null)
     setResultImage(null)
   }
@@ -335,9 +335,11 @@ export default function Home() {
   async function submitTryOn() {
     const personFile = personImage
     const garmentFile = garmentImage
+    const user = localStorage.getItem('user');
 
-    if (!personFile || !garmentFile) {
-      notify("Error", "Please upload both images!", "topRight", "error")
+    if (!user) {
+      notify("Do you have an account?", "Please sign up or log in!", "topRight", "error");
+      route.push("/login")
       return
     }
 
@@ -672,25 +674,16 @@ export default function Home() {
                   src={resultImage}
                   alt="Result"
                   className={styles.uploadedImage}
-                  onClick={handleOpenModal} // Click vào ảnh để mở full screen
+                  onClick={handleOpenModal}
                   style={{ cursor: "pointer" }}
                 />
-                <div className={styles.actionButtons}>
-                  <Button
-                    type="primary"
-                    icon={<FullscreenOutlined />}
-                    onClick={handleOpenModal}
-                    className="mt-2"
-                  >
-                    View Fullscreen
-                  </Button>
+                <div className="absolute top-28 right-14 flex gap-2 z-10">
                   <a href={resultImage} download="try-on-result.jpg">
                     <Button
                       type="default"
-                      icon={<DownloadOutlined />}
+                      icon={<FullscreenOutlined />}
                       className="mt-2 ml-2"
                     >
-                      Download
                     </Button>
                   </a>
                 </div>
@@ -727,20 +720,6 @@ export default function Home() {
           </Card>
         </Card>
 
-        {/* Modal hiển thị ảnh full màn hình */}
-        <Modal
-          open={isModalVisible}
-          footer={null}
-          onCancel={handleCloseModal}
-          centered
-          width={800}
-        >
-          <img
-            src={resultImage}
-            alt="Fullscreen Try-on Result"
-            style={{ width: "100%", height: "auto", borderRadius: "8px" }}
-          />
-        </Modal>
       </Col>
       </Row>
 
