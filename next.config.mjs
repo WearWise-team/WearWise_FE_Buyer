@@ -14,7 +14,8 @@ const nextConfig = {
       "pos.nvncdn.com",
       "res.cloudinary.com",
       "product.hstatic.net",
-      "media.tenor.com"
+      "media.tenor.com",
+      "kwai-kolors-kolors-virtual-try-on.hf"
     ],
     remotePatterns: [
       {

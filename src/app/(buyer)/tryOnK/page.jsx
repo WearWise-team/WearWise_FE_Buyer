@@ -1,29 +1,31 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Divider } from "antd"
+import { Upload, Button, Row, Col, Card, Typography, Spin, Alert, Tabs, List, Space, Divider, Modal } from "antd"
 import { UploadOutlined, InboxOutlined, LoadingOutlined } from "@ant-design/icons"
-import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled } from "@ant-design/icons"
+import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled, DownloadOutlined, FullscreenOutlined} from "@ant-design/icons"
 import { DeleteOutlined, SwapOutlined } from "@ant-design/icons"
 import styles from "./page.module.css"
 import { useNotification } from "@/apiServices/NotificationService"
 import { tryOnKlingAI, getKlingAIResults } from "@/apiServices/tryOnK/page"
+import { useRouter } from "next/navigation"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 const { Text, Title, Paragraph } = Typography
 const { Dragger } = Upload
 // Sample data for examples
 const personExamples = [
   "https://www.newtheoryclothing.com/cdn/shop/files/1_15be3c0e-66d7-4068-a7d0-7cc5463caa16.png?v=1690888546",
-  "https://skinoutfits.com/wp-content/uploads/2023/08/Jensen-Huang-Nvidia-CEO-Black-Biker-Leather-Jacket-Online-At-Superstar-Jackets-3.jpg",
-  "https://cdn.24h.com.vn/upload/1-2021/images/2021-03-12/Phat-hien-nguoi-dep-157884103_540208743608984_4158627500730650223_n-1615519993-786-width1080height1349.jpg",
-  "https://danviet.mediacdn.vn/upload/3-2019/images/2019-09-04/3-1567585403-width650height651.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437024/tryOn2D/an0qtrsraofn54lprdlr.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435096/tryOn2D/krud7cclktsdpoegosrn.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480416/tryOn2D/er3uwnkqawopejlvbb4x.jpg",
 ]
 
 const garmentExamples = [
-  "https://timshop.timhortons.ca/cdn/shop/files/retro-logo-tshirt-back-1000px.png?v=1707853862&width=1000",
-  "https://media.istockphoto.com/id/1152838910/vi/anh/blazer-nam-m%C3%A0u-xanh-%C4%91%E1%BA%ADm-tr%C3%AAn-n%E1%BB%81n-c%C3%B4-l%E1%BA%ADp.jpg?s=612x612&w=0&k=20&c=E1U6Q5jRmtEoC0VorvlVFENFqhfajobXJLWZp4M8Nrc=",
-  "https://product.hstatic.net/200000690725/product/ewcw001_54058105257_o_8e31ef77217942c5a8e31a0738d2c495_master.jpg",
-  "https://bizweb.dktcdn.net/thumb/1024x1024/100/366/518/products/ao-day3.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742437135/tryOn2D/wrboxj4bb0okscdj3ths.png",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435899/tryOn2D/lci08lgr3gr1nwbm3zux.png",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742483057/tryOn2D/xsjohhbrhjr7maiafvyc.jpg",
+  "https://res.cloudinary.com/dkvvko14m/image/upload/v1742435898/tryOn2D/phapcuqrsfsfalxvcwms.jpg",
 ]
 
 export default function Home() {
@@ -32,33 +34,46 @@ export default function Home() {
   const [resultImage, setResultImage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [BuyNowWithTryOn, setBuyNowWithTryOn] = useState(false)
   const notify = useNotification()
+  const route = useRouter()
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleOpenModal = () => setIsModalVisible(true);
+  const handleCloseModal = () => setIsModalVisible(false);
+
+  // Responsive breakpoints
+  const isMobile = useMediaQuery("(max-width: 767px)")
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)")
 
   useEffect(() => {
-    const storedGarmentImage = localStorage.getItem("tryOnImage");
+    const storedGarmentImage = localStorage.getItem("tryOnImage")
+    const BuyNowWithTryOn = localStorage.getItem("BuyNowWithTryOn")
     if (storedGarmentImage) {
-      setGarmentImage(storedGarmentImage);
-      localStorage.removeItem("tryOnImage");
+      setGarmentImage(storedGarmentImage)
+      setBuyNowWithTryOn(BuyNowWithTryOn)
+      localStorage.removeItem("tryOnImage")
     }
-  }, []);
-  
+  }, [])
+
   const items = [
     {
       key: "step1",
-      label: <Text style={{ fontSize: "18px" }}>Step 1: Model Image</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 1: Model Image</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "18px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "16px" : "18px" }}>
               Upload Model Image
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
-          <Row gutter={24}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: isMobile ? "18px" : "20px" }}>
                 Recommended
               </Title>
               <List
@@ -75,14 +90,14 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CheckCircleFilled style={{ color: "#52c41a" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: isMobile ? "18px" : "20px" }}>
                 Not Recommended
               </Title>
               <List
@@ -98,7 +113,7 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CloseCircleFilled style={{ color: "#f5222d" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
@@ -110,20 +125,20 @@ export default function Home() {
     },
     {
       key: "step2",
-      label: <Text style={{ fontSize: "18px" }}>Step 2: Product Image</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 2: Product Image</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "18px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "16px" : "18px" }}>
               Upload Product Image
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>Follow these guidelines for best results</Text>}
           variant="outlined"
         >
-          <Row gutter={24}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#52c41a", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#52c41a", fontSize: isMobile ? "18px" : "20px" }}>
                 Recommended
               </Title>
               <List
@@ -139,14 +154,14 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CheckCircleFilled style={{ color: "#52c41a" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
               />
             </Col>
             <Col xs={24} md={12}>
-              <Title level={4} style={{ color: "#f5222d", fontSize: "20px" }}>
+              <Title level={4} style={{ color: "#f5222d", fontSize: isMobile ? "18px" : "20px" }}>
                 Not Recommended
               </Title>
               <List
@@ -163,7 +178,7 @@ export default function Home() {
                   <List.Item>
                     <Space>
                       <CloseCircleFilled style={{ color: "#f5222d" }} />
-                      <Text style={{ fontSize: "16px" }}>{item}</Text>
+                      <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>{item}</Text>
                     </Space>
                   </List.Item>
                 )}
@@ -175,25 +190,25 @@ export default function Home() {
     },
     {
       key: "step3",
-      label: <Text style={{ fontSize: "18px" }}>Step 3: Results</Text>,
+      label: <Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Step 3: Results</Text>,
       children: (
         <Card
           title={
-            <Title level={3} style={{ fontSize: "20px" }}>
+            <Title level={3} style={{ fontSize: isMobile ? "18px" : "20px" }}>
               Generated Results
             </Title>
           }
-          extra={<Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
+          extra={isMobile ? null : <Text style={{ fontSize: "16px" }}>What to expect after uploading your images</Text>}
           variant="outlined"
         >
-          <Paragraph style={{ fontSize: "16px" }}>
+          <Paragraph style={{ fontSize: isMobile ? "14px" : "16px" }}>
             After uploading compliant product and model images, wait 40-50 seconds to receive your virtual try-on
             result.
           </Paragraph>
           <Divider orientation="left">Example Results</Divider>
-          <Row gutter={[24, 24]}>
+          <Row gutter={[16, 16]}>
             {["Model Image", "Product Image", "Try-on Result"].map((title, index) => (
-              <Col xs={24} md={8} key={index}>
+              <Col xs={24} sm={8} key={index}>
                 <Card variant="outlined" className="result-card">
                   <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
                     {title}
@@ -209,6 +224,31 @@ export default function Home() {
               </Col>
             ))}
           </Row>
+
+          {/* Thêm 3 hình ảnh mới */}
+          <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+            {[
+              { title: "Model Image", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480416/tryOn2D/er3uwnkqawopejlvbb4x.jpg" },
+              { title: "Clothing Item", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742483057/tryOn2D/xsjohhbrhjr7maiafvyc.jpg" },
+              { title: "Result", src: "https://res.cloudinary.com/dkvvko14m/image/upload/v1742480417/tryOn2D/irdhln7uztl8vrapialf.jpg" },
+            ].map((item, index) => (
+              <Col xs={24} sm={8} key={index}>
+                <Card variant="outlined" className="result-card">
+                  <Title level={5} style={{ textAlign: "center", marginBottom: "16px" }}>
+                    {item.title}
+                  </Title>
+                  <div style={{ textAlign: "center" }}>
+                    <img
+                      src={item.src}
+                      alt={`${item.title} example`}
+                      style={{ maxWidth: "100%", height: "auto", border: "1px solid #f0f0f0" }}
+                    />
+                  </div>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+
           <Card type="inner" title="Available Features" style={{ marginTop: "24px" }} variant="outlined">
             <List
               itemLayout="horizontal"
@@ -218,7 +258,7 @@ export default function Home() {
               ]}
               renderItem={(item) => (
                 <List.Item>
-                  <Text style={{ fontSize: "15px" }}>{item}</Text>
+                  <Text style={{ fontSize: isMobile ? "14px" : "15px" }}>{item}</Text>
                 </List.Item>
               )}
             />
@@ -287,7 +327,7 @@ export default function Home() {
 
   // Fixed function to handle image deletion with event stopping
   const handleDeleteImage = (e, setImageFunction) => {
-    e.stopPropagation() // Stop event propagation to prevent Dragger from opening file dialog
+    e.stopPropagation()
     setImageFunction(null)
     setResultImage(null)
   }
@@ -295,9 +335,11 @@ export default function Home() {
   async function submitTryOn() {
     const personFile = personImage
     const garmentFile = garmentImage
+    const user = localStorage.getItem('user');
 
-    if (!personFile || !garmentFile) {
-      notify("Error", "Please upload both images!", "topRight", "error")
+    if (!user) {
+      notify("Do you have an account?", "Please sign up or log in!", "topRight", "error");
+      route.push("/login")
       return
     }
 
@@ -443,8 +485,8 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Row gutter={16} className={styles.stepsRow}>
-        <Col span={8}>
+      <Row gutter={[16, 16]} className={styles.stepsRow}>
+        <Col xs={24} md={8}>
           <Card
             className={styles.card}
             title={
@@ -528,7 +570,7 @@ export default function Home() {
           </Card>
         </Col>
 
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card
             className={styles.card}
             title={
@@ -612,56 +654,85 @@ export default function Home() {
           </Card>
         </Col>
 
-        <Col span={8}>
-          <Card
-            className={styles.card}
-            title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
-          >
-            <div className={styles.uploader}>
-              {isLoading ? (
-                <div className={styles.loadingContainer}>
-                  <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-                  <div className={styles.progressContainer}>
-                    <div className={styles.progressBar} style={{ width: `${loadingProgress}%` }}></div>
-                  </div>
-                  <p className={styles.loadingText}>Processing... {Math.round(loadingProgress)}%</p>
+        <Col xs={24} md={8}>
+        <Card
+          className={styles.card}
+          title={<div className={styles.stepTitle}>Step 3. Press "Run" to get try-on results</div>}
+        >
+          <div className={styles.uploader}>
+            {isLoading ? (
+              <div className={styles.loadingContainer}>
+                <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+                <div className={styles.progressContainer}>
+                  <div className={styles.progressBar} style={{ width: `${loadingProgress}%` }}></div>
                 </div>
-              ) : resultImage ? (
-                <img src={resultImage || "/placeholder.svg"} alt="Result" className={styles.uploadedImage} />
-              ) : (
-                <div className={styles.emptyResult}>
-                  <InboxOutlined style={{ fontSize: 48 }} />
+                <p className={styles.loadingText}>Processing... {Math.round(loadingProgress)}%</p>
+              </div>
+            ) : resultImage ? (
+              <>
+                <img
+                  src={resultImage}
+                  alt="Result"
+                  className={styles.uploadedImage}
+                  onClick={handleOpenModal}
+                  style={{ cursor: "pointer" }}
+                />
+                <div className="absolute top-28 right-14 flex gap-2 z-10">
+                  <a href={resultImage} download="try-on-result.jpg">
+                    <Button
+                      type="default"
+                      icon={<FullscreenOutlined />}
+                      className="mt-2 ml-2"
+                    >
+                    </Button>
+                  </a>
                 </div>
+              </>
+            ) : (
+              <div className={styles.emptyResult}>
+                <InboxOutlined style={{ fontSize: 48 }} />
+              </div>
+            )}
+          </div>
+
+          <Card className={styles.seedCard}>
+            <div className={styles.runButtonContainer}>
+              <Button
+                type="primary"
+                onClick={() => submitTryOn()}
+                className={styles.runButton}
+                disabled={!personImage || !garmentImage || isLoading}
+                loading={isLoading}
+              >
+                {isLoading ? "Processing..." : "Run"}
+              </Button>
+
+              {resultImage && BuyNowWithTryOn && (
+                <Button
+                  className={`${styles.runButton} mt-2`}
+                  type="primary"
+                  onClick={() => route.push("/order/now")}
+                >
+                  Buy Now
+                </Button>
               )}
             </div>
-
-            <Card className={styles.seedCard}>
-              <div className={styles.runButtonContainer}>
-                <Button
-                  type="primary"
-                  onClick={() => submitTryOn()}
-                  className={styles.runButton}
-                  disabled={!personImage || !garmentImage || isLoading}
-                  loading={isLoading}
-                >
-                  {isLoading ? "Processing..." : "Run"}
-                </Button>
-              </div>
-            </Card>
           </Card>
-        </Col>
+        </Card>
+
+      </Col>
       </Row>
 
       <Tabs items={items} />
 
       <section style={{ marginBottom: "30px" }}>
-        <Title level={3} style={{ fontSize: "22px" }}>
+        <Title level={3} style={{ fontSize: isMobile ? "20px" : "22px" }}>
           Tips for Best Results
         </Title>
         <Alert
-          message={<Text style={{ fontSize: "18px" }}>Note</Text>}
+          message={<Text style={{ fontSize: isMobile ? "16px" : "18px" }}>Note</Text>}
           description={
-            <Text style={{ fontSize: "16px" }}>
+            <Text style={{ fontSize: isMobile ? "14px" : "16px" }}>
               Discrepancies may occur in clothing details, especially with small text and logos. This is a common
               challenge in virtual try-on technology that we're continuously working to improve.
             </Text>

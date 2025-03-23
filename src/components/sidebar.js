@@ -14,6 +14,7 @@ import {
   DollarSign,
   User,
 } from "lucide-react";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function Sidebar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,7 +30,7 @@ export default function Sidebar() {
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:8000/api/auth/logout", {
+      const response = await fetch(`${BASE_URL}/api/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

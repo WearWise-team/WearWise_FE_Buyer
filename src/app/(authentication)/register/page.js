@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { InputField } from "@/components/InputField";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useNotification } from "@/apiServices/NotificationService";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -67,7 +68,7 @@ export default function RegisterPage() {
         password: formData.password,
       };
 
-      const res = await fetch("http://127.0.0.1:8000/api/auth/signup", {
+      const res = await fetch(`${BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -172,7 +172,7 @@ export default function Page() {
         order_items: orderItems,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/products/create-order`, {
+      const response = await fetch(`${API_BASE_URL}/api/buyer/order/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -293,7 +293,7 @@ export default function Page() {
             };
 
             const response = await fetch(
-              `${API_BASE_URL}/api/products/create-order`,
+              `${API_BASE_URL}/api/buyer/products/create-order`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json",
