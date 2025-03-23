@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const notify = useNotification();
-
   const validateForm = () => {
     const newErrors = {};
 
@@ -60,7 +59,6 @@ export default function LoginPage() {
 
       notify("Login successful", "success");
 
-      // Lưu token và thông tin người dùng vào localStorage
       localStorage.setItem(
         "accessToken",
         data.result.token.original.access_token
