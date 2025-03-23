@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LogOut,
   DollarSign,
+  User,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -123,6 +124,19 @@ export default function Sidebar() {
           )
         )}
       </nav>
+      <div className="p-4 border-t">
+        <div className="flex items-center">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+            S
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium">Supplier Name</p>
+            <p className="text-xs text-muted-foreground">
+              supplier@example.com
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
