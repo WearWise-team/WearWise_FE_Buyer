@@ -48,12 +48,12 @@ export default function Home() {
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)")
 
   useEffect(() => {
-    const storedGarmentImage = localStorage.getItem("tryOnImage")
-    const BuyNowWithTryOn = localStorage.getItem("BuyNowWithTryOn")
+    const storedGarmentImage = sessionStorage.getItem("tryOnImage")
+    const BuyNowWithTryOn = sessionStorage.getItem("BuyNowWithTryOn")
     if (storedGarmentImage) {
       setGarmentImage(storedGarmentImage)
       setBuyNowWithTryOn(BuyNowWithTryOn)
-      localStorage.removeItem("tryOnImage")
+      sessionStorage.removeItem("tryOnImage")
     }
   }, [])
 
@@ -335,7 +335,7 @@ export default function Home() {
   async function submitTryOn() {
     const personFile = personImage
     const garmentFile = garmentImage
-    const user = localStorage.getItem('user');
+    const user = sessionStorage.getItem('user');
 
     if (!user) {
       notify("Do you have an account?", "Please sign up or log in!", "topRight", "error");

@@ -41,11 +41,11 @@ export default function Header() {
   const pathname = usePathname()
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken")
+    const accessToken = sessionStorage.getItem("accessToken")
     setIsLoggedIn(!!accessToken)
 
-    const userData = JSON.parse(localStorage.getItem("user") || "{}")
-    const avatar = localStorage.getItem("avatar") || null
+    const userData = JSON.parse(sessionStorage.getItem("user") || "{}")
+    const avatar = sessionStorage.getItem("avatar") || null
 
     if (userData && (userData.avatar || avatar)) {
       setUserImage(avatar ? avatar : userData.avatar)
@@ -53,7 +53,7 @@ export default function Header() {
 
     // Add event listener for avatar updates
     const handleAvatarUpdate = () => {
-      const newAvatar = localStorage.getItem("avatar")
+      const newAvatar = sessionStorage.getItem("avatar")
       if (newAvatar) {
         setUserImage(newAvatar)
       }
@@ -70,7 +70,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken")
+      const accessToken = sessionStorage.getItem("accessToken")
       if (!accessToken) {
         console.error("Access token không tồn tại.")
         return
@@ -85,9 +85,9 @@ export default function Header() {
       })
 
       if (response.ok) {
-        localStorage.removeItem("accessToken")
-        localStorage.removeItem("user")
-        localStorage.removeItem("avatar")
+        sessionStorage.removeItem("accessToken")
+        sessionStorage.removeItem("user")
+        sessionStorage.removeItem("avatar")
         notify("Logout", "Logout Successful.", "topRight", "success")
         setIsLoggedIn(false)
         window.location.href = "/"
@@ -195,11 +195,6 @@ export default function Header() {
                   <Link href="/profile?tab=wishlist" className="text-black hover:text-gray-600">
                     <HeartOutlined className="text-xl" />
                   </Link>
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
                 </div>
 
                 {/* Cart with Badge */}

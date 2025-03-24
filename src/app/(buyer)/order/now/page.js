@@ -24,11 +24,11 @@ export default function Page() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedItem = localStorage.getItem("buy_now_product");
-    const storedColorId = localStorage.getItem("buy_now_product_colorId");
-    const storedSizeId = localStorage.getItem("buy_now_product_sizeId");
-    const quantity = localStorage.getItem("buy_now_product_quantity");
+    const storedUser = sessionStorage.getItem("user");
+    const storedItem = sessionStorage.getItem("buy_now_product");
+    const storedColorId = sessionStorage.getItem("buy_now_product_colorId");
+    const storedSizeId = sessionStorage.getItem("buy_now_product_sizeId");
+    const quantity = sessionStorage.getItem("buy_now_product_quantity");
 
     if (storedUser && storedItem) {
       const parsedItem = JSON.parse(storedItem);
@@ -109,7 +109,7 @@ export default function Page() {
       const response = await fetch(`${API_BASE_URL}/api/momo/payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify({
           amount: amountVND,
@@ -126,7 +126,7 @@ export default function Page() {
       const data = await response.json();
 
       if (data.payUrl) {
-        localStorage.setItem(
+        sessionStorage.setItem(
           "pendingOrderData",
           JSON.stringify({
             userId: user.id,
@@ -176,7 +176,7 @@ export default function Page() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify(payload),
       });
@@ -196,12 +196,12 @@ export default function Page() {
       
       router.push("/profile");
 
-      localStorage.removeItem("buy_now_product");
-      localStorage.removeItem("buy_now_product_colorId");
-      localStorage.removeItem("buy_now_product_sizeId");
-      localStorage.removeItem("buy_now_product_quantity");
-      localStorage.removeItem("discount");
-      localStorage.removeItem("total");
+      sessionStorage.removeItem("buy_now_product");
+      sessionStorage.removeItem("buy_now_product_colorId");
+      sessionStorage.removeItem("buy_now_product_sizeId");
+      sessionStorage.removeItem("buy_now_product_quantity");
+      sessionStorage.removeItem("discount");
+      sessionStorage.removeItem("total");
 
       return true;
     } catch (error) {
@@ -267,9 +267,9 @@ export default function Page() {
       const urlParams = new URLSearchParams(window.location.search);
       const resultCode = urlParams.get("resultCode");
 
-      if (resultCode && localStorage.getItem("pendingOrderData")) {
+      if (resultCode && sessionStorage.getItem("pendingOrderData")) {
         const pendingOrderData = JSON.parse(
-          localStorage.getItem("pendingOrderData")
+          sessionStorage.getItem("pendingOrderData")
         );
 
         if (resultCode !== "0") {
@@ -280,7 +280,7 @@ export default function Page() {
             "topRight",
             "error"
           );
-          localStorage.removeItem("pendingOrderData");
+          sessionStorage.removeItem("pendingOrderData");
           router.push("/cart");
         } else {
           // Thanh toán thành công (resultCode = 0)
@@ -297,7 +297,7 @@ export default function Page() {
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json",
-                  authorization: `Bearer ${localStorage.getItem("accessToken")}`},
+                  authorization: `Bearer ${sessionStorage.getItem("accessToken")}`},
                 body: JSON.stringify(payload),
               }
             );
@@ -317,13 +317,13 @@ export default function Page() {
               "success"
             );
 
-            localStorage.removeItem("pendingOrderData");
-            localStorage.removeItem("buy_now_product");
-            localStorage.removeItem("buy_now_product_colorId");
-            localStorage.removeItem("buy_now_product_sizeId");
-            localStorage.removeItem("buy_now_product_quantity");
-            localStorage.removeItem("discount");
-            localStorage.removeItem("total");
+            sessionStorage.removeItem("pendingOrderData");
+            sessionStorage.removeItem("buy_now_product");
+            sessionStorage.removeItem("buy_now_product_colorId");
+            sessionStorage.removeItem("buy_now_product_sizeId");
+            sessionStorage.removeItem("buy_now_product_quantity");
+            sessionStorage.removeItem("discount");
+            sessionStorage.removeItem("total");
 
             router.push("/profile");
           } catch (error) {

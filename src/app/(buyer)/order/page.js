@@ -22,7 +22,7 @@ export default function Page() {
   const router = useRouter()
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
+    const storedUser = sessionStorage.getItem("user")
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser)
       setUser(parsedUser)
@@ -36,8 +36,8 @@ export default function Page() {
   }, [])
 
   useEffect(() => {
-    const storedTotal = localStorage.getItem("total")
-    const storedDiscount = localStorage.getItem("discount")
+    const storedTotal = sessionStorage.getItem("total")
+    const storedDiscount = sessionStorage.getItem("discount")
 
     if (storedTotal) setTotalAmount(Number.parseFloat(storedTotal))
     if (storedDiscount) setDiscount(Number.parseFloat(storedDiscount))
@@ -96,8 +96,8 @@ export default function Page() {
       const data = await response.json()
 
       if (data.payUrl) {
-        // Save order data to localStorage before redirecting
-        localStorage.setItem(
+        // Save order data to sessionStorage before redirecting
+        sessionStorage.setItem(
           "pendingOrderData",
           JSON.stringify({
             userId: user.id,
@@ -135,9 +135,9 @@ export default function Page() {
 
       notify("Order Created", "Your order has been created successfully.", "topRight", "success")
 
-      // Clear cart data from localStorage
-      localStorage.removeItem("discount")
-      localStorage.removeItem("total")
+      // Clear cart data from sessionStorage
+      sessionStorage.removeItem("discount")
+      sessionStorage.removeItem("total")
 
       // Redirect to profile page
       router.push("/profile")
@@ -190,7 +190,7 @@ export default function Page() {
       const urlParams = new URLSearchParams(window.location.search)
       const resultCode = urlParams.get("resultCode")
       if (resultCode) {
-        const pendingOrderData = localStorage.getItem("pendingOrderData")
+        const pendingOrderData = sessionStorage.getItem("pendingOrderData")
 
         if (pendingOrderData) {
           const orderData = JSON.parse(pendingOrderData)
@@ -202,7 +202,7 @@ export default function Page() {
               "topRight",
               "error",
             )
-            localStorage.removeItem("pendingOrderData")
+            sessionStorage.removeItem("pendingOrderData")
             router.push("/cart")
            
               
@@ -227,10 +227,10 @@ export default function Page() {
                 "success",
               )
 
-              // Clear localStorage
-              localStorage.removeItem("pendingOrderData")
-              localStorage.removeItem("discount")
-              localStorage.removeItem("total")
+              // Clear sessionStorage
+              sessionStorage.removeItem("pendingOrderData")
+              sessionStorage.removeItem("discount")
+              sessionStorage.removeItem("total")
 
               // Redirect to profile page
               router.push("/profile")

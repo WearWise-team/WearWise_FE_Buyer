@@ -43,7 +43,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
 
   useEffect(() => {
     const fetchSupplier = async () => {
-      const userData = localStorage.getItem("user");
+      const userData = sessionStorage.getItem("user");
       if (!userData) return;
 
       try {

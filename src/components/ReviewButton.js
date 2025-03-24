@@ -15,7 +15,7 @@ export default function ReviewButton({ itemId, isOpen, onToggle, onReviewSuccess
       return
     }
 
-    const token = localStorage.getItem("accessToken")
+    const token = sessionStorage.getItem("accessToken")
     if (!token) {
       notify("Error", "User not authenticated", "topRight", "error")
       return

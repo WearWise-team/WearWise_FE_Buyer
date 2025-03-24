@@ -60,12 +60,12 @@ export default function LoginPage() {
 
       notify("Login successful", "success");
 
-      // Lưu token và thông tin người dùng vào localStorage
-      localStorage.setItem(
+      // Lưu token và thông tin người dùng vào sessionStorage
+      sessionStorage.setItem(
         "accessToken",
         data.result.token.original.access_token
       );
-      localStorage.setItem("user", JSON.stringify(data.result.user));
+      sessionStorage.setItem("user", JSON.stringify(data.result.user));
 
       // Chuyển hướng dựa trên vai trò
       const userRole = data.result.user.role;

@@ -65,8 +65,8 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      // Get user data from localStorage
-      const userData = localStorage.getItem("user");
+      // Get user data from sessionStorage
+      const userData = sessionStorage.getItem("user");
       if (!userData) {
         notify("User information not found!", "error");
         setIsLoading(false);
@@ -150,7 +150,7 @@ export default function OrdersPage() {
 
   const handleUpdateStatus = async () => {
     try {
-      const userData = localStorage.getItem("user");
+      const userData = sessionStorage.getItem("user");
       if (!userData) {
         notify("User information not found!", "error");
         return;
@@ -160,7 +160,7 @@ export default function OrdersPage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify({
           status: newStatus,

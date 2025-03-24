@@ -2,7 +2,7 @@ import fetchData from "../api/page";
 
 export const tryOnKlingAI = (data) =>
   fetchData("virtual-tryon-klingAI", "POST", data, {
-    authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
   });
 
 export const getKlingAIResults = (taskId, token) =>
@@ -13,6 +13,6 @@ export const getKlingAIResults = (taskId, token) =>
       token: token,
     },
     {
-      authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
     }
   );

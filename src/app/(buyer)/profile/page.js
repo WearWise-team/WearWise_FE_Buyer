@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const resultCode = searchParams.get("resultCode");
-    const buy_now_product = localStorage.getItem("buy_now_product");
+    const buy_now_product = sessionStorage.getItem("buy_now_product");
     if (resultCode && resultCode !== "0") {
       if (buy_now_product) {
         router.push("/order/now");
