@@ -89,7 +89,7 @@ export default function Sidebar() {
     },
     {
       name: "Reviews",
-      path: "/supplier/reviews",
+      path: "/supplier/comments",
       icon: <MessageSquare className="h-5 w-5" />,
     },
     {
