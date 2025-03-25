@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "antd"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function PaymentButton({ order, notify }) {
   const [isPending, setIsPending] = useState(false)
@@ -18,7 +19,7 @@ export default function PaymentButton({ order, notify }) {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/api/momo/payment", {
+      const response = await fetch(`${BASE_URL}/api/momo/payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: amountVND, orderId: order.id }),

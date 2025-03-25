@@ -322,7 +322,7 @@ export default function UserProfile({ orders = [] }) {
     formData.append("avatar", file)
 
     try {
-      const accessToken = localStorage.getItem("accessToken")
+      const accessToken = sessionStorage.getItem("accessToken")
       if (!accessToken) {
         notify("Authentication error", "Please log in again", "topRight", "error")
         return
@@ -350,8 +350,8 @@ export default function UserProfile({ orders = [] }) {
       if (response.ok) {
         setAvatar(data.avatar_url)
 
-        // Update localStorage with the new avatar URL
-        localStorage.setItem("avatar", data.avatar_url)
+        // Update sessionStorage with the new avatar URL
+        sessionStorage.setItem("avatar", data.avatar_url)
 
         // Dispatch a custom event to notify other components about the avatar update
         const avatarUpdateEvent = new Event("avatarUpdated")

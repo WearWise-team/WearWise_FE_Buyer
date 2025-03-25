@@ -21,7 +21,7 @@ const Cart = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       const userId = user.id;
@@ -32,8 +32,8 @@ const Cart = () => {
           setCartItems(response.cart);
           updateSubtotal(response.cart);
 
-          const storedSubtotal = localStorage.getItem("subtotal");
-          const storedDiscount = localStorage.getItem("discount");
+          const storedSubtotal = sessionStorage.getItem("subtotal");
+          const storedDiscount = sessionStorage.getItem("discount");
           if (storedSubtotal) setSubtotal(parseFloat(storedSubtotal));
           if (storedDiscount) setTotalDiscount(parseFloat(storedDiscount));
         } catch (error) {
@@ -76,15 +76,15 @@ const Cart = () => {
     setSubtotal(total);
     setTotalDiscount(totalDiscount);
 
-    localStorage.setItem("discount", totalDiscount);
-    localStorage.setItem("total", total - totalDiscount);
+    sessionStorage.setItem("discount", totalDiscount);
+    sessionStorage.setItem("total", total - totalDiscount);
   };
 
   useEffect(() => {
     if (discountCode) {
       if (totalDiscount > 0) {
-        localStorage.setItem("discount", totalDiscount);
-        localStorage.setItem("total", subtotal - totalDiscount);
+        sessionStorage.setItem("discount", totalDiscount);
+        sessionStorage.setItem("total", subtotal - totalDiscount);
         notify(
           "Discount Applied",
           `Your discount has been successfully applied. You saved ${totalDiscount} VND.`,

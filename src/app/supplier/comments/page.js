@@ -31,8 +31,8 @@ export default function ReviewsPage() {
   const fetchReviews = async () => {
     setIsLoading(true)
     try {
-      // Get user data from localStorage
-      const userData = localStorage.getItem("user")
+      // Get user data from sessionStorage
+      const userData = sessionStorage.getItem("user")
       if (!userData) {
         notify("User information not found!", "error")
         setIsLoading(false)

@@ -9,13 +9,13 @@ import { useNotification } from "@/apiServices/NotificationService";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const [items, setItems] = useState([]);
-  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [totalAmount, setTotalAmount] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [isPending, setIsPending] = useState(false);
+  const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
   const [colorId, setColorId] = useState();
   const [sizeId, setSizeId] = useState();
   const [quantity, setQuantity] = useState(1);
@@ -24,11 +24,11 @@ export default function Page() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedItem = localStorage.getItem("buy_now_product");
-    const storedColorId = localStorage.getItem("buy_now_product_colorId");
-    const storedSizeId = localStorage.getItem("buy_now_product_sizeId");
-    const quantity = localStorage.getItem("buy_now_product_quantity");
+    const storedUser = sessionStorage.getItem("user");
+    const storedItem = sessionStorage.getItem("buy_now_product");
+    const storedColorId = sessionStorage.getItem("buy_now_product_colorId");
+    const storedSizeId = sessionStorage.getItem("buy_now_product_sizeId");
+    const quantity = sessionStorage.getItem("buy_now_product_quantity");
 
     if (storedUser && storedItem) {
       const parsedItem = JSON.parse(storedItem);
@@ -81,6 +81,80 @@ export default function Page() {
     return true;
   };
 
+  async function createVNPayPayment() {
+    setIsPending(true);
+    try {
+      const tempOrderId = `TEMP_${user?.id}_${Date.now()}`;
+      const amountVND = Math.round(totalAmount * 1000);
+
+      if (amountVND < 1000 || amountVND > 50000000) {
+        notify(
+          "Payment Error",
+          "Amount must be from 1,000 to 50,000,000 VND",
+          "topRight",
+          "error"
+        );
+        setIsPending(false);
+        return false;
+      }
+
+      // Prepare order items for storage
+      const orderItems = items.map((item) => ({
+        quantity: quantity || 1,
+        total_price: item.price * (quantity || 1),
+        product_color_id: colorId,
+        product_size_id: sizeId,
+        product_id: item.id,
+      }));
+
+      // Store complete order data
+      sessionStorage.setItem(
+        "pendingOrderData",
+        JSON.stringify({
+          userId: user?.id,
+          totalAmount,
+          paymentMethod: "vnpay",
+          orderItems,
+          tempOrderId,
+          timestamp: Date.now(),
+        })
+      );
+
+      const response = await fetch("/api/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: amountVND,
+          ipAddr: "13.160.92.202",
+          txnRef: tempOrderId,
+          orderInfo: tempOrderId,
+          returnUrl: `${window.location.origin}/profile`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data?.paymentUrl) {
+        throw new Error("Failed to generate payment URL");
+      }
+
+      window.location.href = data.paymentUrl;
+      return true;
+    } catch (error) {
+      console.error("VNPAY payment error:", error);
+      notify(
+        "Payment Error",
+        error.message || "Failed to process payment",
+        "topRight",
+        "error"
+      );
+      setIsPending(false);
+      return false;
+    }
+  }
+
   const handleMomoPayment = async () => {
     setIsPending(true);
     const amountVND = Math.round(totalAmount * 1000);
@@ -108,15 +182,16 @@ export default function Page() {
 
       const response = await fetch(`${API_BASE_URL}/api/momo/payment`, {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify({
           amount: amountVND,
           orderId: tempOrderId,
           extraData: JSON.stringify({
-            userId: user.id,
-            totalAmount,
+            userId: user?.id,
+            totalAmount: amountVND,
             paymentMethod: "momo",
             orderItems,
           }),
@@ -126,7 +201,7 @@ export default function Page() {
       const data = await response.json();
 
       if (data.payUrl) {
-        localStorage.setItem(
+        sessionStorage.setItem(
           "pendingOrderData",
           JSON.stringify({
             userId: user.id,
@@ -134,6 +209,7 @@ export default function Page() {
             paymentMethod: "momo",
             orderItems,
             tempOrderId,
+            timestamp: Date.now(),
           })
         );
         window.location.href = data.payUrl;
@@ -172,14 +248,17 @@ export default function Page() {
         order_items: orderItems,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/buyer/order/create-order`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/buyer/order/create-order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
 
@@ -193,15 +272,15 @@ export default function Page() {
         "topRight",
         "success"
       );
-      
+
       router.push("/profile");
 
-      localStorage.removeItem("buy_now_product");
-      localStorage.removeItem("buy_now_product_colorId");
-      localStorage.removeItem("buy_now_product_sizeId");
-      localStorage.removeItem("buy_now_product_quantity");
-      localStorage.removeItem("discount");
-      localStorage.removeItem("total");
+      sessionStorage.removeItem("buy_now_product");
+      sessionStorage.removeItem("buy_now_product_colorId");
+      sessionStorage.removeItem("buy_now_product_sizeId");
+      sessionStorage.removeItem("buy_now_product_quantity");
+      sessionStorage.removeItem("discount");
+      sessionStorage.removeItem("total");
 
       return true;
     } catch (error) {
@@ -246,6 +325,8 @@ export default function Page() {
     try {
       if (paymentMethod === "momo") {
         await handleMomoPayment();
+      } else if (paymentMethod === "vnpay") {
+        await createVNPayPayment();
       } else {
         await createOrder();
       }
@@ -262,85 +343,9 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    const checkPaymentStatus = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const resultCode = urlParams.get("resultCode");
-
-      if (resultCode && localStorage.getItem("pendingOrderData")) {
-        const pendingOrderData = JSON.parse(
-          localStorage.getItem("pendingOrderData")
-        );
-
-        if (resultCode !== "0") {
-          // Thanh toán thất bại
-          notify(
-            "Payment Failed",
-            "Your payment was not successful. Please try again.",
-            "topRight",
-            "error"
-          );
-          localStorage.removeItem("pendingOrderData");
-          router.push("/cart");
-        } else {
-          // Thanh toán thành công (resultCode = 0)
-          try {
-            const payload = {
-              user_id: pendingOrderData.userId,
-              total_amount: pendingOrderData.totalAmount,
-              payment_method: "momo",
-              order_items: pendingOrderData.orderItems,
-            };
-
-            const response = await fetch(
-              `${API_BASE_URL}/api/buyer/products/create-order`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json",
-                  authorization: `Bearer ${localStorage.getItem("accessToken")}`},
-                body: JSON.stringify(payload),
-              }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-              throw new Error(
-                data.message || "Failed to create order after payment"
-              );
-            }
-
-            notify(
-              "Order Completed",
-              "Your payment was successful and your order has been created.",
-              "topRight",
-              "success"
-            );
-
-            localStorage.removeItem("pendingOrderData");
-            localStorage.removeItem("buy_now_product");
-            localStorage.removeItem("buy_now_product_colorId");
-            localStorage.removeItem("buy_now_product_sizeId");
-            localStorage.removeItem("buy_now_product_quantity");
-            localStorage.removeItem("discount");
-            localStorage.removeItem("total");
-
-            router.push("/profile");
-          } catch (error) {
-            console.error("Failed to create order after payment:", error);
-            notify(
-              "Order Creation Failed",
-              "Your payment was successful, but there was a problem creating your order. Please contact support.",
-              "topRight",
-              "error"
-            );
-          }
-        }
-      }
-    };
-
-    checkPaymentStatus();
-  }, [router, notify]);
+  // IMPORTANT: Remove the payment callback handling from this page
+  // The payment callback is now handled ONLY in profile-page.tsx
+  // This prevents duplicate order creation
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -439,6 +444,7 @@ export default function Page() {
                 >
                   <option value="cod">Cash on delivery</option>
                   <option value="momo">Momo</option>
+                  <option value="vnpay">VNpay</option>
                 </select>
               </div>
             </div>
@@ -477,7 +483,7 @@ export default function Page() {
                               ?.name || "N/A"}
                           </p>
                           <p className="text-sm font-semibold text-gray-700 mt-1">
-                            {(item.price || 0)}đ
+                            {item.price || 0}đ
                           </p>
                         </div>
                       </div>
@@ -504,7 +510,9 @@ export default function Page() {
                 </div>
                 <div className="flex justify-between font-bold text-lg mb-2">
                   <span>Total</span>
-                  <span>{(totalAmount * 1000 || 0).toLocaleString("vi-VN")}đ</span>
+                  <span>
+                    {(totalAmount * 1000 || 0).toLocaleString("vi-VN")}đ
+                  </span>
                 </div>
               </div>
               <button
@@ -514,7 +522,7 @@ export default function Page() {
               >
                 {isPending
                   ? "Processing..."
-                  : paymentMethod === "momo"
+                  : paymentMethod === "momo" || paymentMethod === "vnpay"
                   ? "Proceed to Payment"
                   : "Confirm Order"}
               </button>

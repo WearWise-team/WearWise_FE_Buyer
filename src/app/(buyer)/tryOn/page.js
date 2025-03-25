@@ -32,10 +32,10 @@ export default function TryOn2D() {
   };
 
   useEffect(() => {
-    const storedGarmentImage = localStorage.getItem("tryOnImage");
+    const storedGarmentImage = sessionStorage.getItem("tryOnImage");
     if (storedGarmentImage) {
       setGarmentImage(storedGarmentImage);
-      localStorage.removeItem("tryOnImage");
+      sessionStorage.removeItem("tryOnImage");
     }
   }, []);
 

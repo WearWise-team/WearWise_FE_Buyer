@@ -50,7 +50,7 @@ export default function Card({ product, rating }) {
       return
     }
 
-    const isUserLogin = localStorage.getItem("user")
+    const isUserLogin = sessionStorage.getItem("user")
     if (!isUserLogin) {
       notify("Login Required", "You must login to add this product to the cart.", "topRight", "warning")
       router.push("/login")

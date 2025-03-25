@@ -95,7 +95,7 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    const isUserLogin = localStorage.getItem("user");
+    const isUserLogin = sessionStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === productId &&
@@ -145,7 +145,7 @@ export default function DetailProduct({ params }) {
 
   const toggleFavorite = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         console.error("User not authenticated");
         return;
@@ -193,7 +193,7 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    const isUserLogin = localStorage.getItem("user");
+    const isUserLogin = sessionStorage.getItem("user");
 
     if (!isUserLogin) {
       notify(
@@ -206,20 +206,20 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    localStorage.setItem("BuyNowWithTryOn", true);
-    localStorage.setItem("buy_now_product", JSON.stringify(product));
-    localStorage.setItem(
+    sessionStorage.setItem("BuyNowWithTryOn", true);
+    sessionStorage.setItem("buy_now_product", JSON.stringify(product));
+    sessionStorage.setItem(
       "buy_now_product_colorId",
       JSON.stringify(selectedColor)
     );
-    localStorage.setItem(
+    sessionStorage.setItem(
       "buy_now_product_sizeId",
       JSON.stringify(selectedSize)
     );
-    localStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    sessionStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
 
     if (typeof window !== "undefined" && selectedImage) {
-      localStorage.setItem("tryOnImage", selectedImage);
+      sessionStorage.setItem("tryOnImage", selectedImage);
       router.push("/tryOnK");
     } else {
       notify("Please select an image to try on", "", "topRight", "warning");
@@ -237,7 +237,7 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    const isUserLogin = localStorage.getItem("user");
+    const isUserLogin = sessionStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === product.id &&
@@ -262,16 +262,16 @@ export default function DetailProduct({ params }) {
       router.push("/login");
       return;
     }
-    localStorage.setItem("buy_now_product", JSON.stringify(product));
-    localStorage.setItem(
+    sessionStorage.setItem("buy_now_product", JSON.stringify(product));
+    sessionStorage.setItem(
       "buy_now_product_colorId",
       JSON.stringify(selectedColor)
     );
-    localStorage.setItem(
+    sessionStorage.setItem(
       "buy_now_product_sizeId",
       JSON.stringify(selectedSize)
     );
-    localStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    sessionStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
     router.push("/order/now");
   };
 
@@ -322,8 +322,14 @@ export default function DetailProduct({ params }) {
 
               {/* Thumbnails - Horizontal scroll on all devices */}
               <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
-                {images.map((value, index) =>
-                  value ? (
+                {images
+                  .filter(
+                    (value) =>
+                      value &&
+                      (value.deleted_at === null ||
+                        value.deleted_at === undefined)
+                  )
+                  .map((value, index) => (
                     <Image
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
@@ -339,8 +345,7 @@ export default function DetailProduct({ params }) {
                         setSelectedImage(value.url ? value.url : value)
                       }
                     />
-                  ) : null
-                )}
+                  ))}
               </div>
             </div>
 

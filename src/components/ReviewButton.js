@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button, Rate, Input } from "antd"
 import { CheckCircleOutlined } from "@ant-design/icons"
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function ReviewButton({ itemId, isOpen, onToggle, onReviewSuccess, isReviewed, notify }) {
   const [rating, setRating] = useState(0)
@@ -15,7 +16,7 @@ export default function ReviewButton({ itemId, isOpen, onToggle, onReviewSuccess
       return
     }
 
-    const token = localStorage.getItem("accessToken")
+    const token = sessionStorage.getItem("accessToken")
     if (!token) {
       notify("Error", "User not authenticated", "topRight", "error")
       return
@@ -23,7 +24,7 @@ export default function ReviewButton({ itemId, isOpen, onToggle, onReviewSuccess
 
     setSubmitting(true)
     try {
-      const response = await fetch("http://localhost:8000/api/reviews", {
+      const response = await fetch(`${BASE_URL}/api/reviews`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

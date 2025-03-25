@@ -38,7 +38,7 @@ export default function Sidebar() {
   
   const handleLogout = async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
+      const accessToken = sessionStorage.getItem("accessToken");
       if (!accessToken) {
         console.error("Access token không tồn tại.");
         return;
@@ -48,13 +48,13 @@ export default function Sidebar() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
       });
 
       if (response.ok) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("user");
         notify("Logout", "Logout Successful.", "topRight", "success");
         setIsLoggedIn(false);
         window.location.href = "/";

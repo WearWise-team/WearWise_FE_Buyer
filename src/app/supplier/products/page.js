@@ -50,7 +50,7 @@ export default function ProductsPage() {
   const itemsPerPage = 10;
   useEffect(() => {
     const fetchSupplier = async () => {
-      const userData = localStorage.getItem("user");
+      const userData = sessionStorage.getItem("user");
       if (!userData) return;
 
       try {
