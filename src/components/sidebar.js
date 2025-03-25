@@ -21,7 +21,21 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const notify = useNotification();
+  const [userData, setUserData] = useState(null);
 
+  useEffect(() => {
+    const userDataString = localStorage.getItem("user");
+    if (userDataString) {
+      try {
+        const parsedUserData = JSON.parse(userDataString);
+        setUserData(parsedUserData);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+  
   const handleLogout = async () => {
     try {
       const accessToken = sessionStorage.getItem("accessToken");
@@ -48,7 +62,7 @@ export default function Sidebar() {
         const errorData = await response.json();
         console.error(
           "Logout failed",
-          errorData.message || "Lỗi không xác định."
+          errorData.message || "Something went wrong."
         );
       }
     } catch (error) {
@@ -74,7 +88,7 @@ export default function Sidebar() {
       icon: <ShoppingCart className="h-5 w-5" />,
     },
     {
-      name: "Comments",
+      name: "Reviews",
       path: "/supplier/comments",
       icon: <MessageSquare className="h-5 w-5" />,
     },
@@ -127,13 +141,19 @@ export default function Sidebar() {
       </nav>
       <div className="p-4 border-t">
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-            S
-          </div>
+          {userData?.avatar && (
+            <img
+              src={userData.avatar}
+              alt={userData.name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          )}
           <div className="ml-3">
-            <p className="text-sm font-medium">Supplier Name</p>
+            <p className="text-sm font-medium">
+              {userData ? userData.name : "Supplier Name"}
+            </p>
             <p className="text-xs text-muted-foreground">
-              supplier@example.com
+              {userData ? userData.email : "supplier@example.com"}
             </p>
           </div>
         </div>

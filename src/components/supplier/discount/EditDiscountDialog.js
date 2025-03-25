@@ -58,7 +58,7 @@ export default function EditDiscountDialog({
       if (formData.entries().next().done === false) {
         await updateDiscount(editedDiscount.id, formData);
         onEdit(editedDiscount);
-        notify("Discount updated successfully! ✅", "success");
+        notify("Discount updated successfully!","", "topRight", "success");
         onClose();
       } else {
         console.log("No changes detected, skipping API call.");
@@ -70,6 +70,7 @@ export default function EditDiscountDialog({
         error.data?.errors
           ? "Please correct the errors and try again! ❌"
           : "Failed to update discount! ❌",
+          "", "topRight",
         "error"
       );
     }

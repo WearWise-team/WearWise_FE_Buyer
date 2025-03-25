@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const notify = useNotification();
-
   const validateForm = () => {
     const newErrors = {};
 

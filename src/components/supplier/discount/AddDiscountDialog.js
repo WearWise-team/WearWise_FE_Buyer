@@ -48,7 +48,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
       const result = await response.json();
 
       if (response.ok) {
-        notify("✅ Add discount successful!", "success");
+        notify("Add discount successful!","", "topRight", "success");
         onAdd(result.data);
         setFormData({
           code: "",
@@ -59,7 +59,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
         });
         onClose();
       } else {
-        notify(" Error adding discount!", "error");
+        notify("Error adding discount!","", "topRight", "error");
         if (result.errors) {
           setErrors(result.errors);
         }

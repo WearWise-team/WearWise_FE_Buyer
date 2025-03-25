@@ -147,7 +147,7 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
       const result = await response.json();
 
       if (response.ok) {
-        notify("✅ Add product successful!", "success");
+        notify(" Add product successful!","", "topRight", "success");
         onAdd(result.data);
         setFormData({
           name: "",
