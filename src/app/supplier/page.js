@@ -1,3 +1,6 @@
+"use client";
+import { getProductBySupplierID } from "@/apiServices/products/page";
+import { getSupplierByUserID } from "@/apiServices/suppliers/page";
 import { Overview } from "@/components/overview";
 import {
   Card,
@@ -6,9 +9,100 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { RecentSales } from "@/components/ui/recent-sales";
+import RecentSales from "@/components/ui/recent-sales";
+import { MessageSquare, Package, ShoppingCart } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+  const [supplierID, setSupplierID] = useState("");
+  const [userID, setUserID] = useState("");
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const [dashboardData, setDashboardData] = useState({
+    totalProducts: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalReviews: 0,
+    totalOrderValue: 0,
+    isLoading: true,
+  });
+  useEffect(() => {
+    const fetchSupplier = async () => {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+
+      try {
+        const user = JSON.parse(userData);
+        setUserID(user.id);
+        const supplier = await getSupplierByUserID(user.id);
+        setSupplierID(supplier.id);
+      } catch (error) {
+        console.error("Fetch supplier error:", error);
+      }
+    };
+
+    fetchSupplier();
+  }, []);
+
+  useEffect(() => {
+    if (!supplierID) return;
+
+    async function fetchDashboardData() {
+      try {
+        setDashboardData((prev) => ({ ...prev, isLoading: true }));
+
+        const [products, ordersResponse, reviewsResponse] = await Promise.all([
+          getProductBySupplierID(supplierID),
+          fetch(`${BASE_URL}/api/supplier/orders/${userID}`),
+          fetch(`${BASE_URL}/api/suppliers/reviews/${userID}`),
+        ]);
+
+        if (!ordersResponse.ok || !reviewsResponse.ok) {
+          throw new Error("Failed to load data from API");
+        }
+
+        const orders = await ordersResponse.json();
+        const reviews = await reviewsResponse.json();
+
+        const pendingOrdersCount = orders.reduce((count, order) => {
+          const orderItems = Array.isArray(order.order_items)
+            ? order.order_items
+            : [];
+          return (
+            count +
+            orderItems.filter((item) => item.status === "pending").length
+          );
+        }, 0);
+        const totalOrderValue = orders.reduce(
+          (sum, order) => sum + parseFloat(order.total_amount || "0"),
+          0
+        );
+
+        const formattedAmount = parseFloat(totalOrderValue)
+          .toFixed(3)
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        setDashboardData({
+          totalProducts: products.length || 0,
+          totalOrders: orders.length || 0,
+          pendingOrders: pendingOrdersCount || 0,
+          totalReviews: reviews.length || 0,
+          totalOrderValue: formattedAmount || 0,
+          isLoading: false,
+        });
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        setDashboardData((prev) => ({ ...prev, isLoading: false }));
+      }
+    }
+
+    fetchDashboardData();
+  }, [supplierID, userID]);
+
+  console.log(dashboardData.totalOrderValue);
+
+  if (dashboardData.isLoading) {
+    return <div className="p-6">Loading dashboard data...</div>;
+  }
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -28,48 +122,26 @@ export default function Dashboard() {
             <CardTitle className="text-sm font-medium">
               Total Products
             </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+            <Package className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">142</div>
-            <p className="text-xs text-muted-foreground">
-              +20% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              {dashboardData.totalProducts}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <rect width="20" height="14" x="2" y="5" rx="2" />
-              <path d="M2 10h20" />
-            </svg>
+            <ShoppingCart className="h-5 w-5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87</div>
-            <p className="text-xs text-muted-foreground">
-              +15% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              {dashboardData.totalOrders}
+            </div>
+            <div className="text-2xl font-bold">
+              {dashboardData.totalOrderValue} VND
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -91,34 +163,20 @@ export default function Dashboard() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">-5% from last month</p>
+            <div className="text-2xl font-bold">
+              {dashboardData.pendingOrders}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Comments</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M21 15V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9" />
-              <path d="M9 21h6" />
-              <path d="M12 18v3" />
-              <path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1H3v1Z" />
-            </svg>
+            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+            <MessageSquare className="h-5 w-5" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              {dashboardData.totalReviews}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -134,7 +192,9 @@ export default function Dashboard() {
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
-            <CardDescription>You made 27 sales this month.</CardDescription>
+            <CardDescription>
+              You made {dashboardData.totalOrders} sales this month.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <RecentSales />
