@@ -98,7 +98,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [supplierID, userID]);
 
-  console.log(dashboardData.totalOrderValue);
 
   if (dashboardData.isLoading) {
     return <div className="p-6">Loading dashboard data...</div>;
