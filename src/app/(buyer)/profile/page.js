@@ -141,7 +141,7 @@ export default function ProfilePage() {
               );
             }
           } else {
-            notify("error", "Payment failed!");
+            notify("error", "Payment failed!", "topRight", "error");
             if (buy_now_product) {
               router.push("/order/now");
             } else {
@@ -167,7 +167,7 @@ export default function ProfilePage() {
               );
             }
           } else {
-            notify("error", "VNPAY payment failed!");
+            notify("error", "Payment failed!", "topRight", "error");
             if (buy_now_product) {
               router.push("/order/now");
             } else {
@@ -177,7 +177,7 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error("Error processing payment callback:", error);
-        notify("error", "Failed to process payment result");
+        notify("error", "Payment failed!", "topRight", "error");
       } finally {
         setProcessingPayment(false);
       }

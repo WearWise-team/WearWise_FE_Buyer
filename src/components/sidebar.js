@@ -24,7 +24,7 @@ export default function Sidebar() {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const userDataString = localStorage.getItem("user");
+    const userDataString = sessionStorage.getItem("user");
     if (userDataString) {
       try {
         const parsedUserData = JSON.parse(userDataString);

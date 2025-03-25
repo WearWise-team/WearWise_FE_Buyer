@@ -12,7 +12,7 @@ export default function RecentSales() {
     const fetchOrders = async () => {
       setIsLoading(true);
       try {
-        const userData = localStorage.getItem("user");
+        const userData = sessionStorage.getItem("user");
         if (!userData) {
           notify("User information not found!", "error");
           return;
