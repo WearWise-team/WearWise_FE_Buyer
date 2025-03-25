@@ -322,8 +322,14 @@ export default function DetailProduct({ params }) {
 
               {/* Thumbnails - Horizontal scroll on all devices */}
               <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
-                {images.map((value, index) =>
-                  value ? (
+                {images
+                  .filter(
+                    (value) =>
+                      value &&
+                      (value.deleted_at === null ||
+                        value.deleted_at === undefined)
+                  )
+                  .map((value, index) => (
                     <Image
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
@@ -339,8 +345,7 @@ export default function DetailProduct({ params }) {
                         setSelectedImage(value.url ? value.url : value)
                       }
                     />
-                  ) : null
-                )}
+                  ))}
               </div>
             </div>
 
