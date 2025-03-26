@@ -177,7 +177,7 @@ export default function EditDiscountDialog({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleEditDiscount}>
+          <Button type="submit" id="editDiscount" onClick={handleEditDiscount}>
             Save Changes
           </Button>
         </DialogFooter>

@@ -151,10 +151,10 @@ export default function AddProductDialog({ isOpen, onClose, onAdd }) {
           </div>
         </div>
         <DialogFooter className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
+          <Button id="cancelDiscount" variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleAddDiscount} disabled={loading}>
+          <Button id="addDiscount" type="submit" onClick={handleAddDiscount} disabled={loading}>
             {loading ? "Adding..." : "Add Discount"}
           </Button>
         </DialogFooter>

@@ -381,10 +381,10 @@ export default function EditProductDialog({
           </div>
         </div>
         <DialogFooter className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" id="cancel" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleEditProduct}>
+          <Button type="submit" id="editProduct" onClick={handleEditProduct}>
             Save Changes
           </Button>
         </DialogFooter>
