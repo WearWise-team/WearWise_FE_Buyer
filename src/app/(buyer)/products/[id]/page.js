@@ -360,7 +360,7 @@ export default function DetailProduct({ params }) {
                   <Rate allowHalf value={rating} disabled />
                 </div>
                 <span className="ml-2 text-gray-600">
-                  {rating ? rating.toFixed(0) : 0}/5
+                  {rating}/5
                 </span>
                 <button onClick={toggleFavorite} className="ml-2 text-red-500">
                   {isFavorite ? <HeartFilled /> : <HeartOutlined />}

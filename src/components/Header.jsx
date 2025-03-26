@@ -154,7 +154,7 @@ export default function Header() {
             <NavLink href="/" label="Home" activePath={isActive("/")} />
             <NavLink href="/products" label="Products" activePath={isActive("/products/*")} />
             <NavLink href="/contactUs" label="Contact Us" activePath={isActive("/contactUs")} />
-            <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} />
+            {/* <NavLink href="/tryOn" label="Try On" activePath={isActive("/tryOn")} /> */}
             <div className="nav-link-container relative">
               <NavLink href="/tryOnK" label="Try On" activePath={isActive("/tryOnK")} />
               <span className="absolute -top-2 -right-6 bg-red-600 text-white text-xs px-1 rounded">New</span>

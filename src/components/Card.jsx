@@ -112,7 +112,7 @@ export default function Card({ product, rating }) {
         {typeof rating === "number" && (
           <div className="flex items-center mb-1 sm:mb-2">
             <div className="flex items-center text-yellow-500">
-              <Rate value={rating} disabled style={{ fontSize: "12px" }} />
+              <Rate value={rating} allowHalf disabled style={{ fontSize: "12px" }} />
             </div>
             <span className="ml-1 text-[10px] sm:text-xs text-gray-600">{rating.toFixed(1)}/5</span>
           </div>
