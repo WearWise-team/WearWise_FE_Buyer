@@ -73,11 +73,9 @@ export default function OrdersPage() {
         return;
       }
 
-      // Parse user data and extract ID
       const user = JSON.parse(userData);
       const userId = user.id;
 
-      // Call the supplier-specific orders API
       const response = await fetch(`${BASE_URL}/api/supplier/orders/${userId}`);
 
       if (!response.ok) {
@@ -88,7 +86,7 @@ export default function OrdersPage() {
       setOrders(data);
     } catch (error) {
       console.error("Fetch orders error:", error);
-      notify("Failed to fetch orders!", "error");
+      notify("Failed to fetch orders!","","topRight", "error");
     } finally {
       setIsLoading(false);
     }

@@ -53,7 +53,7 @@ export default function RecentSales() {
         setTotals(sortedTotals);
       } catch (error) {
         console.error("Fetch orders error:", error);
-        notify("Failed to fetch orders!", "error");
+        notify("Failed to fetch orders!","","topRight", "error");
       } finally {
         setIsLoading(false);
       }
