@@ -52,7 +52,12 @@ export default function DetailProduct({ params }) {
             setProduct(data);
           }
         } catch (error) {
-          console.error("error when show data:", error);
+          notify(
+            "Error when show data",
+            `${error}`,
+            "topRight",
+            "error"
+          );
         } finally {
           if (isMounted) {
             setIsLoading(false);
@@ -360,7 +365,7 @@ export default function DetailProduct({ params }) {
                   <Rate allowHalf value={rating} disabled />
                 </div>
                 <span className="ml-2 text-gray-600">
-                  {rating}/5
+                  {rating * 1 || 0}/5
                 </span>
                 <button onClick={toggleFavorite} className="ml-2 text-red-500">
                   {isFavorite ? <HeartFilled /> : <HeartOutlined />}

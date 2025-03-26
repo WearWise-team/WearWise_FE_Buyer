@@ -11,20 +11,18 @@ export default function SidebarFilter() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [priceRange, setPriceRange] = useState({ min: "", max: "" })
+  const [rawPriceRange, setRawPriceRange] = useState({ min: "", max: "" })
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedColors, setSelectedColors] = useState([])
   const [selectedSizes, setSelectedSizes] = useState([])
   const [sortPrice, setSortPrice] = useState("")
 
-  // Refs to maintain focus
   const minPriceRef = useRef(null)
   const maxPriceRef = useRef(null)
   const searchRef = useRef(null)
 
-  // Track which input is focused
   const [focusedInput, setFocusedInput] = useState(null)
 
-  // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
     price: true,
     categories: true,
@@ -33,11 +31,9 @@ export default function SidebarFilter() {
     sort: true,
   })
 
-  // Only colors need to be fetched
   const [colors, setColors] = useState([])
   const [loadingColors, setLoadingColors] = useState(true)
 
-  // Hardcoded categories and sizes
   const categories = [
     { id: "T-shirt", name: "T-shirt" },
     { id: "Shirt", name: "Shirt" },
@@ -54,7 +50,12 @@ export default function SidebarFilter() {
     { id: "XL", name: "XL" },
   ]
 
-  // Fetch colors data
+  // Format a number with thousand separators
+  const formatWithThousandSeparator = (value) => {
+    if (!value) return ""
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  }
+
   useEffect(() => {
     const fetchColors = async () => {
       setLoadingColors(true)
@@ -71,7 +72,6 @@ export default function SidebarFilter() {
     fetchColors()
   }, [])
 
-  // Restore focus after render if needed
   useEffect(() => {
     if (focusedInput === "min" && minPriceRef.current) {
       minPriceRef.current.focus()
@@ -83,7 +83,6 @@ export default function SidebarFilter() {
   }, [focusedInput, priceRange])
 
   useEffect(() => {
-    // Restore filter state from URL
     const params = new URLSearchParams(searchParams.toString())
 
     if (params.has("search")) {
@@ -91,26 +90,31 @@ export default function SidebarFilter() {
     }
 
     if (params.has("minPrice")) {
-      setPriceRange((prev) => ({ ...prev, min: params.get("minPrice") }))
+      const minPrice = params.get("minPrice") || ""
+      // Convert back to display format (multiply by 1000 and format)
+      const displayValue = minPrice ? formatWithThousandSeparator(Number.parseInt(minPrice, 10) * 1000) : ""
+      setPriceRange((prev) => ({ ...prev, min: displayValue }))
+      setRawPriceRange((prev) => ({ ...prev, min: minPrice }))
     }
 
     if (params.has("maxPrice")) {
-      setPriceRange((prev) => ({ ...prev, max: params.get("maxPrice") }))
+      const maxPrice = params.get("maxPrice") || ""
+      // Convert back to display format (multiply by 1000 and format)
+      const displayValue = maxPrice ? formatWithThousandSeparator(Number.parseInt(maxPrice, 10) * 1000) : ""
+      setPriceRange((prev) => ({ ...prev, max: displayValue }))
+      setRawPriceRange((prev) => ({ ...prev, max: maxPrice }))
     }
 
-    // Get all values for categories
     const categoryValues = params.getAll("categories")
     if (categoryValues.length > 0) {
       setSelectedCategories(categoryValues)
     }
 
-    // Get all values for colors
     const colorValues = params.getAll("colors")
     if (colorValues.length > 0) {
       setSelectedColors(colorValues)
     }
 
-    // Get all values for sizes
     const sizeValues = params.getAll("sizes")
     if (sizeValues.length > 0) {
       setSelectedSizes(sizeValues)
@@ -128,14 +132,28 @@ export default function SidebarFilter() {
     const params = new URLSearchParams(searchParams.toString())
     params.set("search", searchTerm.trim())
 
-    // Remove any existing search param and add the new one
     router.push(`/products?${params.toString()}`, { scroll: false })
     setIsOpen(false)
   }
 
   const handlePriceChange = (type, value) => {
-    setPriceRange((prev) => ({ ...prev, [type]: value }))
-    setFocusedInput(type) // Track which input is focused
+    // Remove any non-numeric characters
+    const numericValue = value.replace(/\D/g, "")
+
+    // Store the raw numeric value
+    setRawPriceRange((prev) => ({
+      ...prev,
+      [type]: numericValue,
+    }))
+
+    // Format with thousand separators for display
+    const formattedValue = formatWithThousandSeparator(numericValue)
+
+    // Update the display value
+    setPriceRange((prev) => ({
+      ...prev,
+      [type]: formattedValue,
+    }))
   }
 
   const handleInputFocus = (inputName) => {
@@ -143,17 +161,14 @@ export default function SidebarFilter() {
   }
 
   const handleInputBlur = () => {
-    // Small delay to allow for re-focus if needed
     setTimeout(() => {
       setFocusedInput(null)
     }, 100)
   }
 
   const applyFilters = () => {
-    // Start with current search params to preserve other params
     const params = new URLSearchParams(searchParams.toString())
 
-    // Clear existing filter params
     params.delete("minPrice")
     params.delete("maxPrice")
     params.delete("categories")
@@ -161,31 +176,31 @@ export default function SidebarFilter() {
     params.delete("sizes")
     params.delete("sortPrice")
 
-    // Keep search term if it exists
     if (searchTerm.trim()) {
       params.set("search", searchTerm.trim())
     }
 
-    // Add new filter params
+    // Convert the formatted price values to numeric values and divide by 1000
     if (priceRange.min) {
-      params.append("minPrice", priceRange.min)
+      const minNumeric = Number.parseInt(priceRange.min.replace(/\./g, ""), 10)
+      const minConverted = Math.floor(minNumeric / 1000)
+      params.append("minPrice", minConverted.toString())
     }
 
     if (priceRange.max) {
-      params.append("maxPrice", priceRange.max)
+      const maxNumeric = Number.parseInt(priceRange.max.replace(/\./g, ""), 10)
+      const maxConverted = Math.floor(maxNumeric / 1000)
+      params.append("maxPrice", maxConverted.toString())
     }
 
-    // Add each category value separately
     selectedCategories.forEach((category) => {
       params.append("categories", category)
     })
 
-    // Add each color value separately
     selectedColors.forEach((color) => {
       params.append("colors", color)
     })
 
-    // Add each size value separately
     selectedSizes.forEach((size) => {
       params.append("sizes", size)
     })
@@ -194,26 +209,24 @@ export default function SidebarFilter() {
       params.append("sortPrice", sortPrice)
     }
 
-    // Use the scroll: false option to prevent scrolling to top
     router.push(`/products?${params.toString()}`, { scroll: false })
     setIsOpen(false)
   }
 
   const resetFilters = () => {
-    // Keep search term if it exists
     const params = new URLSearchParams()
     if (searchTerm.trim()) {
       params.set("search", searchTerm.trim())
     }
 
-    setSearchTerm(searchTerm) // Keep the search term
+    setSearchTerm(searchTerm)
     setPriceRange({ min: "", max: "" })
+    setRawPriceRange({ min: "", max: "" })
     setSelectedCategories([])
     setSelectedColors([])
     setSelectedSizes([])
     setSortPrice("")
 
-    // Use the scroll: false option to prevent scrolling to top
     router.push(`/products?${params.toString()}`, { scroll: false })
     setIsOpen(false)
   }
@@ -237,7 +250,6 @@ export default function SidebarFilter() {
     }))
   }
 
-  // Count active filters
   const activeFilterCount =
     (priceRange.min || priceRange.max ? 1 : 0) +
     selectedCategories.length +
@@ -245,7 +257,6 @@ export default function SidebarFilter() {
     selectedSizes.length +
     (sortPrice ? 1 : 0)
 
-  // Filter section component
   const FilterSection = ({ title, section, children }) => (
     <div className="border-b border-gray-100 pb-4 mb-4">
       <button
@@ -263,7 +274,6 @@ export default function SidebarFilter() {
 
   return (
     <>
-      {/* Mobile filter button */}
       <div className="md:hidden sticky top-0 z-10 bg-white py-3 mb-4 border-b border-gray-100">
         <button
           onClick={() => setIsOpen(true)}
@@ -279,7 +289,6 @@ export default function SidebarFilter() {
         </button>
       </div>
 
-      {/* Desktop sidebar */}
       <div className="hidden md:block w-64 flex-shrink-0">
         <div className="sticky top-4 bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-4 bg-gray-50 border-b border-gray-100">
@@ -295,12 +304,11 @@ export default function SidebarFilter() {
           </div>
 
           <div className="p-4">
-            {/* Price Range */}
             <FilterSection title="Filter by Original Price" section="price">
               <div className="flex items-center gap-2">
                 <input
                   ref={minPriceRef}
-                  type="number"
+                  type="text"
                   placeholder="Min"
                   className="w-full p-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                   value={priceRange.min}
@@ -311,7 +319,7 @@ export default function SidebarFilter() {
                 <span className="text-gray-400">-</span>
                 <input
                   ref={maxPriceRef}
-                  type="number"
+                  type="text"
                   placeholder="Max"
                   className="w-full p-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                   value={priceRange.max}
@@ -322,7 +330,6 @@ export default function SidebarFilter() {
               </div>
             </FilterSection>
 
-            {/* Categories */}
             <FilterSection title="Categories" section="categories">
               <div className="space-y-2">
                 {categories.map((category) => (
@@ -342,7 +349,6 @@ export default function SidebarFilter() {
               </div>
             </FilterSection>
 
-            {/* Colors */}
             <FilterSection title="Colors" section="colors">
               {loadingColors ? (
                 <div className="flex justify-center items-center py-2">
@@ -367,7 +373,6 @@ export default function SidebarFilter() {
               )}
             </FilterSection>
 
-            {/* Sizes */}
             <FilterSection title="Sizes" section="sizes">
               <div className="flex flex-wrap gap-2">
                 {sizes.map((size) => (
@@ -386,7 +391,6 @@ export default function SidebarFilter() {
               </div>
             </FilterSection>
 
-            {/* Sort */}
             <FilterSection title="Sort by" section="sort">
               <select
                 className="w-full p-2.5 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500 bg-white"
@@ -399,7 +403,6 @@ export default function SidebarFilter() {
               </select>
             </FilterSection>
 
-            {/* Action buttons */}
             <button
               onClick={applyFilters}
               className="w-full bg-pink-500 text-white py-2.5 px-4 rounded-md font-medium hover:bg-pink-600 transition-colors"
@@ -410,7 +413,6 @@ export default function SidebarFilter() {
         </div>
       </div>
 
-      {/* Mobile filter sidebar */}
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex md:hidden">
           <div className="bg-white w-full max-w-sm h-full overflow-y-auto ml-auto">
@@ -422,7 +424,6 @@ export default function SidebarFilter() {
             </div>
 
             <div className="p-4">
-              {/* Search in mobile sidebar */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Search</h4>
                 <form onSubmit={handleSearch} className="flex">
@@ -445,12 +446,11 @@ export default function SidebarFilter() {
                 </form>
               </div>
 
-              {/* Price Range */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Filter by Original Price</h4>
                 <div className="flex items-center gap-2">
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Min"
                     className="w-full p-2.5 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                     value={priceRange.min}
@@ -460,7 +460,7 @@ export default function SidebarFilter() {
                   />
                   <span className="text-gray-400">-</span>
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Max"
                     className="w-full p-2.5 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
                     value={priceRange.max}
@@ -471,7 +471,6 @@ export default function SidebarFilter() {
                 </div>
               </div>
 
-              {/* Categories */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Categories</h4>
                 <div className="space-y-2">
@@ -492,7 +491,6 @@ export default function SidebarFilter() {
                 </div>
               </div>
 
-              {/* Colors */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Colors</h4>
                 {loadingColors ? (
@@ -518,7 +516,6 @@ export default function SidebarFilter() {
                 )}
               </div>
 
-              {/* Sizes */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Sizes</h4>
                 <div className="flex flex-wrap gap-2">
@@ -538,7 +535,6 @@ export default function SidebarFilter() {
                 </div>
               </div>
 
-              {/* Sort */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Sort by Price</h4>
                 <select
@@ -552,7 +548,6 @@ export default function SidebarFilter() {
                 </select>
               </div>
 
-              {/* Action buttons */}
               <div className="sticky bottom-0 bg-white pt-2 pb-4 border-t border-gray-100 mt-6">
                 <div className="flex gap-3">
                   <button
