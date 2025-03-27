@@ -14,13 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getSizes } from "@/apiServices/size/page";
-import { getColors } from "@/apiServices/colors/page";
-import { getDiscounts } from "@/apiServices/discounts/page";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { X } from "lucide-react";
-import { updateProduct } from "@/apiServices/products/page"; // Adjust the import path as needed
-// import { getSupplierByUserID } from "@/apiServices/suppliers/page";
+import { updateProduct } from "@/apiServices/products/page"; 
+import { useNotification } from "@/apiServices/NotificationService";
+import { useData } from "@/Context/DataContext";
+
 
 export default function EditProductDialog({
   isOpen,
@@ -29,67 +28,9 @@ export default function EditProductDialog({
   product,
 }) {
   const [editedProduct, setEditedProduct] = useState(product);
-  const [sizes, setSizes] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [discounts, setDiscounts] = useState([]);
-  // const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-  // const notify = useNotification();
+  const { sizes, colors, discounts } = useData();
+  const notify = useNotification();
   // const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    const fetchSizes = async () => {
-      try {
-        const sizes = await getSizes();
-        setSizes(sizes);
-      } catch (error) {
-        console.error("Fetch sizes error:", error);
-      }
-    };
-    fetchSizes();
-  }, []);
-
-  useEffect(() => {
-    const fetchColors = async () => {
-      try {
-        const response = await getColors();
-        setColors(response.data);
-      } catch (error) {
-        console.error("Fetch colors error:", error);
-      }
-    };
-    fetchColors();
-  }, []);
-
-  useEffect(() => {
-    const fetchDiscount = async () => {
-      try {
-        const discounts = await getDiscounts();
-        setDiscounts(discounts);
-      } catch (error) {
-        console.error("Fetch colors error:", error);
-      }
-    };
-    fetchDiscount();
-  }, []);
-
-  // useEffect(() => {
-  //   const fetchSupplier = async () => {
-  //     const userData = localStorage.getItem("user");
-  //     if (!userData) return;
-
-  //     try {
-  //       const user = JSON.parse(userData);
-  //       const supplier = await getSupplierByUserID(user.id);
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         supplier_id: supplier.id,
-  //       }));
-  //     } catch (error) {
-  //       console.error("Fetch supplier error:", error);
-  //     }
-  //   };
-  //   fetchSupplier();
-  // }, []);
 
   useEffect(() => {
     setEditedProduct(product);
@@ -108,7 +49,6 @@ export default function EditProductDialog({
         return original !== edited && edited !== undefined && edited !== null;
       };
 
-      // Kiểm tra và thêm dữ liệu vào FormData
       if (hasChanged(product.name, editedProduct.name)) {
         formData.append("name", editedProduct.name || "");
       }
@@ -173,24 +113,17 @@ export default function EditProductDialog({
         });
       }
 
-      // Debug FormData
-      console.log("FormData contents:");
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-
-      // Gọi API nếu có dữ liệu thay đổi
       if (formData.entries().next().done === false) {
         await updateProduct(editedProduct.id, formData);
       } else {
         console.log("No changes detected, skipping API call.");
       }
-
-      // Cập nhật UI và đóng dialog
       onEdit(editedProduct);
+      notify("Product updated successfully! ✅", "success");
       onClose();
     } catch (error) {
       console.error("Error updating product:", error);
+      notify("Failed to update product! ❌", "error");
     }
   };
 
@@ -219,7 +152,6 @@ export default function EditProductDialog({
 
     const file = e.target.files[0];
     if (file) {
-      // Store the actual file for form submission
       setEditedProduct((prev) => ({
         ...prev,
         main_image: file,
@@ -238,7 +170,6 @@ export default function EditProductDialog({
   const handleSubImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      // Store the actual files for form submission
       const newImages = files.map((file) => ({
         file: file,
         url: URL.createObjectURL(file), // Create preview URL
@@ -314,10 +245,10 @@ export default function EditProductDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-price">Price</Label>
+              <Label htmlFor="edit-price">Price (VND)</Label>
               <Input
                 id="edit-price"
-                type="text"
+                type="number"
                 value={editedProduct?.price || 0}
                 onChange={(e) =>
                   setEditedProduct({
@@ -450,10 +381,10 @@ export default function EditProductDialog({
           </div>
         </div>
         <DialogFooter className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" id="cancel" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleEditProduct}>
+          <Button type="submit" id="editProduct" onClick={handleEditProduct}>
             Save Changes
           </Button>
         </DialogFooter>

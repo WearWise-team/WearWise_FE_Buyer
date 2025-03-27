@@ -11,33 +11,50 @@ import {
   MessageSquare,
   LayoutDashboard,
   LogOut,
+  DollarSign,
+  User,
 } from "lucide-react";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function Sidebar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const notify = useNotification();
+  const [userData, setUserData] = useState(null);
 
+  useEffect(() => {
+    const userDataString = sessionStorage.getItem("user");
+    if (userDataString) {
+      try {
+        const parsedUserData = JSON.parse(userDataString);
+        setUserData(parsedUserData);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+  
   const handleLogout = async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
+      const accessToken = sessionStorage.getItem("accessToken");
       if (!accessToken) {
         console.error("Access token không tồn tại.");
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:8000/api/auth/logout", {
+      const response = await fetch(`${BASE_URL}/api/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("accessToken")}`,
         },
       });
 
       if (response.ok) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("accessToken");
+        sessionStorage.removeItem("user");
         notify("Logout", "Logout Successful.", "topRight", "success");
         setIsLoggedIn(false);
         window.location.href = "/";
@@ -45,7 +62,7 @@ export default function Sidebar() {
         const errorData = await response.json();
         console.error(
           "Logout failed",
-          errorData.message || "Lỗi không xác định."
+          errorData.message || "Something went wrong."
         );
       }
     } catch (error) {
@@ -71,9 +88,14 @@ export default function Sidebar() {
       icon: <ShoppingCart className="h-5 w-5" />,
     },
     {
-      name: "Comments",
+      name: "Reviews",
       path: "/supplier/comments",
       icon: <MessageSquare className="h-5 w-5" />,
+    },
+    {
+      name: "Discounts",
+      path: "/supplier/discounts",
+      icon: <DollarSign className="h-5 w-5" />,
     },
     {
       name: "Logout",
@@ -117,6 +139,25 @@ export default function Sidebar() {
           )
         )}
       </nav>
+      <div className="p-4 border-t">
+        <div className="flex items-center">
+          {userData?.avatar && (
+            <img
+              src={userData.avatar}
+              alt={userData.name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          )}
+          <div className="ml-3">
+            <p className="text-sm font-medium">
+              {userData ? userData.name : "Supplier Name"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {userData ? userData.email : "supplier@example.com"}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

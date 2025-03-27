@@ -2,7 +2,6 @@
 
 import { useState, use, useEffect } from "react";
 import { RiCheckboxCircleLine } from "react-icons/ri";
-import { FaSlidersH, FaChevronDown } from "react-icons/fa";
 import { IoMdArrowDropright } from "react-icons/io";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import axios from "axios";
@@ -42,17 +41,33 @@ export default function DetailProduct({ params }) {
   const { id } = resolvedParams;
 
   useEffect(() => {
+    let isMounted = true;
+
     if (product === null) {
       setIsLoading(true);
-      setTimeout(() => {
-        getProductDetails(id)
-          .then((data) => {
+      const fetchData = async () => {
+        try {
+          const data = await getProductDetails(id);
+          if (isMounted) {
             setProduct(data);
-          })
-          .catch((error) => console.error("error when show data:", error))
-          .finally(() => setIsLoading(false));
+          }
+        } catch (error) {
+          notify("Error when show data", `${error}`, "topRight", "error");
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      };
+
+      setTimeout(() => {
+        fetchData();
       }, 3000);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [id, product]);
 
   useEffect(() => {
@@ -80,7 +95,7 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    const isUserLogin = localStorage.getItem("user");
+    const isUserLogin = sessionStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === productId &&
@@ -130,7 +145,7 @@ export default function DetailProduct({ params }) {
 
   const toggleFavorite = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = sessionStorage.getItem("accessToken");
       if (!token) {
         console.error("User not authenticated");
         return;
@@ -142,21 +157,34 @@ export default function DetailProduct({ params }) {
       };
 
       if (!isFavorite) {
-        await axios.post(
-          `${API_BASE_URL}/api/wishlists`,
-          { product_id: id },
-          { headers }
-        );
+        const response = await fetch(`${API_BASE_URL}/api/wishlists`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ product_id: id }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add to wishlist");
+        }
+
         notify(
           "Product Added wishlist Successfully",
           "Your product has been added to the wishlist.",
           "topRight"
         );
       } else {
-        await axios.delete(`${API_BASE_URL}/api/wishlists/${id}`, { headers });
+        const response = await fetch(`${API_BASE_URL}/api/wishlists/${id}`, {
+          method: "DELETE",
+          headers,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to remove from wishlist");
+        }
+
         notify(
           "Product deleted wishlist Successfully",
-          "Your product has been added to the wishlist.",
+          "Your product has been removed from the wishlist.",
           "topRight"
         );
       }
@@ -164,6 +192,53 @@ export default function DetailProduct({ params }) {
       setIsFavorite(!isFavorite);
     } catch (error) {
       console.error("Error updating wishlist:", error);
+    }
+  };
+
+  const handleTryOn = () => {
+    if (!selectedColor || !selectedSize) {
+      notify(
+        "Product Color and Size Required",
+        "Please select a color and size for this product.",
+        "topRight",
+        "warning"
+      );
+      return;
+    }
+
+    const isUserLogin = sessionStorage.getItem("user");
+
+    if (!isUserLogin) {
+      notify(
+        "Login Required",
+        "You must login to add this product to the cart.",
+        "topRight",
+        "warning"
+      );
+      router.push("/login");
+      return;
+    }
+
+    sessionStorage.setItem("BuyNowWithTryOn", true);
+    sessionStorage.setItem("buy_now_product", JSON.stringify(product));
+    sessionStorage.setItem(
+      "buy_now_product_colorId",
+      JSON.stringify(selectedColor)
+    );
+    sessionStorage.setItem(
+      "buy_now_product_sizeId",
+      JSON.stringify(selectedSize)
+    );
+    sessionStorage.setItem(
+      "buy_now_product_quantity",
+      JSON.stringify(quantity)
+    );
+
+    if (typeof window !== "undefined" && selectedImage) {
+      sessionStorage.setItem("tryOnImage", selectedImage);
+      router.push("/tryOnK");
+    } else {
+      notify("Please select an image to try on", "", "topRight", "warning");
     }
   };
 
@@ -178,7 +253,7 @@ export default function DetailProduct({ params }) {
       return;
     }
 
-    const isUserLogin = localStorage.getItem("user");
+    const isUserLogin = sessionStorage.getItem("user");
     const isAlreadyInCart = cart.some(
       (item) =>
         item.product_id === product.id &&
@@ -203,24 +278,27 @@ export default function DetailProduct({ params }) {
       router.push("/login");
       return;
     }
-    localStorage.setItem("buy_now_product", JSON.stringify(product));
-    localStorage.setItem(
+    sessionStorage.setItem("buy_now_product", JSON.stringify(product));
+    sessionStorage.setItem(
       "buy_now_product_colorId",
       JSON.stringify(selectedColor)
     );
-    localStorage.setItem(
+    sessionStorage.setItem(
       "buy_now_product_sizeId",
       JSON.stringify(selectedSize)
     );
-    localStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    sessionStorage.setItem(
+      "buy_now_product_quantity",
+      JSON.stringify(quantity)
+    );
     router.push("/order/now");
   };
 
   const percentageOf = (value, percentage) => {
-    const numValue = parseFloat(
+    const numValue = Number.parseFloat(
       value.toString().replace(/\./g, "").replace("đ", "").trim()
     );
-    const numPercentage = parseFloat(percentage);
+    const numPercentage = Number.parseFloat(percentage);
 
     if (isNaN(numValue) || isNaN(numPercentage)) return "0";
 
@@ -236,7 +314,7 @@ export default function DetailProduct({ params }) {
   return (
     <>
       <div className="bg-white text-gray-800">
-        <div className="container mx-16 p-4">
+        <div className="container mx-auto px-4 md:px-6 lg:px-16 p-4">
           <nav className="text-sm mb-4 flex gap-2 text-end">
             <Link className="text-gray-500 hover:text-gray-700" href="/">
               Home
@@ -247,18 +325,37 @@ export default function DetailProduct({ params }) {
             </Link>{" "}
           </nav>
 
-          <div className="flex flex-col lg:flex-row">
-            <div className="flex items-center justify-between gap-5 lg:w-1/2">
-              <div className="flex flex-col items-center justify-evenly h-full mb-4">
-                {images.map((value, index) =>
-                  value ? (
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Product Images Section */}
+            <div className="w-full lg:w-1/2">
+              {/* Main Image */}
+              <div className="mb-4">
+                <Image
+                  alt="Main product image"
+                  className="w-full h-auto rounded-lg object-cover"
+                  height="800"
+                  src={selectedImage ? selectedImage : product.main_image}
+                  width="600"
+                />
+              </div>
+
+              {/* Thumbnails - Horizontal scroll on all devices */}
+              <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
+                {images
+                  .filter(
+                    (value) =>
+                      value &&
+                      (value.deleted_at === null ||
+                        value.deleted_at === undefined)
+                  )
+                  .map((value, index) => (
                     <Image
                       key={index}
                       alt={`Thumbnail ${index + 1}`}
-                      className={`w-20 h-20 rounded-lg cursor-pointer ${
+                      className={`w-20 h-20 rounded-lg cursor-pointer flex-shrink-0 object-cover ${
                         selectedImage === (value.url ? value.url : value)
                           ? "border-2 border-pink-500"
-                          : ""
+                          : "border border-gray-200"
                       }`}
                       height="100"
                       src={value.url ? value.url : value}
@@ -267,26 +364,12 @@ export default function DetailProduct({ params }) {
                         setSelectedImage(value.url ? value.url : value)
                       }
                     />
-                  ) : null
-                )}
-              </div>
-
-              <div className="w-full lg:w-3/4 mb-4">
-                <Image
-                  alt="Main product image"
-                  className="w-full rounded-lg"
-                  height="800"
-                  src={
-                    selectedImage
-                      ? selectedImage
-                      : product.main_image
-                  }
-                  width="600"
-                />
+                  ))}
               </div>
             </div>
 
-            <div className="lg:w-1/2 lg:pl-8">
+            {/* Product Details Section */}
+            <div className="w-full lg:w-1/2 lg:pl-8">
               <h1 className="text-2xl font-bold mb-2">
                 {product ? product.name : "loading..."}
               </h1>
@@ -295,9 +378,7 @@ export default function DetailProduct({ params }) {
                 <div className="flex items-center text-yellow-500">
                   <Rate allowHalf value={rating} disabled />
                 </div>
-                <span className="ml-2 text-gray-600">
-                  {rating ? rating.toFixed(0) : 0}/5
-                </span>
+                <span className="ml-2 text-gray-600">{rating * 1 || 0}/5</span>
                 <button onClick={toggleFavorite} className="ml-2 text-red-500">
                   {isFavorite ? <HeartFilled /> : <HeartOutlined />}
                 </button>
@@ -332,13 +413,13 @@ export default function DetailProduct({ params }) {
                 ) : null}
               </div>
 
-              <p className="text-gray-600 mb-4 w-2/3">
+              <p className="text-gray-600 mb-4 w-full md:w-2/3">
                 {product ? product.description : ""}
               </p>
 
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Select Colors</h2>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   {product?.colors?.map((color) => (
                     <button
                       key={color.id}
@@ -359,7 +440,7 @@ export default function DetailProduct({ params }) {
 
               <div className="mb-4">
                 <h2 className="text-lg font-medium mb-2">Choose Size</h2>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   {product?.sizes?.map((size) => (
                     <button
                       key={size.id}
@@ -394,19 +475,16 @@ export default function DetailProduct({ params }) {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 mb-4">
-                <Link
-                  href="/tryOnK"
-                  onClick={() => {
-                    if (typeof window !== "undefined" && selectedImage) {
-                      localStorage.setItem("tryOnImage", selectedImage);
-                    }
-                  }}
+              <div className="flex flex-wrap gap-3 mb-4">
+                <div
+                  onClick={() =>
+                    handleTryOn(product, selectedColor, selectedSize, quantity)
+                  }
                 >
-                  <button className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-xl">
+                  <button className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-xl w-full">
                     Try to 2D
                   </button>
-                </Link>
+                </div>
                 <button
                   className="px-4 mt-4 py-2 bg-pink-500 text-white rounded-xl flex"
                   onClick={() =>
@@ -439,7 +517,7 @@ export default function DetailProduct({ params }) {
           {/* Tabs */}
           <div className="mt-8 relative">
             {/* Navigation Tabs */}
-            <div className="flex justify-center space-x-8 border-b ">
+            <div className="flex justify-center flex-wrap gap-2 md:gap-0 md:space-x-8 border-b">
               {tabs.map((tab) => (
                 <button
                   key={tab}
@@ -518,7 +596,7 @@ export default function DetailProduct({ params }) {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-8">
+                    <div className="flex flex-wrap gap-4 md:gap-8 justify-center md:justify-start">
                       {product.reviews.length > 0 &&
                         product.reviews.map((review, index) => (
                           <CartReview

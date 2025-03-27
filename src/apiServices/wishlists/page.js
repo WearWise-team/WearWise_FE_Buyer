@@ -1,14 +1,15 @@
 // Function to get user wishlists
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export async function getUserWishlists(userId) {
     try {
-      // Get token from localStorage
-      const token = localStorage.getItem("accessToken")
+      // Get token from sessionStorage
+      const token = sessionStorage.getItem("accessToken")
   
       if (!token) {
         throw new Error("Authentication token not found")
       }
   
-      const response = await fetch(`http://127.0.0.1:8000/api/wishlists`, {
+      const response = await fetch(`${BASE_URL}/api/wishlists`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -31,14 +32,14 @@ export async function getUserWishlists(userId) {
   // Function to remove item from wishlist
   export async function removeWishlistItem(itemId) {
     try {
-      // Get token from localStorage
-      const token = localStorage.getItem("accessToken")
+      // Get token from sessionStorage
+      const token = sessionStorage.getItem("accessToken")
   
       if (!token) {
         throw new Error("Authentication token not found")
       }
   
-      const response = await fetch(`http://127.0.0.1:8000/api/wishlists/${itemId}`, {
+      const response = await fetch(`${BASE_URL}/api/wishlists/${itemId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -24,22 +24,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import AddProductDialog from "@/components/supplier/product/AddProductDialog";
-import EditProductDialog from "@/components/supplier/product/EditProductDialog";
-import DetailProductDialog from "@/components/supplier/product/DetailProductDialog";
-import { getSupplierByUserID } from "@/apiServices/suppliers/page";
-import { deleteProduct, getProductBySupplierID } from "@/apiServices/products/page";
+import AddDiscountDialog from "@/components/supplier/discount/AddDiscountDialog";
+import EditDiscountDialog from "@/components/supplier/discount/EditDiscountDialog";
+import DetailDiscountDialog from "@/components/supplier/discount/DetailDiscountDialog";
 import { useNotification } from "@/apiServices/NotificationService";
+import { deleteDiscount, getDiscounts } from "@/apiServices/discounts/page";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState([]);
+  const [discounts, setDiscounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [supplierID, setSupplierID] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const notify = useNotification();
   const [isLoading, setIsLoading] = useState(true);
@@ -49,38 +47,19 @@ export default function ProductsPage() {
   });
   const itemsPerPage = 10;
   useEffect(() => {
-    const fetchSupplier = async () => {
-      const userData = sessionStorage.getItem("user");
-      if (!userData) return;
-
+    const fetchDiscounts = async () => {
+      setIsLoading(true);
       try {
-        const user = JSON.parse(userData);
-        const supplier = await getSupplierByUserID(user.id);
-        setSupplierID(supplier.id);
+        const discounts = await getDiscounts();
+        setDiscounts(discounts);
       } catch (error) {
-        console.error("Fetch supplier error:", error);
-      }
-    };
-
-    fetchSupplier();
-  }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (!supplierID) return;
-      setIsLoading(true)
-      try {
-        const products = await getProductBySupplierID(supplierID);
-        setProducts(products);
-      } catch (error) {
-        console.error("Fetch products error:", error);
+        console.error("Fetch discounts error:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchProducts();
-  }, [supplierID]);
+    fetchDiscounts();
+  }, []);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -90,13 +69,12 @@ export default function ProductsPage() {
     setSortConfig({ key, direction });
   };
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDiscounts = discounts.filter(
+    (discount) =>
+      discount.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const sortedFilteredProducts = [...filteredProducts].sort((a, b) => {
+  const sortedFilteredDiscounts = [...filteredDiscounts].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
@@ -107,41 +85,38 @@ export default function ProductsPage() {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = (sortedFilteredProducts || []).slice(
+  const currentDiscounts = (sortedFilteredDiscounts || []).slice(
     indexOfFirstItem,
     indexOfLastItem
   );
-  const handleAddProduct = (newProduct) => {
-    setProducts([newProduct, ...products]);
+  const handleAddDiscount = (newDiscount) => {
+    setDiscounts([newDiscount, ...discounts]);
   };
 
-  const handleEditProduct = (updatedProduct) => {
-    const updatedProducts = products.map((product) =>
-      product.id === updatedProduct.id ? updatedProduct : product
+  const handleEditProduct = (updatedDiscount) => {
+    const updatedDiscounts = discounts.map((discount) =>
+      discount.id === updatedDiscount.id ? updatedDiscount : discount
     );
-    setProducts(updatedProducts);
+    setDiscounts(updatedDiscounts);
   };
 
-  const handleDeleteProduct = async () => {
+  const handleDeleteDiscount = async () => {
     try {
-      await deleteProduct(selectedProduct.id);
+      await deleteDiscount(selectedDiscount.id);
 
-      const updatedProducts = products.filter(
-        (product) => product.id !== selectedProduct.id
+      const updatedDiscounts = discounts.filter(
+        (discount) => discount.id !== selectedDiscount.id
       );
-
-      setProducts(updatedProducts);
+      setDiscounts(updatedDiscounts);
       setIsDeleteDialogOpen(false);
-
-      notify("Product deleted successfully!", "success");
+      notify("Discount deleted successfully!", "success");
     } catch (error) {
-      console.error("Error deleting product:", error);
-      notify("Failed to delete product!", "error");
+      console.error("Error deleting discount:", error);
+      notify("Failed to delete discount!", "error");
     }
   };
 
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredDiscounts.length / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -152,13 +127,15 @@ export default function ProductsPage() {
   return (
     <div className="p-6 w-full">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Products Management</h1>
-        <Button onClick={() => setIsAddModalOpen(true)}>Add New Product</Button>
+        <h1 className="text-2xl font-bold">Discounts Management</h1>
+        <Button onClick={() => setIsAddModalOpen(true)}>
+          Add New Discount
+        </Button>
       </div>
 
       <div className="flex items-center mb-6">
         <Input
-          placeholder="Search products..."
+          placeholder="Search disounts..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -169,26 +146,22 @@ export default function ProductsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              {["name", "category", "price", "quantity"].map(
-                (key) => (
-                  <TableHead
-                    key={key}
-                    onClick={() => handleSort(key)}
-                    className="cursor-pointer"
-                  >
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                    {sortConfig.key === key &&
-                      (sortConfig.direction === "asc" ? (
-                        <ArrowUp className="inline ml-1" />
-                      ) : (
-                        <ArrowDown className="inline ml-1" />
-                      ))}
-                  </TableHead>
-                )
-              )}
-              <TableHead>Size</TableHead>
-              <TableHead>Color</TableHead>
-              <TableHead>Discount</TableHead>
+              {["code", "percentage", "start_date", "end_date"].map((key) => (
+                <TableHead
+                  key={key}
+                  onClick={() => handleSort(key)}
+                  className="cursor-pointer"
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                  {sortConfig.key === key &&
+                    (sortConfig.direction === "asc" ? (
+                      <ArrowUp className="inline ml-1" />
+                    ) : (
+                      <ArrowDown className="inline ml-1" />
+                    ))}
+                </TableHead>
+              ))}
+              <TableHead>Description</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -198,42 +171,24 @@ export default function ProductsPage() {
                 <TableCell colSpan={9} className="text-center py-8">
                   <div className="flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <span className="ml-2">Loading products...</span>
+                    <span className="ml-2">Loading discounts...</span>
                   </div>
                 </TableCell>
               </TableRow>
-            ) : currentProducts.length > 0 ? (
-              currentProducts?.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.price.toLocaleString()} VND</TableCell>
-                  <TableCell>{product.quantity}</TableCell>
-                  <TableCell>
-                    {[...new Set(product.sizes?.map((size) => size.name))].join(
-                      ", "
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {[
-                      ...new Set(product.colors?.map((color) => color.name)),
-                    ].join(", ")}
-                  </TableCell>
-                  <TableCell>
-                    {[
-                      ...new Set(
-                        product.discounts?.map(
-                          (discount) => `${Math.round(discount.percentage)}%`
-                        )
-                      ),
-                    ].join(", ")}
-                  </TableCell>
+            ) : currentDiscounts.length > 0 ? (
+              currentDiscounts?.map((discount) => (
+                <TableRow key={discount.id}>
+                  <TableCell className="font-medium">{discount.code}</TableCell>
+                  <TableCell>{discount.percentage} %</TableCell>
+                  <TableCell>{discount.start_date} </TableCell>
+                  <TableCell>{discount.end_date}</TableCell>
+                  <TableCell>{discount.description}</TableCell>
                   <TableCell className="flex space-x-2">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        setSelectedProduct(product);
+                        setSelectedDiscount(discount);
                         setIsDetailModalOpen(true);
                       }}
                     >
@@ -243,7 +198,7 @@ export default function ProductsPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        setSelectedProduct(product);
+                        setSelectedDiscount(discount);
                         setIsEditModalOpen(true);
                       }}
                     >
@@ -253,7 +208,7 @@ export default function ProductsPage() {
                       size="sm"
                       variant="destructive"
                       onClick={() => {
-                        setSelectedProduct(product);
+                        setSelectedDiscount(discount);
                         setIsDeleteDialogOpen(true);
                       }}
                     >
@@ -265,7 +220,7 @@ export default function ProductsPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="text-center">
-                  No products found
+                  No discounts found
                 </TableCell>
               </TableRow>
             )}
@@ -292,23 +247,23 @@ export default function ProductsPage() {
         </Button>
       </div>
 
-      <AddProductDialog
+      <AddDiscountDialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddProduct}
+        onAdd={handleAddDiscount}
       />
 
-      <EditProductDialog
+      <EditDiscountDialog
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onEdit={handleEditProduct}
-        product={selectedProduct}
+        discount={selectedDiscount}
       />
 
-      <DetailProductDialog
+      <DetailDiscountDialog
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        product={selectedProduct}
+        discount={selectedDiscount}
       />
 
       <AlertDialog
@@ -320,14 +275,14 @@ export default function ProductsPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              product from the database.
+              discount from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct}>
+            <AlertDialogAction onClick={handleDeleteDiscount}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

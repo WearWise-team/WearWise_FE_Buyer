@@ -7,7 +7,7 @@ import { InputField } from "@/components/InputField";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useNotification } from "@/apiServices/NotificationService";
-
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const notify = useNotification();
-
   const validateForm = () => {
     const newErrors = {};
 
@@ -44,7 +43,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {        
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,12 +59,12 @@ export default function LoginPage() {
 
       notify("Login successful", "success");
 
-      // Lưu token và thông tin người dùng vào localStorage
-      localStorage.setItem(
+      // Lưu token và thông tin người dùng vào sessionStorage
+      sessionStorage.setItem(
         "accessToken",
         data.result.token.original.access_token
       );
-      localStorage.setItem("user", JSON.stringify(data.result.user));
+      sessionStorage.setItem("user", JSON.stringify(data.result.user));
 
       // Chuyển hướng dựa trên vai trò
       const userRole = data.result.user.role;

@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IoMdArrowDropright } from "react-icons/io";
 import { getMyCart, removeFromCart, updateCart } from "@/apiServices/cart/page";
 import WearwiseLoading from "@/components/WearwiseLoading";
@@ -20,8 +20,21 @@ const Cart = () => {
   const notify = useNotification();
   const router = useRouter();
 
+  const calculateDiscount = (originalPrice, discountPercentage) => {
+    const numValue = Number.parseFloat(
+      typeof originalPrice === "string"
+        ? originalPrice.toString().replace(/\./g, "").replace("đ", "").trim()
+        : originalPrice
+    );
+    const numPercentage = Number.parseFloat(discountPercentage);
+
+    if (isNaN(numValue) || isNaN(numPercentage)) return 0;
+
+    return Math.round((numValue * numPercentage) / 100);
+  };
+
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       const userId = user.id;
@@ -30,12 +43,19 @@ const Cart = () => {
         try {
           const response = await getMyCart(userId);
           setCartItems(response.cart);
+
+          // Automatically apply discounts when cart is loaded
           updateSubtotal(response.cart);
 
-          const storedSubtotal = localStorage.getItem("subtotal");
-          const storedDiscount = localStorage.getItem("discount");
-          if (storedSubtotal) setSubtotal(parseFloat(storedSubtotal));
-          if (storedDiscount) setTotalDiscount(parseFloat(storedDiscount));
+          // Log the discount percentage for debugging
+          console.log("Discount percentage:", response.cart[0].discounts[0].code);
+          setDiscountCode(response.cart[0].discounts[0].code)
+
+          const storedSubtotal = sessionStorage.getItem("subtotal");
+          const storedDiscount = sessionStorage.getItem("discount");
+          if (storedSubtotal) setSubtotal(Number.parseFloat(storedSubtotal));
+          if (storedDiscount)
+            setTotalDiscount(Number.parseFloat(storedDiscount));
         } catch (error) {
           console.error("Error fetching cart items:", error);
         } finally {
@@ -53,38 +73,47 @@ const Cart = () => {
   const updateSubtotal = (items) => {
     let total = 0;
     let totalDiscount = 0;
-    const now = new Date();
-    let discountApplied = false;
 
-    items.forEach((item) => {
-      total += item.product.price * item.quantity;
+    if (
+      items &&
+      items.length > 0 &&
+      items[0].discounts &&
+      items[0].discounts.length > 0
+    ) {
+      // Automatically get the discount percentage from the first item
+      const discountPercentage = items[0].discounts[0].percentage;
 
-      const validDiscount = item.discounts.find(
-        (d) =>
-          d.code === discountCode &&
-          now >= new Date(d.start_date) &&
-          now <= new Date(d.end_date)
-      );
+      items.forEach((item) => {
+        const itemPrice = item.product.price * item.quantity;
+        total += itemPrice;
 
-      if (validDiscount) {
-        totalDiscount +=
-          (item.product.price * item.quantity * validDiscount.percentage) / 100;
-        discountApplied = true;
-      }
-    });
+        // Calculate discount for this item
+        const itemDiscount = calculateDiscount(itemPrice, discountPercentage);
+        totalDiscount += itemDiscount;
+      });
+
+      // Set the discount percentage for display
+      setTotalDiscount(totalDiscount);
+    } else {
+      // If no discounts available, just calculate the total
+      items.forEach((item) => {
+        total += item.product.price * item.quantity;
+      });
+      setTotalDiscount(0);
+    }
 
     setSubtotal(total);
-    setTotalDiscount(totalDiscount);
 
-    localStorage.setItem("discount", totalDiscount);
-    localStorage.setItem("total", total - totalDiscount);
+    // Store values in session storage
+    sessionStorage.setItem("discount", totalDiscount);
+    sessionStorage.setItem("total", total - totalDiscount);
   };
 
   useEffect(() => {
     if (discountCode) {
       if (totalDiscount > 0) {
-        localStorage.setItem("discount", totalDiscount);
-        localStorage.setItem("total", subtotal - totalDiscount);
+        sessionStorage.setItem("discount", totalDiscount);
+        sessionStorage.setItem("total", subtotal - totalDiscount);
         notify(
           "Discount Applied",
           `Your discount has been successfully applied. You saved ${totalDiscount} VND.`,
@@ -101,10 +130,6 @@ const Cart = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalDiscount, subtotal]);
-
-  const applyDiscount = () => {
-    updateSubtotal(cartItems);
-  };
 
   const confirmRemoveItem = async () => {
     if (itemToRemove) {
@@ -198,14 +223,22 @@ const Cart = () => {
                       className="w-16 h-16 rounded-lg mr-4"
                       height={60}
                       width={60}
-                      src={item.product.main_image}
+                      src={item.product.main_image || "/placeholder.svg"}
                     />
                     <div>
                       <h2 className="font-semibold">{item.product.name}</h2>
                       <p className="text-sm text-gray-500">
                         Size: {item.size?.name}, Color: {item.color?.name}
                       </p>
-                      <p className="font-bold mt-2">{item.product?.price}đ</p>
+                      {item.discounts && item.discounts.length > 0 ? (
+                        <div>
+                          <p className="font-bold mt-2 text-gray-500">
+                            {item.product?.price}đ
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="font-bold mt-2">{item.product?.price}đ</p>
+                      )}
                       <div className="flex items-center mt-2">
                         <button
                           onClick={() =>
@@ -258,7 +291,7 @@ const Cart = () => {
                 <span>{(subtotal * 1000).toLocaleString("vi-VN")}đ</span>
               </div>
               <div className="flex justify-between mb-2">
-                <span>Discount</span>
+                <span>Discount: <span>{discountCode}</span></span>
                 <span className="text-pink-500">
                   -{(totalDiscount * 1000).toLocaleString("vi-VN")}đ
                 </span>
@@ -272,14 +305,54 @@ const Cart = () => {
 
               <input
                 type="text"
-                className="w-full border p-2 rounded mb-2"
+                className="w-full border p-2 rounded mb-2 hidden"
                 placeholder="Enter discount code"
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
               />
               <button
-                onClick={applyDiscount}
-                className="bg-pink-500 text-white w-full py-2 rounded-lg mb-4"
+                onClick={() => {
+                  // If discount code is provided, use it
+                  if (discountCode) {
+                    updateSubtotal(cartItems);
+                  } else {
+                    // Otherwise, just use the automatic discount from the first item
+                    if (
+                      cartItems &&
+                      cartItems.length > 0 &&
+                      cartItems[0].discounts &&
+                      cartItems[0].discounts.length > 0
+                    ) {
+                      const discountPercentage =
+                        cartItems[0].discounts[0].percentage;
+                      let total = 0;
+                      let totalDiscount = 0;
+
+                      cartItems.forEach((item) => {
+                        const itemPrice = item.product.price * item.quantity;
+                        total += itemPrice;
+                        const itemDiscount = calculateDiscount(
+                          itemPrice,
+                          discountPercentage
+                        );
+                        totalDiscount += itemDiscount;
+                      });
+
+                      setSubtotal(total);
+                      setTotalDiscount(totalDiscount);
+
+                      sessionStorage.setItem("discount", totalDiscount);
+                      sessionStorage.setItem("total", total - totalDiscount);
+
+                      notify(
+                        "Discount Applied",
+                        `Your discount has been automatically applied. You saved ${totalDiscount} VND.`,
+                        "topRight"
+                      );
+                    }
+                  }
+                }}
+                className="bg-pink-500 text-white w-full py-2 rounded-lg mb-4 hidden"
               >
                 Apply Discount
               </button>

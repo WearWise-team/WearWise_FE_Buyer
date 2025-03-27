@@ -1,6 +1,6 @@
-
-import { cn } from "@/lib/utils"
-import Image from "next/image"
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function AuthLayout({ children, image, className }) {
   return (
@@ -15,14 +15,16 @@ export default function AuthLayout({ children, image, className }) {
           quality={100}
         />
         <div className="absolute left-8 top-8">
-          <h1 className="text-2xl font-bold">
-            <span className="text-pink-600">W</span>EARWISE
-          </h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold">
+              <span className="text-pink-600">W</span>EARWISE
+            </h1>
+          </Link>
         </div>
       </div>
       <main className={cn("flex items-center justify-center p-8", className)}>
         <div className="mx-auto w-full max-w-md space-y-8">{children}</div>
       </main>
     </div>
-  )
+  );
 }

@@ -10,9 +10,9 @@ export default function Reviews({title}) {
           {title}
         </h1>
         <div className="flex justify-center items-center space-x-4">
-          <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full cursor-pointer">
+          {/* <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full cursor-pointer">
             <FaArrowLeft />
-          </div>
+          </div> */}
           <div className="flex space-x-4 overflow-x-auto">
             {[
               {
@@ -34,9 +34,9 @@ export default function Reviews({title}) {
               <CartReview key={index} author={customer.name} comment={customer.review} numStar={5}/>
             ))}
           </div>
-          <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full cursor-pointer">
+          {/* <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full cursor-pointer">
             <FaArrowRight />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
