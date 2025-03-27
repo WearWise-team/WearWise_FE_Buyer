@@ -52,12 +52,7 @@ export default function DetailProduct({ params }) {
             setProduct(data);
           }
         } catch (error) {
-          notify(
-            "Error when show data",
-            `${error}`,
-            "topRight",
-            "error"
-          );
+          notify("Error when show data", `${error}`, "topRight", "error");
         } finally {
           if (isMounted) {
             setIsLoading(false);
@@ -162,21 +157,34 @@ export default function DetailProduct({ params }) {
       };
 
       if (!isFavorite) {
-        await axios.post(
-          `${API_BASE_URL}/api/wishlists`,
-          { product_id: id },
-          { headers }
-        );
+        const response = await fetch(`${API_BASE_URL}/api/wishlists`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ product_id: id }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to add to wishlist");
+        }
+
         notify(
           "Product Added wishlist Successfully",
           "Your product has been added to the wishlist.",
           "topRight"
         );
       } else {
-        await axios.delete(`${API_BASE_URL}/api/wishlists/${id}`, { headers });
+        const response = await fetch(`${API_BASE_URL}/api/wishlists/${id}`, {
+          method: "DELETE",
+          headers,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to remove from wishlist");
+        }
+
         notify(
           "Product deleted wishlist Successfully",
-          "Your product has been added to the wishlist.",
+          "Your product has been removed from the wishlist.",
           "topRight"
         );
       }
@@ -221,7 +229,10 @@ export default function DetailProduct({ params }) {
       "buy_now_product_sizeId",
       JSON.stringify(selectedSize)
     );
-    sessionStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    sessionStorage.setItem(
+      "buy_now_product_quantity",
+      JSON.stringify(quantity)
+    );
 
     if (typeof window !== "undefined" && selectedImage) {
       sessionStorage.setItem("tryOnImage", selectedImage);
@@ -276,7 +287,10 @@ export default function DetailProduct({ params }) {
       "buy_now_product_sizeId",
       JSON.stringify(selectedSize)
     );
-    sessionStorage.setItem("buy_now_product_quantity", JSON.stringify(quantity));
+    sessionStorage.setItem(
+      "buy_now_product_quantity",
+      JSON.stringify(quantity)
+    );
     router.push("/order/now");
   };
 
@@ -364,9 +378,7 @@ export default function DetailProduct({ params }) {
                 <div className="flex items-center text-yellow-500">
                   <Rate allowHalf value={rating} disabled />
                 </div>
-                <span className="ml-2 text-gray-600">
-                  {rating * 1 || 0}/5
-                </span>
+                <span className="ml-2 text-gray-600">{rating * 1 || 0}/5</span>
                 <button onClick={toggleFavorite} className="ml-2 text-red-500">
                   {isFavorite ? <HeartFilled /> : <HeartOutlined />}
                 </button>
